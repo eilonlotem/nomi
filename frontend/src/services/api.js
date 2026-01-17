@@ -295,6 +295,13 @@ export const userApi = {
   }),
   
   /**
+   * Mark onboarding as complete
+   */
+  completeOnboarding: () => apiRequest('/auth/onboarding/complete/', {
+    method: 'POST',
+  }),
+  
+  /**
    * Validate token
    */
   validateToken: () => apiRequest('/auth/validate/'),

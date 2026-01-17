@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from './composables/useI18n'
 import { useAuth } from './composables/useAuth'
-import { profileApi, matchingApi, chatApi, clearCache } from './services/api'
+import { profileApi, matchingApi, chatApi, userApi, clearCache } from './services/api'
 
 const { t, locale, isRTL, dir, setLocale, getLanguages } = useI18n()
 
@@ -124,144 +124,36 @@ const toggleRelationship = (relId) => {
 const profilePromptOptions = ['laughMost', 'perfectSunday', 'convinced']
 
 // Mock profile data for discovery
-const mockProfiles = [
-  {
-    id: 1,
-    name: 'Maya',
-    age: 28,
-    distance: 3,
-    photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop',
-    bio: {
-      en: 'Wheelchair user who loves adaptive yoga and photography. Looking for genuine connections.',
-      he: 'מתניידת בכיסא גלגלים שאוהבת יוגה מותאמת וצילום. מחפשת חיבורים אמיתיים.',
-      es: 'Usuaria de silla de ruedas que ama el yoga adaptativo y la fotografía.',
-      fr: "Utilisatrice de fauteuil roulant qui aime le yoga adapté et la photographie.",
-      ar: 'مستخدمة كرسي متحرك تحب اليوغا والتصوير. أبحث عن اتصالات حقيقية.',
-    },
-    tags: ['wheelchairUser', 'chronicIllness'],
-    interests: {
-      en: ['Photography', 'Yoga', 'Art'],
-      he: ['צילום', 'יוגה', 'אמנות'],
-      es: ['Fotografía', 'Yoga', 'Arte'],
-      fr: ['Photographie', 'Yoga', 'Art'],
-      ar: ['التصوير', 'اليوغا', 'الفن'],
-    },
-    mood: 'open',
-    compatibility: 87,
-    promptId: 'laughMost',
-    promptAnswer: {
-      en: 'When my cat judges my life choices',
-      he: 'כשהחתול שלי שופט את הבחירות שלי בחיים',
-      es: 'Cuando mi gato juzga mis decisiones de vida',
-      fr: 'Quand mon chat juge mes choix de vie',
-      ar: 'عندما تحكم قطتي على خياراتي في الحياة',
-    },
-  },
-  {
-    id: 2,
-    name: 'Daniel',
-    age: 32,
-    distance: 7,
-    photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=500&fit=crop',
-    bio: {
-      en: 'Deaf artist and coffee enthusiast. I communicate in sign language.',
-      he: 'אמן חרש וחובב קפה. מתקשר בשפת סימנים.',
-      es: 'Artista sordo y entusiasta del café.',
-      fr: "Artiste sourd et amateur de café.",
-      ar: 'فنان أصم ومحب للقهوة.',
-    },
-    tags: ['deafHoh', 'neurodivergent'],
-    interests: {
-      en: ['Coffee', 'Art', 'Sign Language'],
-      he: ['קפה', 'אמנות', 'שפת סימנים'],
-      es: ['Café', 'Arte', 'Lengua de Señas'],
-      fr: ['Café', 'Art', 'Langue des Signes'],
-      ar: ['القهوة', 'الفن', 'لغة الإشارة'],
-    },
-    mood: 'chatty',
-    compatibility: 73,
-    promptId: 'perfectSunday',
-    promptAnswer: {
-      en: 'Gallery hopping, then sketching at a quiet café',
-      he: 'סיור בגלריות, ואז ציור בבית קפה שקט',
-      es: 'Recorriendo galerías, luego dibujando en un café',
-      fr: 'Faire le tour des galeries, puis dessiner',
-      ar: 'زيارة المعارض، ثم الرسم في مقهى هادئ',
-    },
-  },
-  {
-    id: 3,
-    name: 'Noa',
-    age: 26,
-    distance: 5,
-    photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=500&fit=crop',
-    bio: {
-      en: 'Neurodivergent tech enthusiast. I appreciate patience and understanding.',
-      he: 'נוירו-מגוונת וחובבת טכנולוגיה. מעריכה סבלנות והבנה.',
-      es: 'Entusiasta de la tecnología neurodivergente.',
-      fr: "Passionnée de technologie neurodivergente.",
-      ar: 'متحمسة للتكنولوجيا ومتباينة عصبياً.',
-    },
-    tags: ['neurodivergent', 'autism'],
-    interests: {
-      en: ['Gaming', 'Coding', 'Sci-Fi'],
-      he: ['גיימינג', 'תכנות', 'מדע בדיוני'],
-      es: ['Juegos', 'Programación', 'Ciencia Ficción'],
-      fr: ['Jeux Vidéo', 'Programmation', 'Science-Fiction'],
-      ar: ['الألعاب', 'البرمجة', 'الخيال العلمي'],
-    },
-    mood: 'lowEnergy',
-    compatibility: 92,
-    promptId: 'convinced',
-    promptAnswer: {
-      en: 'Robots will eventually appreciate good memes',
-      he: 'רובוטים יום אחד יעריכו ממים טובים',
-      es: 'Los robots apreciarán los buenos memes',
-      fr: 'Les robots apprécieront les bons memes',
-      ar: 'الروبوتات ستقدر الميمات الجيدة',
-    },
-  },
-]
-
 const currentProfileIndex = ref(0)
 
-// Discovery profiles from backend (falls back to mock)
+// Discovery profiles from backend only
 const discoveryProfiles = ref([])
 const noMoreProfiles = ref(false)
 
-// Current profile - prioritize backend data, normalized for template
+// Current profile - uses backend data only, normalized for template
 const currentProfile = computed(() => {
-  const profiles = discoveryProfiles.value.length > 0 ? discoveryProfiles.value : mockProfiles
-  const profile = profiles[currentProfileIndex.value]
+  const profile = discoveryProfiles.value[currentProfileIndex.value]
   if (!profile) return null
   
   // Normalize backend profile format to match expected template format
-  const isBackendProfile = discoveryProfiles.value.length > 0
+  const primaryPhoto = profile.primary_photo?.url || profile.primary_photo?.image || profile.picture_url || 
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop'
   
-  if (isBackendProfile) {
-    // Backend profile format - normalize it
-    const primaryPhoto = profile.primary_photo?.image || profile.picture_url || 
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop'
-    
-    return {
-      ...profile,
-      id: profile.user_id || profile.id,
-      name: profile.display_name || 'User',
-      age: profile.age || profile.user_age || 25,
-      photo: primaryPhoto,
-      distance: profile.distance || Math.floor(Math.random() * 20) + 1,
-      bio: profile.bio || '',
-      tags: (profile.disability_tags || []).map(t => typeof t === 'string' ? t : t.code),
-      interests: (profile.interests || []).map(i => typeof i === 'string' ? i : i.name),
-      mood: profile.current_mood || 'open',
-      compatibility: profile.compatibility || 75,
-      promptId: profile.prompt_id || 'laughMost',
-      promptAnswer: profile.prompt_answer || '',
-    }
+  return {
+    ...profile,
+    id: profile.user_id || profile.id,
+    name: profile.display_name || 'User',
+    age: profile.age || profile.user_age || 25,
+    photo: primaryPhoto,
+    distance: profile.distance || Math.floor(Math.random() * 20) + 1,
+    bio: profile.bio || '',
+    tags: (profile.disability_tags || []).map(t => typeof t === 'string' ? t : t.code),
+    interests: (profile.interests || []).map(i => typeof i === 'string' ? i : i.name),
+    mood: profile.current_mood || 'open',
+    compatibility: profile.compatibility || 75,
+    promptId: profile.prompt_id || 'laughMost',
+    promptAnswer: profile.prompt_answer || '',
   }
-  
-  // Mock profile - return as-is
-  return profile
 })
 
 // Shared tags with current profile
@@ -943,6 +835,9 @@ const saveProfile = async () => {
         preferred_location: userProfile.value.lookingFor.location,
       })
       
+      // Mark onboarding as complete
+      await userApi.completeOnboarding()
+      
       console.log('Profile saved to backend')
     } catch (err) {
       console.warn('Could not save profile to backend:', err.message)
@@ -995,7 +890,11 @@ const initializeApp = async () => {
     
     if (isValid && user.value) {
       loggedInWith.value = user.value.social_provider || 'facebook'
-      currentView.value = 'language'
+      
+      // Set language from user preferences
+      if (user.value.preferred_language) {
+        setLocale(user.value.preferred_language)
+      }
       
       // Fetch profile, tags, discovery profiles, matches, and conversations in parallel
       const [profile, tagsResponse, discoverResponse, matchesResponse, conversationsResponse] = await Promise.all([
@@ -1016,6 +915,8 @@ const initializeApp = async () => {
       if (discoverResponse && discoverResponse.length > 0) {
         discoveryProfiles.value = discoverResponse
         noMoreProfiles.value = false
+      } else {
+        noMoreProfiles.value = true
       }
       
       // Process matches
@@ -1054,6 +955,13 @@ const initializeApp = async () => {
             location: profile.looking_for.preferred_location || '',
           }
         }
+      }
+      
+      // Skip onboarding if user has already completed it
+      if (user.value.is_onboarded) {
+        currentView.value = 'discovery'
+      } else {
+        currentView.value = 'language'
       }
     } else {
       // Not authenticated, just fetch tags

@@ -296,3 +296,15 @@ class ValidateTokenView(APIView):
     def get(self, request: Request) -> Response:
         user = cast(User, request.user)
         return Response({"valid": True, "user": UserSerializer(user).data})
+
+
+class CompleteOnboardingView(APIView):
+    """Mark user as having completed onboarding."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        user = cast(User, request.user)
+        user.is_onboarded = True
+        user.save()
+        return Response({"is_onboarded": True, "user": UserSerializer(user).data})

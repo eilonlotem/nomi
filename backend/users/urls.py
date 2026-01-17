@@ -15,6 +15,7 @@ urlpatterns: list[URLPattern] = [
     # Current user
     path("me/", views.CurrentUserView.as_view(), name="current-user"),
     path("language/", views.UpdateLanguageView.as_view(), name="update-language"),
+    path("onboarding/complete/", views.CompleteOnboardingView.as_view(), name="complete-onboarding"),
     # Session management
     path("logout/", views.LogoutView.as_view(), name="logout"),
     path("validate/", views.ValidateTokenView.as_view(), name="validate-token"),

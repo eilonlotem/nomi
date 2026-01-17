@@ -141,6 +141,10 @@ class Command(BaseCommand):
                 first_name=user_data['first_name'],
                 last_name=user_data['last_name'],
             )
+            # Mark as onboarded so they appear in discovery
+            user.is_onboarded = True
+            user.is_profile_complete = True
+            user.save()
 
             # Create auth token
             Token.objects.create(user=user)

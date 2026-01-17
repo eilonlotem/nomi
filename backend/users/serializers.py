@@ -26,6 +26,7 @@ class UserSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
             "preferred_language",
             "is_verified",
             "is_profile_complete",
+            "is_onboarded",
             "last_active",
             "created_at",
         ]

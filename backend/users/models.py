@@ -49,6 +49,7 @@ class User(AbstractUser):
     # Account status
     is_verified = models.BooleanField(default=False)
     is_profile_complete = models.BooleanField(default=False)
+    is_onboarded = models.BooleanField(default=False)  # True after completing onboarding
 
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

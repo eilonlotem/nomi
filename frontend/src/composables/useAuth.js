@@ -175,6 +175,8 @@ const mockLogin = async (provider) => {
       last_name: 'User',
       social_provider: provider,
       is_verified: true,
+      is_onboarded: false, // New users need to complete onboarding
+      is_profile_complete: false,
     }
 
     const mockToken = 'mock_token_' + Date.now()

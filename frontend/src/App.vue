@@ -501,6 +501,20 @@ const goToDiscovery = async () => {
   if (isAuthenticated.value) {
     currentProfileIndex.value = 0
     await fetchDiscoveryProfiles()
+    
+    // Mark onboarding as complete in backend (if not already)
+    if (!user.value?.is_onboarded) {
+      try {
+        await userApi.completeOnboarding()
+        // Update local user state
+        if (user.value) {
+          user.value.is_onboarded = true
+        }
+        console.log('Onboarding marked as complete')
+      } catch (err) {
+        console.warn('Could not mark onboarding complete:', err.message)
+      }
+    }
   }
 }
 
@@ -864,8 +878,17 @@ const handleSocialLogin = async (provider) => {
       }
     }
     
-    // Navigate to language selection
-    currentView.value = 'language'
+    // Check if user has already completed onboarding
+    if (user.value?.is_onboarded) {
+      // Skip onboarding, go directly to discovery
+      currentView.value = 'discovery'
+      // Fetch discovery data
+      await fetchDiscoveryProfiles()
+      await fetchMatches()
+    } else {
+      // Navigate to language selection for onboarding
+      currentView.value = 'language'
+    }
   } else {
     loginError.value = result.error || 'Login failed. Please try again.'
   }

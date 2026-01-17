@@ -15,17 +15,23 @@ const isAuthenticated = computed(() => !!token.value && !!user.value)
 const facebookSDKLoaded = ref(false)
 
 /**
- * Initialize Facebook SDK
+ * Initialize Facebook SDK with timeout
  */
 const initFacebookSDK = () => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     if (facebookSDKLoaded.value) {
       resolve()
       return
     }
 
+    // Set a timeout in case SDK fails to load
+    const timeout = setTimeout(() => {
+      reject(new Error('Facebook SDK load timeout'))
+    }, 5000)
+
     // Load Facebook SDK
     window.fbAsyncInit = function() {
+      clearTimeout(timeout)
       window.FB.init({
         appId: FACEBOOK_APP_ID,
         cookie: true,
@@ -43,8 +49,13 @@ const initFacebookSDK = () => {
       script.src = 'https://connect.facebook.net/en_US/sdk.js'
       script.async = true
       script.defer = true
+      script.onerror = () => {
+        clearTimeout(timeout)
+        reject(new Error('Facebook SDK failed to load'))
+      }
       document.head.appendChild(script)
     } else {
+      clearTimeout(timeout)
       resolve()
     }
   })
@@ -198,9 +209,9 @@ const login = async (provider) => {
     // Try real Facebook login
     const result = await loginWithFacebook()
     
-    // If Facebook login failed due to HTTPS requirement, fall back to mock
-    if (!result.success && result.error?.includes('HTTPS')) {
-      console.warn('Facebook requires HTTPS, falling back to mock login for development')
+    // If Facebook login failed for any reason, fall back to mock
+    if (!result.success) {
+      console.warn('Facebook login failed, falling back to mock login for development:', result.error)
       return mockLogin(provider)
     }
     

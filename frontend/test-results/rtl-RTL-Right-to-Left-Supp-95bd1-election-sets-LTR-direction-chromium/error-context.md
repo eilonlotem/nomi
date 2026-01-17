@@ -1,0 +1,48 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - button "Accessibility" [ref=e4] [cursor=pointer]:
+    - generic [ref=e5]: ⚙️
+  - generic [ref=e6]:
+    - banner [ref=e7]:
+      - generic [ref=e8]:
+        - button "Go back" [ref=e9] [cursor=pointer]:
+          - img [ref=e10]
+        - heading "Choose Your Language" [level=1] [ref=e12]
+    - main [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - img [ref=e17]
+          - generic [ref=e19]: Connected
+          - generic [ref=e20]: ✓
+        - generic [ref=e24]: 🌍
+        - heading "Choose Your Language" [level=2] [ref=e25]
+        - paragraph [ref=e26]: Select your preferred language
+        - generic [ref=e27]:
+          - button "Switch language - English" [ref=e28] [cursor=pointer]:
+            - generic [ref=e29]:
+              - generic [ref=e30]: 🇬🇧
+              - generic [ref=e31]: English
+            - img [ref=e33]
+          - button "Switch language - Hebrew" [ref=e35] [cursor=pointer]:
+            - generic [ref=e36]:
+              - generic [ref=e37]: 🇮🇱
+              - generic [ref=e38]: עברית
+            - img [ref=e40]
+          - button "Switch language - Spanish" [ref=e42] [cursor=pointer]:
+            - generic [ref=e43]:
+              - generic [ref=e44]: 🇪🇸
+              - generic [ref=e45]: Español
+            - img [ref=e47]
+          - button "Switch language - French" [ref=e49] [cursor=pointer]:
+            - generic [ref=e50]:
+              - generic [ref=e51]: 🇫🇷
+              - generic [ref=e52]: Français
+            - img [ref=e54]
+          - button "Switch language - Arabic" [ref=e56] [cursor=pointer]:
+            - generic [ref=e57]:
+              - generic [ref=e58]: 🇸🇦
+              - generic [ref=e59]: العربية
+            - img [ref=e61]
+```

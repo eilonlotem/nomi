@@ -1,0 +1,35 @@
+# Render.com deployment configuration
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: nomi-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: gunicorn config.wsgi:application
+    envVars:
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nomi-db
+          property: connectionString
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://frontend-ylalo.vercel.app,https://your-custom-domain.com
+      - key: FRONTEND_URL
+        value: https://frontend-ylalo.vercel.app
+      - key: FACEBOOK_APP_ID
+        sync: false
+      - key: FACEBOOK_APP_SECRET
+        sync: false
+
+databases:
+  - name: nomi-db
+    plan: free
+    databaseName: nomi
+    user: nomi_user

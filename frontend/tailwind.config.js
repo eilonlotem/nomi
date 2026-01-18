@@ -55,7 +55,8 @@ export default {
       },
       fontFamily: {
         display: ['Fraunces', 'Georgia', 'serif'],
-        sans: ['DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Heebo', 'DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        hebrew: ['Heebo', 'Arial', 'sans-serif'],
       },
       borderRadius: {
         'blob': '60% 40% 30% 70% / 60% 30% 70% 40%',

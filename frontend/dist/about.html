@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>נומי - היכרויות בגובה העיניים</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #F97316;
+            --secondary: #EC4899;
+            --accent: #8B5CF6;
+            --text: #1E293B;
+            --text-light: #64748B;
+            --bg: #FFFBF5;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+            overflow-x: hidden;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #FFF7ED 0%, #FEF3C7 30%, #FCE7F3 70%, #F3E8FF 100%);
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 80%, rgba(249, 115, 22, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+        }
+        
+        .logo {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        h1 {
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        
+        .tagline {
+            font-size: clamp(1.25rem, 3vw, 1.75rem);
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 3rem;
+        }
+        
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.25rem 3rem;
+            border-radius: 100px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.25rem;
+            box-shadow: 0 10px 40px rgba(249, 115, 22, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 50px rgba(249, 115, 22, 0.4);
+        }
+        
+        .scroll-hint {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            color: var(--text-light);
+            font-size: 2rem;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+        
+        /* Section Styling */
+        section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+        
+        /* Problem Section */
+        .problem {
+            background: linear-gradient(135deg, #FEE2E2 0%, #FEF3C7 100%);
+            padding: 5rem 2rem;
+        }
+        
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .problem-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .problem-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .problem-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .problem-card p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+        
+        /* Features Section */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #FEF3C7, #FCE7F3);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.35rem;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+        
+        .feature-card p {
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+        
+        /* Stats Section */
+        .stats {
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            padding: 4rem 2rem;
+            color: white;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* How it Works */
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .step {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .step-content h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .step-content p {
+            color: var(--text-light);
+        }
+        
+        /* CTA Section */
+        .final-cta {
+            text-align: center;
+            padding: 6rem 2rem;
+            background: linear-gradient(135deg, #FFF7ED 0%, #FCE7F3 100%);
+        }
+        
+        .final-cta h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 1rem;
+        }
+        
+        .final-cta p {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        
+        footer a {
+            color: white;
+            opacity: 0.8;
+            text-decoration: none;
+            margin: 0 1rem;
+            transition: opacity 0.2s;
+        }
+        
+        footer a:hover {
+            opacity: 1;
+        }
+        
+        .footer-links {
+            margin-bottom: 1.5rem;
+        }
+        
+        .copyright {
+            opacity: 0.6;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .step {
+                flex-direction: column;
+                text-align: center;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="logo">🧡</div>
+            <h1>נומי</h1>
+            <p class="tagline">היכרויות בגובה העיניים</p>
+            <p class="subtitle">אפליקציית ההיכרויות הראשונה שמבינה אותך באמת</p>
+            <a href="/" class="cta-button">התחילו עכשיו 💜</a>
+        </div>
+        <div class="scroll-hint">↓</div>
+    </section>
+    
+    <!-- Problem -->
+    <section class="problem">
+        <h2 class="section-title">הבעיה? 🎯</h2>
+        <p class="section-subtitle">אפליקציות היכרויות רגילות לא נבנו בשבילנו</p>
+        
+        <div class="problem-grid">
+            <div class="problem-card">
+                <div class="problem-icon">😔</div>
+                <h3>חוסר הבנה</h3>
+                <p>רוב האנשים לא מבינים מה זה לחיות עם מוגבלות</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon">🚫</div>
+                <h3>סטיגמה</h3>
+                <p>דחייה, יחס מתנשא, או הימנעות מראש</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon">⚠️</div>
+                <h3>חוסר נגישות</h3>
+                <p>ממשקים לא מותאמים לצרכים שונים</p>
+            </div>
+            <div class="problem-card">
+                <div class="problem-icon">❌</div>
+                <h3>התאמה לקויה</h3>
+                <p>אלגוריתמים שלא מבינים את הצרכים שלנו</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features -->
+    <section>
+        <h2 class="section-title">הפתרון ✨</h2>
+        <p class="section-subtitle">נומי נבנתה מהיסוד עבור אנשים עם מוגבלויות</p>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🏷️</div>
+                <h3>תגיות זהות</h3>
+                <p>בחרו תגיות שמתארות אתכם ומצאו אנשים עם חוויות דומות. בלי לחפש, בלי להסביר.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💪</div>
+                <h3>תשאלו אותי על זה</h3>
+                <p>חגגו את מה שהופך אתכם למיוחדים. שתפו את כוח העל שלכם, לא את ה"מגבלה".</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔋</div>
+                <h3>מצב אנרגיה</h3>
+                <p>יום קשה? סמנו "אנרגיה נמוכה". יום טוב? "מרגיש נועז". אנחנו מבינים.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⏰</div>
+                <h3>העדפות זמן</h3>
+                <p>קצב תגובה, זמני זמינות, העדפות מפגש - הכל בשליטה שלכם.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>התאמה חכמה</h3>
+                <p>האלגוריתם שלנו מתחשב בתגיות משותפות, סגנון תקשורת, ומה שחשוב לכם.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3>שוברי קרח</h3>
+                <p>לא יודעים מה לכתוב? יש לנו שאלות מוכנות שיעזרו להתחיל שיחה.</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Stats -->
+    <section class="stats">
+        <div class="stats-grid">
+            <div>
+                <div class="stat-number">12K+</div>
+                <div class="stat-label">משתמשים רשומים</div>
+            </div>
+            <div>
+                <div class="stat-number">3.2K</div>
+                <div class="stat-label">התאמות מוצלחות</div>
+            </div>
+            <div>
+                <div class="stat-number">89%</div>
+                <div class="stat-label">מרוצים מהחוויה</div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- How it Works -->
+    <section>
+        <h2 class="section-title">איך זה עובד? 🚀</h2>
+        <p class="section-subtitle">שלושה צעדים פשוטים לחיבור אמיתי</p>
+        
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>התחברו עם פייסבוק</h3>
+                    <p>הרשמה מהירה ובטוחה. בלי סיסמאות לזכור.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>בנו את הפרופיל שלכם</h3>
+                    <p>בחרו תגיות, כתבו קצת על עצמכם, והגדירו מה אתם מחפשים.</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>התחילו לגלות</h3>
+                    <p>גלו אנשים שמבינים אותכם, החליקו ימינה, והתחילו שיחה.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Final CTA -->
+    <section class="final-cta">
+        <h2>מוכנים למצוא את החיבור שלכם? 💜</h2>
+        <p>הצטרפו לאלפי אנשים שכבר מצאו את הקהילה שלהם</p>
+        <a href="/" class="cta-button">הצטרפו עכשיו - בחינם</a>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-links">
+            <a href="/">בית</a>
+            <a href="/terms.html">תנאי שימוש</a>
+            <a href="/privacy.html">מדיניות פרטיות</a>
+            <a href="mailto:hello@nomi.app">צור קשר</a>
+        </div>
+        <p class="copyright">© 2026 נומי. כל הזכויות שמורות. 🧡</p>
+    </footer>
+</body>
+</html>

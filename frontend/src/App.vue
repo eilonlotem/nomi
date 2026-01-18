@@ -931,8 +931,15 @@ const connectProfile = async () => {
         
         // Refresh matches list
         await fetchMatches()
+        
+        // Advance to next profile so we don't show the matched profile again
+        advanceToNextProfile()
         return
       }
+      
+      // Like recorded but no match - still advance to next profile
+      advanceToNextProfile()
+      return
     } catch (err) {
       console.warn('Could not record like:', err.message)
     }
@@ -941,6 +948,21 @@ const connectProfile = async () => {
   // Fallback to mock match animation (for demo purposes)
   matchedProfile.value = currentProfile.value
   showMatchAnimation.value = true
+}
+
+// Helper to advance to next discovery profile
+const advanceToNextProfile = async () => {
+  const profiles = discoveryProfiles.value.length > 0 ? discoveryProfiles.value : mockProfiles
+  if (currentProfileIndex.value < profiles.length - 1) {
+    currentProfileIndex.value++
+  } else {
+    // No more profiles in current batch
+    noMoreProfiles.value = true
+    // Refresh from backend to get new profiles (excluding matched/swiped ones)
+    if (isAuthenticated.value) {
+      await fetchDiscoveryProfiles()
+    }
+  }
 }
 
 // Fetch discovery profiles from backend
@@ -1033,6 +1055,16 @@ const closeMatchAndChat = async () => {
   }
   
   navigateTo('chat')
+}
+
+const keepDiscovering = async () => {
+  showMatchAnimation.value = false
+  matchedProfile.value = null
+  
+  // Refresh discovery profiles to ensure we don't show already-matched profiles
+  if (isAuthenticated.value) {
+    await fetchDiscoveryProfiles()
+  }
 }
 
 const goBack = () => {
@@ -3832,7 +3864,7 @@ const constellationPoints = computed(() => {
               {{ t('match.sendMessage') }}
             </button>
             <button
-              @click="showMatchAnimation = false"
+              @click="keepDiscovering"
               class="text-white/80 font-medium py-3 touch-manipulation active:opacity-70"
             >
               {{ t('match.keepDiscovering') }}

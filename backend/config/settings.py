@@ -129,7 +129,7 @@ AUTH_PASSWORD_VALIDATORS: list[dict[str, str]] = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE: str = "he"  # Hebrew is the default language
+LANGUAGE_CODE: str = "en-us"  # Django admin in English (frontend handles its own i18n)
 
 TIME_ZONE: str = "UTC"
 

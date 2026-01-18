@@ -645,6 +645,7 @@ const handleTouchEnd = (e) => {
   
   const touch = e.changedTouches ? e.changedTouches[0] : e
   const deltaX = touch.clientX - touchStartX.value
+  const deltaY = touch.clientY - touchStartY.value
   const deltaTime = Date.now() - touchStartTime.value
   const velocity = Math.abs(deltaX) / deltaTime
   
@@ -655,10 +656,20 @@ const handleTouchEnd = (e) => {
   if (isQuickSwipe || isFarEnough) {
     // Complete the swipe animation
     animateSwipeOut(deltaX > 0 ? 'right' : 'left')
-  } else {
-    // Snap back to center with spring animation
-    animateSnapBack()
+    return
   }
+  
+  // Treat as tap if minimal movement
+  const isTap = Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10 && deltaTime < 250
+  if (isTap && currentProfile.value) {
+    openProfileView(currentProfile.value)
+    // Snap back to center in case there was slight movement
+    animateSnapBack()
+    return
+  }
+  
+  // Snap back to center with spring animation
+  animateSnapBack()
 }
 
 const animateSwipeOut = (direction) => {

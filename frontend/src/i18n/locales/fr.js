@@ -11,6 +11,7 @@ export default {
   skip: 'Passer',
   done: 'Terminé',
   save: 'Enregistrer',
+  logout: 'Déconnexion',
   cancel: 'Annuler',
   edit: 'Modifier',
   delete: 'Supprimer',
@@ -96,6 +97,10 @@ export default {
     yesterday: 'Hier',
     icebreaker: 'Brise-glace',
     icebreakers: 'Brise-glaces',
+    disconnect: 'Déconnecter',
+    disconnectTitle: 'Se déconnecter du match ?',
+    disconnectMessage: 'Cela supprimera cette personne de vos matchs et effacera tous les messages. Cette action est irréversible.',
+    disconnectConfirm: 'Déconnecter',
   },
   
   // Icebreaker prompts
@@ -132,6 +137,10 @@ export default {
     promptAnswer: 'Votre réponse',
     saveChanges: 'Enregistrer les Modifications',
     photoHint: 'Appuyez pour changer la photo',
+    cleanup: 'Effacer Mes Matchs et Discussions',
+    cleanupConfirm: 'Cela supprimera tous vos matchs, messages et swipes. Êtes-vous sûr?',
+    cleanupSuccess: 'Tous les matchs et discussions effacés avec succès!',
+    cleanupError: 'Échec de la suppression. Veuillez réessayer.',
   },
   
   // Looking For

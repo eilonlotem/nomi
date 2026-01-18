@@ -4,38 +4,39 @@ test.describe('RTL (Right-to-Left) Support', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Continue with Facebook/i }).click();
+    await page.waitForTimeout(500);
   });
 
   test('Hebrew selection sets RTL direction', async ({ page }) => {
-    await page.getByRole('button', { name: /עברית/i }).click();
+    await page.getByRole('button', { name: /Switch language.*עברית/i }).click();
     
     const body = page.locator('body');
     await expect(body).toHaveAttribute('dir', 'rtl');
   });
 
   test('Arabic selection sets RTL direction', async ({ page }) => {
-    await page.getByRole('button', { name: /العربية/i }).click();
+    await page.getByRole('button', { name: /Switch language.*العربية/i }).click();
     
     const body = page.locator('body');
     await expect(body).toHaveAttribute('dir', 'rtl');
   });
 
   test('English selection sets LTR direction', async ({ page }) => {
-    await page.getByRole('button', { name: /English/i }).click();
+    await page.getByRole('button', { name: /Switch language.*English/i }).click();
     
     const body = page.locator('body');
     await expect(body).toHaveAttribute('dir', 'ltr');
   });
 
   test('Spanish selection sets LTR direction', async ({ page }) => {
-    await page.getByRole('button', { name: /Español/i }).click();
+    await page.getByRole('button', { name: /Switch language.*Español/i }).click();
     
     const body = page.locator('body');
     await expect(body).toHaveAttribute('dir', 'ltr');
   });
 
   test('French selection sets LTR direction', async ({ page }) => {
-    await page.getByRole('button', { name: /Français/i }).click();
+    await page.getByRole('button', { name: /Switch language.*Français/i }).click();
     
     const body = page.locator('body');
     await expect(body).toHaveAttribute('dir', 'ltr');
@@ -46,7 +47,9 @@ test.describe('Hebrew Language UI', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Continue with Facebook/i }).click();
-    await page.getByRole('button', { name: /עברית/i }).click();
+    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: /Switch language.*עברית/i }).click();
+    await page.waitForTimeout(500);
   });
 
   test('onboarding shows Hebrew text', async ({ page }) => {
@@ -84,7 +87,9 @@ test.describe('Arabic Language UI', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Continue with Facebook/i }).click();
-    await page.getByRole('button', { name: /العربية/i }).click();
+    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: /Switch language.*العربية/i }).click();
+    await page.waitForTimeout(500);
   });
 
   test('onboarding shows Arabic text', async ({ page }) => {
@@ -101,7 +106,9 @@ test.describe('RTL Layout Verification', () => {
   test('buttons align correctly in RTL', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Continue with Facebook/i }).click();
-    await page.getByRole('button', { name: /עברית/i }).click();
+    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: /Switch language.*עברית/i }).click();
+    await page.waitForTimeout(500);
     
     // Skip button should be on left in RTL
     const skipButton = page.getByRole('button', { name: /דלג/i });

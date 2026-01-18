@@ -11,6 +11,7 @@ export default {
   skip: 'تخطي',
   done: 'تم',
   save: 'حفظ',
+  logout: 'تسجيل الخروج',
   cancel: 'إلغاء',
   edit: 'تعديل',
   delete: 'حذف',
@@ -96,6 +97,10 @@ export default {
     yesterday: 'أمس',
     icebreaker: 'كسر الجليد',
     icebreakers: 'كاسرات الجليد',
+    disconnect: 'قطع الاتصال',
+    disconnectTitle: 'قطع الاتصال من التطابق؟',
+    disconnectMessage: 'سيؤدي هذا إلى إزالة هذا الشخص من تطابقاتك وحذف جميع رسائل الدردشة. لا يمكن التراجع عن هذا الإجراء.',
+    disconnectConfirm: 'قطع الاتصال',
   },
   
   // Icebreaker prompts
@@ -132,6 +137,10 @@ export default {
     promptAnswer: 'إجابتك',
     saveChanges: 'حفظ التغييرات',
     photoHint: 'انقر لتغيير الصورة',
+    cleanup: 'مسح التطابقات والمحادثات',
+    cleanupConfirm: 'سيؤدي هذا إلى حذف جميع التطابقات والرسائل والتمريرات. هل أنت متأكد؟',
+    cleanupSuccess: 'تم مسح جميع التطابقات والمحادثات بنجاح!',
+    cleanupError: 'فشل في مسح البيانات. يرجى المحاولة مرة أخرى.',
   },
   
   // Looking For

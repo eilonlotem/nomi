@@ -41,18 +41,71 @@ class FacebookAuthView(APIView):
     """
     Handle Facebook authentication from frontend.
 
-    The frontend uses Facebook SDK to get an access token,
-    then sends it here for validation and user creation.
+    Supports two flows:
+    1. Access token flow: Frontend sends access_token directly
+    2. Authorization code flow: Frontend sends code + redirect_uri
+       (used for redirect-based login without popups)
     """
 
     permission_classes = [permissions.AllowAny]
 
     def post(self, request: Request) -> Response:
+        import os
+        
         access_token: Optional[str] = request.data.get("access_token")
+        code: Optional[str] = request.data.get("code")
+        redirect_uri: Optional[str] = request.data.get("redirect_uri")
+
+        # If authorization code is provided, exchange it for access token
+        if code and redirect_uri:
+            try:
+                app_id = os.environ.get("FACEBOOK_APP_ID", "")
+                app_secret = os.environ.get("FACEBOOK_APP_SECRET", "")
+                
+                if not app_id or not app_secret:
+                    return Response(
+                        {"error": "Facebook app credentials not configured"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+                
+                # Exchange code for access token
+                token_response = requests.get(
+                    "https://graph.facebook.com/v18.0/oauth/access_token",
+                    params={
+                        "client_id": app_id,
+                        "client_secret": app_secret,
+                        "redirect_uri": redirect_uri,
+                        "code": code,
+                    },
+                    timeout=10,
+                )
+                
+                if token_response.status_code != 200:
+                    error_data = token_response.json()
+                    error_msg = error_data.get("error", {}).get("message", "Failed to exchange code")
+                    return Response(
+                        {"error": f"Facebook token exchange failed: {error_msg}"},
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+                
+                token_data = token_response.json()
+                access_token = token_data.get("access_token")
+                
+                if not access_token:
+                    return Response(
+                        {"error": "No access token in Facebook response"},
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+                    
+            except requests.RequestException as e:
+                return Response(
+                    {"error": f"Failed to exchange code with Facebook: {str(e)}"},
+                    status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                )
 
         if not access_token:
             return Response(
-                {"error": "Access token is required"},
+                {"error": "Access token or authorization code is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -308,3 +361,95 @@ class CompleteOnboardingView(APIView):
         user.is_onboarded = True
         user.save()
         return Response({"is_onboarded": True, "user": UserSerializer(user).data})
+
+
+class FacebookDataDeletionView(APIView):
+    """
+    Handle Facebook data deletion callback.
+    
+    Facebook sends a POST request when a user requests data deletion.
+    We need to return a confirmation URL and a confirmation code.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request: Request) -> Response:
+        import base64
+        import hashlib
+        import hmac
+        import json
+        import os
+        from urllib.parse import parse_qs
+
+        signed_request = request.data.get("signed_request", "")
+        
+        if not signed_request:
+            return Response(
+                {"error": "Missing signed_request"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Parse the signed request
+            encoded_sig, payload = signed_request.split(".", 2)
+            
+            # Decode the payload
+            payload += "=" * (4 - len(payload) % 4)  # Add padding
+            data = json.loads(base64.urlsafe_b64decode(payload))
+            
+            user_id = data.get("user_id")
+            
+            if user_id:
+                # Find and delete the user
+                username = f"fb_{user_id}"
+                user = User.objects.filter(username=username).first()
+                
+                if user:
+                    # Delete user's data
+                    from matching.models import Match, Swipe, Message, Conversation
+                    from profiles.models import Profile
+                    from django.db.models import Q
+                    
+                    # Delete messages
+                    Message.objects.filter(sender=user).delete()
+                    
+                    # Delete conversations where user is involved
+                    matches = Match.objects.filter(Q(user1=user) | Q(user2=user))
+                    for match in matches:
+                        Conversation.objects.filter(match=match).delete()
+                    
+                    # Delete matches
+                    matches.delete()
+                    
+                    # Delete swipes
+                    Swipe.objects.filter(Q(from_user=user) | Q(to_user=user)).delete()
+                    
+                    # Delete profile
+                    Profile.objects.filter(user=user).delete()
+                    
+                    # Delete token
+                    Token.objects.filter(user=user).delete()
+                    
+                    # Delete user
+                    user.delete()
+            
+            # Generate confirmation code
+            confirmation_code = hashlib.sha256(
+                f"{user_id}-{datetime.now().isoformat()}".encode()
+            ).hexdigest()[:16]
+            
+            # Return the response Facebook expects
+            frontend_url = os.environ.get(
+                "FRONTEND_URL", "https://frontend-ylalo.vercel.app"
+            )
+            
+            return Response({
+                "url": f"{frontend_url}/data-deletion.html",
+                "confirmation_code": confirmation_code,
+            })
+            
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )

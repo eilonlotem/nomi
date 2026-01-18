@@ -4,8 +4,18 @@ test.describe('Profile View', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Continue with Facebook/i }).click();
-    await page.getByRole('button', { name: /English/i }).click();
+    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: /Switch language.*English/i }).click();
+    await page.waitForTimeout(500);
+    // Skip onboarding
     await page.getByRole('button', { name: 'Skip' }).click();
+    await page.waitForTimeout(500);
+    // Skip preferences (if visible)
+    const skipBtn = page.getByRole('button', { name: 'Skip' });
+    if (await skipBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await skipBtn.click();
+      await page.waitForTimeout(500);
+    }
     await page.getByRole('button', { name: 'Profile' }).click();
   });
 

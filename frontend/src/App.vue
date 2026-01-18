@@ -1,5 +1,7 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { ROUTES } from './router'
 import { useI18n } from './composables/useI18n'
 import { useAuth } from './composables/useAuth'
 import { profileApi, matchingApi, chatApi, userApi, clearCache } from './services/api'
@@ -15,7 +17,9 @@ const {
   logout, 
   validateToken,
   updateLanguage,
-  hasFacebookConfig 
+  hasFacebookConfig,
+  isFacebookCallback,
+  handleFacebookCallback,
 } = useAuth()
 
 // App loading state for smoother transitions
@@ -24,8 +28,43 @@ const appLoading = ref(true)
 // Get all available languages
 const availableLanguages = getLanguages()
 
-// Current view state
-const currentView = ref('login') // 'login', 'language', 'onboarding', 'onboarding-preferences', 'discovery', 'matches', 'chat', 'profile'
+// Router
+const router = useRouter()
+const route = useRoute()
+
+// Current view computed from route
+const currentView = computed(() => {
+  const routeName = route.name
+  // Map route names to view names for backward compatibility
+  const routeToView = {
+    [ROUTES.LOGIN]: 'login',
+    [ROUTES.AUTH_CALLBACK]: 'login',
+    [ROUTES.LANGUAGE]: 'language',
+    [ROUTES.ONBOARDING]: 'onboarding',
+    [ROUTES.LOOKING_FOR]: 'onboarding-preferences',
+    [ROUTES.DISCOVERY]: 'discovery',
+    [ROUTES.MATCHES]: 'matches',
+    [ROUTES.CHAT]: 'chat',
+    [ROUTES.PROFILE]: 'profile',
+  }
+  return routeToView[routeName] || 'login'
+})
+
+// Navigate to a view (wrapper for router.push)
+const navigateTo = (view, params = {}) => {
+  const viewToRoute = {
+    'login': ROUTES.LOGIN,
+    'language': ROUTES.LANGUAGE,
+    'onboarding': ROUTES.ONBOARDING,
+    'onboarding-preferences': ROUTES.LOOKING_FOR,
+    'discovery': ROUTES.DISCOVERY,
+    'matches': ROUTES.MATCHES,
+    'chat': ROUTES.CHAT,
+    'profile': ROUTES.PROFILE,
+  }
+  const routeName = viewToRoute[view] || ROUTES.LOGIN
+  router.push({ name: routeName, params })
+}
 
 // Onboarding stage
 const onboardingStage = ref(1) // 1 = identity tags, 2 = looking for preferences
@@ -57,17 +96,36 @@ const moodOptions = [
   { id: 'adventurous', emoji: '✨' },
 ]
 
+// Vibrant interest tag color palette - cycles through diverse colors
+const interestColorClasses = [
+  'bg-rose-light text-rose border-rose/30',
+  'bg-teal-light text-teal border-teal/30',
+  'bg-violet-light text-violet border-violet/30',
+  'bg-amber-light text-amber border-amber/30',
+  'bg-indigo-light text-indigo border-indigo/30',
+  'bg-emerald-light text-emerald border-emerald/30',
+]
+
 // User profile data (editable)
 const userProfile = ref({
   name: 'Alex',
   age: 29,
   location: 'Tel Aviv',
   photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=500&fit=crop',
+  photos: [], // Array of uploaded photos { id, image, is_primary, order }
   bio: '',
   tags: [],
   interests: ['Music', 'Reading', 'Hiking'],
   promptId: 'laughMost',
   promptAnswer: '',
+  // Ask Me About It - celebration prompt
+  askMePromptId: '',
+  askMeAnswer: '',
+  // Time Preferences
+  preferredTimes: [], // 'morning', 'afternoon', 'evening', 'night', 'flexible'
+  responsePace: '', // 'quick', 'moderate', 'slow', 'variable'
+  datePace: '', // 'ready', 'slow', 'virtual', 'flexible'
+  timeNotes: '',
   lookingFor: {
     genders: [], // 'men', 'women', 'nonbinary', 'everyone'
     relationshipTypes: [], // 'dating', 'serious', 'friends', 'activity'
@@ -76,6 +134,122 @@ const userProfile = ref({
     location: '', // City/area
   },
 })
+
+// Photo upload state
+const isUploadingPhoto = ref(false)
+const photoUploadError = ref(null)
+
+// Handle photo upload
+const handlePhotoUpload = async (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+  
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    photoUploadError.value = 'Please select an image file'
+    return
+  }
+  
+  // Validate file size (max 5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    photoUploadError.value = 'Image must be less than 5MB'
+    return
+  }
+  
+  isUploadingPhoto.value = true
+  photoUploadError.value = null
+  
+  try {
+    const photo = await profileApi.uploadPhoto(file)
+    userProfile.value.photos = [...userProfile.value.photos, photo]
+    
+    // If this is the first photo and no picture_url, use it as main photo
+    if (photo.is_primary || !userProfile.value.photo) {
+      userProfile.value.photo = photo.image
+    }
+  } catch (err) {
+    photoUploadError.value = err.message || 'Failed to upload photo'
+  } finally {
+    isUploadingPhoto.value = false
+    // Reset file input
+    event.target.value = ''
+  }
+}
+
+// Delete photo
+const deletePhoto = async (photoId) => {
+  try {
+    await profileApi.deletePhoto(photoId)
+    userProfile.value.photos = userProfile.value.photos.filter(p => p.id !== photoId)
+    
+    // If we deleted the primary photo, update the main photo
+    const primaryPhoto = userProfile.value.photos.find(p => p.is_primary)
+    if (primaryPhoto) {
+      userProfile.value.photo = primaryPhoto.image
+    }
+  } catch (err) {
+    console.error('Failed to delete photo:', err)
+  }
+}
+
+// Set photo as primary
+const setPrimaryPhoto = async (photoId) => {
+  try {
+    await profileApi.setPrimaryPhoto(photoId)
+    userProfile.value.photos = userProfile.value.photos.map(p => ({
+      ...p,
+      is_primary: p.id === photoId
+    }))
+    
+    const primaryPhoto = userProfile.value.photos.find(p => p.id === photoId)
+    if (primaryPhoto) {
+      userProfile.value.photo = primaryPhoto.image
+    }
+  } catch (err) {
+    console.error('Failed to set primary photo:', err)
+  }
+}
+
+// Photo carousel for discovery cards
+const currentPhotoIndex = ref(0)
+
+// Get all photos for a profile (including picture_url and uploaded photos)
+const getAllPhotos = (profile) => {
+  if (!profile) return []
+  
+  const photos = []
+  
+  // Add main photo (from picture_url or primary photo)
+  if (profile.photo) {
+    photos.push(profile.photo)
+  }
+  
+  // Add uploaded photos (excluding primary if already added via picture_url)
+  const uploadedPhotos = profile.photos || []
+  for (const photo of uploadedPhotos) {
+    const url = photo.image || photo.url
+    if (url && !photos.includes(url)) {
+      photos.push(url)
+    }
+  }
+  
+  return photos
+}
+
+// Navigate to next photo
+const nextPhoto = () => {
+  const photos = getAllPhotos(currentProfile.value)
+  if (currentPhotoIndex.value < photos.length - 1) {
+    currentPhotoIndex.value++
+  }
+}
+
+// Navigate to previous photo
+const prevPhoto = () => {
+  if (currentPhotoIndex.value > 0) {
+    currentPhotoIndex.value--
+  }
+}
 
 // Looking for options
 const genderOptions = [
@@ -91,6 +265,51 @@ const relationshipOptions = [
   { id: 'friends', emoji: '🤝', gradient: 'from-cyan-400 to-blue-500' },
   { id: 'activity', emoji: '🎯', gradient: 'from-amber-400 to-orange-500' },
 ]
+
+// Ask Me About It prompts
+const askMePrompts = [
+  { id: 'coolestThing', emoji: '✨' },
+  { id: 'superpower', emoji: '💪' },
+  { id: 'wishPeopleKnew', emoji: '💭' },
+  { id: 'proudOf', emoji: '🏆' },
+  { id: 'dontLetStop', emoji: '🚀' },
+  { id: 'loveAboutCommunity', emoji: '💜' },
+]
+
+// Time preference options
+const timeOptions = [
+  { id: 'morning', emoji: '🌅' },
+  { id: 'afternoon', emoji: '☀️' },
+  { id: 'evening', emoji: '🌆' },
+  { id: 'night', emoji: '🌙' },
+  { id: 'flexible', emoji: '🤷' },
+]
+
+const responsePaceOptions = [
+  { id: 'quick', emoji: '⚡' },
+  { id: 'moderate', emoji: '🕐' },
+  { id: 'slow', emoji: '🐢' },
+  { id: 'variable', emoji: '🔋' },
+]
+
+const datePaceOptions = [
+  { id: 'ready', emoji: '🎯' },
+  { id: 'slow', emoji: '💬' },
+  { id: 'virtual', emoji: '📱' },
+  { id: 'flexible', emoji: '🌈' },
+]
+
+// Toggle time preference
+const toggleTime = (timeId) => {
+  const times = userProfile.value.preferredTimes || []
+  const index = times.indexOf(timeId)
+  if (index > -1) {
+    times.splice(index, 1)
+  } else {
+    times.push(timeId)
+  }
+  userProfile.value.preferredTimes = times
+}
 
 // Toggle looking for options
 const toggleGender = (genderId) => {
@@ -126,6 +345,11 @@ const profilePromptOptions = ['laughMost', 'perfectSunday', 'convinced']
 // Mock profile data for discovery
 const currentProfileIndex = ref(0)
 
+// Reset photo index when profile changes
+watch(currentProfileIndex, () => {
+  currentPhotoIndex.value = 0
+})
+
 // Discovery profiles from backend only
 const discoveryProfiles = ref([])
 const noMoreProfiles = ref(false)
@@ -153,6 +377,13 @@ const currentProfile = computed(() => {
     compatibility: profile.compatibility || 75,
     promptId: profile.prompt_id || 'laughMost',
     promptAnswer: profile.prompt_answer || '',
+    // Ask Me About It
+    askMePromptId: profile.ask_me_prompt_id || '',
+    askMeAnswer: profile.ask_me_answer || '',
+    // Time Preferences
+    preferredTimes: profile.preferred_times || [],
+    responsePace: profile.response_pace || '',
+    datePace: profile.date_pace || '',
   }
 })
 
@@ -169,6 +400,67 @@ const showMatchAnimation = ref(false)
 const matchedProfile = ref(null)
 const selectedMatch = ref(null)
 
+// Disconnect/unmatch state
+const showDisconnectConfirm = ref(false)
+const isDisconnecting = ref(false)
+
+// Handle disconnect from match
+const handleDisconnect = async () => {
+  if (!selectedMatch.value || isDisconnecting.value) return
+  
+  isDisconnecting.value = true
+  try {
+    await matchingApi.unmatch(selectedMatch.value.id)
+    
+    // Remove match from local state
+    matches.value = matches.value.filter(m => m.id !== selectedMatch.value.id)
+    
+    // Clear chat state
+    selectedMatch.value = null
+    currentConversation.value = null
+    chatMessages.value = []
+    
+    // Close confirmation dialog
+    showDisconnectConfirm.value = false
+    
+    // Navigate back to matches
+    navigateTo('matches')
+  } catch (err) {
+    console.error('Failed to disconnect:', err)
+  } finally {
+    isDisconnecting.value = false
+  }
+}
+
+// View profile overlay state
+const viewingProfile = ref(null)
+const viewingProfilePhotoIndex = ref(0)
+
+// Open user profile view
+const openProfileView = (profile) => {
+  viewingProfile.value = profile
+  viewingProfilePhotoIndex.value = 0
+}
+
+// Close profile view
+const closeProfileView = () => {
+  viewingProfile.value = null
+}
+
+// Navigate photos in profile view
+const nextViewingPhoto = () => {
+  const photos = getAllPhotos(viewingProfile.value)
+  if (viewingProfilePhotoIndex.value < photos.length - 1) {
+    viewingProfilePhotoIndex.value++
+  }
+}
+
+const prevViewingPhoto = () => {
+  if (viewingProfilePhotoIndex.value > 0) {
+    viewingProfilePhotoIndex.value--
+  }
+}
+
 // Matches and conversations from backend
 const matches = ref([])
 const conversations = ref([])
@@ -177,6 +469,7 @@ const conversations = ref([])
 // Chat state
 const currentConversation = ref(null)
 const chatMessages = ref([])
+
 const chatPartner = ref({
   name: '',
   photo: '',
@@ -472,7 +765,7 @@ const selectLanguage = async (lang) => {
     }
   }
   
-  currentView.value = 'onboarding'
+  navigateTo('onboarding')
 }
 
 const toggleTag = (tagId) => {
@@ -495,26 +788,26 @@ const toggleProfileTag = (tagId) => {
 
 const goToDiscovery = async () => {
   userProfile.value.tags = [...selectedTags.value]
-  currentView.value = 'discovery'
+  // Mark onboarding as complete BEFORE navigating (so navigation guard allows discovery)
+  if (user.value && !user.value.is_onboarded) {
+    user.value.is_onboarded = true
+    localStorage.setItem('user_data', JSON.stringify(user.value))
+    
+    // Also update backend
+    try {
+      await userApi.completeOnboarding()
+      console.log('Onboarding marked as complete')
+    } catch (err) {
+      console.warn('Could not mark onboarding complete:', err.message)
+    }
+  }
+  
+  navigateTo('discovery')
   
   // Fetch fresh discovery profiles based on new preferences
   if (isAuthenticated.value) {
     currentProfileIndex.value = 0
     await fetchDiscoveryProfiles()
-    
-    // Mark onboarding as complete in backend (if not already)
-    if (!user.value?.is_onboarded) {
-      try {
-        await userApi.completeOnboarding()
-        // Update local user state
-        if (user.value) {
-          user.value.is_onboarded = true
-        }
-        console.log('Onboarding marked as complete')
-      } catch (err) {
-        console.warn('Could not mark onboarding complete:', err.message)
-      }
-    }
   }
 }
 
@@ -596,10 +889,20 @@ const fetchMatches = async () => {
   if (!isAuthenticated.value) return
   
   try {
+    // Clear cache to get fresh data
+    clearCache('/matches')
     const result = await matchingApi.getMatches()
-    matches.value = result.results || result || []
+    // Handle paginated or direct array response
+    if (Array.isArray(result)) {
+      matches.value = result
+    } else if (result?.results && Array.isArray(result.results)) {
+      matches.value = result.results
+    } else {
+      matches.value = []
+    }
   } catch (err) {
     console.warn('Could not fetch matches:', err.message)
+    matches.value = []
   }
 }
 
@@ -615,40 +918,114 @@ const fetchConversations = async () => {
   }
 }
 
-const closeMatchAndChat = () => {
+const closeMatchAndChat = async () => {
   showMatchAnimation.value = false
-  currentView.value = 'chat'
+  
+  // Get the matched profile data
+  const profile = matchedProfile.value
+  if (!profile) {
+    navigateTo('discovery')
+    return
+  }
+  
+  // Set up chat partner from the matched profile
+  chatPartner.value = {
+    name: profile.name || profile.display_name || 'Match',
+    photo: profile.photo || profile.picture_url || '',
+    isOnline: true,
+  }
+  
+  // Get conversation ID from the match data
+  if (profile.matchData?.conversation_id) {
+    currentConversation.value = profile.matchData.conversation_id
+  } else if (profile.matchData?.id) {
+    // Try to find the conversation from the matches list
+    await fetchMatches()
+    const match = matches.value.find(m => m.id === profile.matchData.id)
+    if (match?.conversation_id) {
+      currentConversation.value = match.conversation_id
+    }
+  }
+  
+  // Initialize chat state and load messages
+  chatMessages.value = []
+  lastSeenMessageId.value = 0
+  if (currentConversation.value) {
+    await refreshMessages()
+  }
+  
+  navigateTo('chat')
 }
 
 const goBack = () => {
-  if (currentView.value === 'language') {
-    currentView.value = 'login'
-    loggedInWith.value = null
-  } else if (currentView.value === 'onboarding') {
-    currentView.value = 'language'
-  } else if (currentView.value === 'onboarding-preferences') {
-    currentView.value = 'onboarding'
-  } else if (currentView.value === 'discovery') {
-    currentView.value = 'onboarding-preferences'
-  } else if (currentView.value === 'matches') {
-    currentView.value = 'discovery'
-  } else if (currentView.value === 'chat') {
-    currentView.value = 'matches'
-  } else if (currentView.value === 'profile') {
-    currentView.value = 'discovery'
+  // Use browser history when possible
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    // Fallback logic for direct URL access
+    if (currentView.value === 'language') {
+      navigateTo('login')
+      loggedInWith.value = null
+    } else if (currentView.value === 'onboarding') {
+      navigateTo('language')
+    } else if (currentView.value === 'onboarding-preferences') {
+      navigateTo('onboarding')
+    } else if (currentView.value === 'discovery') {
+      navigateTo('profile')
+    } else if (currentView.value === 'matches') {
+      navigateTo('discovery')
+    } else if (currentView.value === 'chat') {
+      navigateTo('matches')
+    } else if (currentView.value === 'profile') {
+      navigateTo('discovery')
+    } else {
+      navigateTo('discovery')
+    }
   }
 }
 
 const goToPreferences = () => {
-  currentView.value = 'onboarding-preferences'
+  navigateTo('onboarding-preferences')
 }
 
 const goToProfile = () => {
-  currentView.value = 'profile'
+  navigateTo('profile')
+}
+
+const handleLogout = async () => {
+  await logout()
+  // Reset app state
+  navigateTo('login')
+  matches.value = []
+  conversations.value = []
+  chatMessages.value = []
+  discoveryProfiles.value = []
+  currentProfileIndex.value = 0
+}
+
+const handleCleanup = async () => {
+  if (!confirm(t('profile.cleanupConfirm'))) return
+  
+  try {
+    await matchingApi.cleanup()
+    // Reset local state
+    matches.value = []
+    conversations.value = []
+    chatMessages.value = []
+    currentProfileIndex.value = 0
+    noMoreProfiles.value = false
+    // Refresh discovery profiles
+    clearCache('/discover')
+    await fetchDiscoveryProfiles()
+    alert(t('profile.cleanupSuccess'))
+  } catch (err) {
+    console.error('Cleanup failed:', err)
+    alert(t('profile.cleanupError'))
+  }
 }
 
 const goToMatches = async () => {
-  currentView.value = 'matches'
+  navigateTo('matches')
   // Refresh matches from backend
   if (isAuthenticated.value) {
     await fetchMatches()
@@ -685,6 +1062,19 @@ const getMatchProfile = (match) => {
   return { name: 'Unknown', bio: '' }
 }
 
+// Get the current chat partner's profile
+const getChatPartnerProfile = () => {
+  if (!selectedMatch.value) {
+    // Fallback to mockChat data if no match selected
+    return {
+      name: mockChat.matchName,
+      photo: mockChat.matchPhoto,
+      picture_url: mockChat.matchPhoto,
+    }
+  }
+  return getMatchProfile(selectedMatch.value)
+}
+
 // Format match date
 const formatMatchDate = (dateStr) => {
   if (!dateStr) return ''
@@ -719,82 +1109,175 @@ const openChat = async (match) => {
   // Get conversation ID from match
   currentConversation.value = match.conversation_id || null
   chatMessages.value = []
+  lastSeenMessageId.value = 0
   
-  // Fetch messages from API if we have a conversation
+  // Load messages
   if (currentConversation.value && isAuthenticated.value) {
-    try {
-      const messages = await chatApi.getMessages(currentConversation.value)
-      chatMessages.value = messages.results || messages || []
-    } catch (error) {
-      console.error('Failed to load messages:', error)
-    }
+    await refreshMessages()
   }
   
-  currentView.value = 'chat'
+  navigateTo('chat')
 }
 
-const sendMessage = async () => {
-  if (newMessage.value.trim() && currentConversation.value) {
-    const text = newMessage.value
-    newMessage.value = '' // Clear immediately for UX
+// =============================================================================
+// CHAT SYSTEM - Clean refactored implementation
+// =============================================================================
+
+// Track the last message ID we've seen to detect new messages
+const lastSeenMessageId = ref(0)
+
+// Load all messages from server (full refresh)
+const loadMessages = async () => {
+  if (!currentConversation.value) return []
+  
+  try {
+    const response = await chatApi.getMessages(currentConversation.value)
+    let messages = []
     
-    // Optimistically add the message
-    const tempMessage = {
-      id: Date.now(),
-      content: text,
-      is_mine: true,
-      sender: 'me',
-      sent_at: new Date().toISOString(),
-      is_read: false,
+    if (Array.isArray(response)) {
+      messages = response
+    } else if (response?.results) {
+      messages = response.results
     }
-    chatMessages.value.push(tempMessage)
     
-    // Send to API
-    try {
-      const response = await chatApi.sendMessage(currentConversation.value, text)
-      // Replace temp message with real one
-      const index = chatMessages.value.findIndex(m => m.id === tempMessage.id)
-      if (index !== -1) {
-        chatMessages.value[index] = response
-      }
-    } catch (error) {
-      console.error('Failed to send message:', error)
-      // Remove the temp message on failure
-      chatMessages.value = chatMessages.value.filter(m => m.id !== tempMessage.id)
-      // Restore the message text
-      newMessage.value = text
-    }
+    return messages
+  } catch (error) {
+    console.error('Failed to load messages:', error)
+    return []
   }
 }
 
+// Refresh messages from server (replaces all messages)
+const refreshMessages = async () => {
+  const messages = await loadMessages()
+  if (messages.length > 0) {
+    chatMessages.value = messages
+    // Track the latest message ID
+    const maxId = Math.max(...messages.map(m => m.id || 0))
+    lastSeenMessageId.value = maxId
+  }
+}
+
+// Check for new messages only (append new ones)
+const checkForNewMessages = async () => {
+  if (!currentConversation.value) return
+  
+  const messages = await loadMessages()
+  if (messages.length === 0) return
+  
+  // Find messages newer than what we've seen
+  const newMessages = messages.filter(m => m.id > lastSeenMessageId.value)
+  
+  if (newMessages.length > 0) {
+    // Append new messages
+    chatMessages.value = [...chatMessages.value, ...newMessages]
+    // Update last seen
+    const maxId = Math.max(...newMessages.map(m => m.id))
+    lastSeenMessageId.value = maxId
+  }
+}
+
+// Polling system
+let pollingTimer = null
+
+const startPolling = () => {
+  stopPolling() // Clear any existing
+  pollingTimer = setInterval(checkForNewMessages, 2500)
+}
+
+const stopPolling = () => {
+  if (pollingTimer) {
+    clearInterval(pollingTimer)
+    pollingTimer = null
+  }
+}
+
+// Send a message
+const sendMessage = async () => {
+  const text = newMessage.value.trim()
+  if (!text || !currentConversation.value) return
+  
+  // Clear input immediately
+  newMessage.value = ''
+  
+  // Add optimistic message with negative temp ID
+  const tempId = -Date.now()
+  const optimisticMsg = {
+    id: tempId,
+    content: text,
+    is_mine: true,
+    sent_at: new Date().toISOString(),
+    is_read: false,
+  }
+  chatMessages.value = [...chatMessages.value, optimisticMsg]
+  
+  try {
+    // Send to server
+    const serverMsg = await chatApi.sendMessage(currentConversation.value, text)
+    
+    // Replace optimistic message with server response
+    chatMessages.value = chatMessages.value.map(m => 
+      m.id === tempId ? serverMsg : m
+    )
+    
+    // Update last seen ID
+    if (serverMsg.id > lastSeenMessageId.value) {
+      lastSeenMessageId.value = serverMsg.id
+    }
+    
+    // Check for AI response after a short delay
+    setTimeout(checkForNewMessages, 2000)
+    
+  } catch (error) {
+    console.error('Failed to send:', error)
+    // Mark as failed (keep the message visible)
+    chatMessages.value = chatMessages.value.map(m => 
+      m.id === tempId ? { ...m, _failed: true } : m
+    )
+  }
+}
+
+// Send icebreaker
 const sendIcebreaker = async (prompt) => {
   if (!currentConversation.value) return
   
-  // Optimistically add the message
-  const tempMessage = {
-    id: Date.now(),
+  const tempId = -Date.now()
+  const optimisticMsg = {
+    id: tempId,
     content: prompt.text,
     is_mine: true,
-    sender: 'me',
     sent_at: new Date().toISOString(),
     is_read: false,
     isIcebreaker: true,
   }
-  chatMessages.value.push(tempMessage)
+  chatMessages.value = [...chatMessages.value, optimisticMsg]
   showIcebreakers.value = false
   
-  // Send to API
   try {
-    const response = await chatApi.sendMessage(currentConversation.value, prompt.text, 'icebreaker')
-    const index = chatMessages.value.findIndex(m => m.id === tempMessage.id)
-    if (index !== -1) {
-      chatMessages.value[index] = response
+    const serverMsg = await chatApi.sendMessage(currentConversation.value, prompt.text, 'icebreaker')
+    chatMessages.value = chatMessages.value.map(m => 
+      m.id === tempId ? serverMsg : m
+    )
+    if (serverMsg.id > lastSeenMessageId.value) {
+      lastSeenMessageId.value = serverMsg.id
     }
+    setTimeout(checkForNewMessages, 2000)
   } catch (error) {
     console.error('Failed to send icebreaker:', error)
-    chatMessages.value = chatMessages.value.filter(m => m.id !== tempMessage.id)
+    chatMessages.value = chatMessages.value.map(m => 
+      m.id === tempId ? { ...m, _failed: true } : m
+    )
   }
 }
+
+// Watch for view changes to start/stop polling
+watch(() => currentView.value, (newView, oldView) => {
+  if (newView === 'chat') {
+    startPolling()
+  } else if (oldView === 'chat') {
+    stopPolling()
+  }
+}, { immediate: true })
 
 const toggleReaction = (messageId, emoji) => {
   const msg = chatMessages.value.find(m => m.id === messageId)
@@ -837,6 +1320,14 @@ const saveProfile = async () => {
         current_mood: currentMood.value,
         prompt_id: userProfile.value.promptId,
         prompt_answer: userProfile.value.promptAnswer,
+        // Ask Me About It
+        ask_me_prompt_id: userProfile.value.askMePromptId,
+        ask_me_answer: userProfile.value.askMeAnswer,
+        // Time Preferences
+        preferred_times: userProfile.value.preferredTimes || [],
+        response_pace: userProfile.value.responsePace,
+        date_pace: userProfile.value.datePace,
+        time_notes: userProfile.value.timeNotes,
       })
       
       // Save looking for preferences
@@ -858,7 +1349,13 @@ const saveProfile = async () => {
     }
   }
   
-  currentView.value = 'discovery'
+  // Always update local user state for navigation guard (even if API fails)
+  if (user.value) {
+    user.value.is_onboarded = true
+    localStorage.setItem('user_data', JSON.stringify(user.value))
+  }
+  
+  navigateTo('discovery')
 }
 
 // Social login handler
@@ -866,6 +1363,11 @@ const handleSocialLogin = async (provider) => {
   loginError.value = null
   
   const result = await login(provider)
+  
+  // If redirecting to OAuth provider, stop here (page will navigate away)
+  if (result.redirecting) {
+    return
+  }
   
   if (result.success) {
     loggedInWith.value = provider
@@ -881,13 +1383,13 @@ const handleSocialLogin = async (provider) => {
     // Check if user has already completed onboarding
     if (user.value?.is_onboarded) {
       // Skip onboarding, go directly to discovery
-      currentView.value = 'discovery'
+      navigateTo('discovery')
       // Fetch discovery data
       await fetchDiscoveryProfiles()
       await fetchMatches()
     } else {
       // Navigate to language selection for onboarding
-      currentView.value = 'language'
+      navigateTo('language')
     }
   } else {
     loginError.value = result.error || 'Login failed. Please try again.'
@@ -961,6 +1463,16 @@ const initializeApp = async () => {
           promptAnswer: profile.prompt_answer || '',
           age: profile.age || userProfile.value.age,
           photo: profile.picture_url || userProfile.value.photo,
+          // Ask Me About It
+          askMePromptId: profile.ask_me_prompt_id || '',
+          askMeAnswer: profile.ask_me_answer || '',
+          // Time Preferences
+          preferredTimes: profile.preferred_times || [],
+          responsePace: profile.response_pace || '',
+          datePace: profile.date_pace || '',
+          timeNotes: profile.time_notes || '',
+          // Photos
+          photos: profile.photos || [],
         }
         selectedTags.value = userProfile.value.tags
         currentMood.value = profile.current_mood || 'open'
@@ -982,9 +1494,9 @@ const initializeApp = async () => {
       
       // Skip onboarding if user has already completed it
       if (user.value.is_onboarded) {
-        currentView.value = 'discovery'
+        navigateTo('discovery')
       } else {
-        currentView.value = 'language'
+        navigateTo('language')
       }
     } else {
       // Not authenticated, just fetch tags
@@ -1003,8 +1515,43 @@ const initializeApp = async () => {
 }
 
 // Check for existing auth on mount
-onMounted(() => {
-  initializeApp()
+onMounted(async () => {
+  // Check if this is a Facebook OAuth callback
+  if (isFacebookCallback()) {
+    console.log('Handling Facebook OAuth callback...')
+    appLoading.value = true
+    
+    const result = await handleFacebookCallback()
+    
+    if (result.success) {
+      loggedInWith.value = 'facebook'
+      
+      // Update user profile with data from social login
+      if (result.facebookData) {
+        userProfile.value.name = result.facebookData.name || userProfile.value.name
+        if (result.facebookData.picture_url) {
+          userProfile.value.photo = result.facebookData.picture_url
+        }
+      }
+      
+      // Navigate based on onboarding status
+      if (user.value?.is_onboarded) {
+        navigateTo('discovery')
+      } else {
+        navigateTo('language')
+      }
+      
+      // Continue with normal initialization to load profile data
+      await initializeApp()
+    } else {
+      // Callback failed, show login with error
+      loginError.value = result.error || 'Facebook login failed. Please try again.'
+      appLoading.value = false
+    }
+  } else {
+    // Normal initialization
+    initializeApp()
+  }
 })
 
 // Generate constellation points for match animation
@@ -1334,7 +1881,7 @@ const constellationPoints = computed(() => {
               :class="[
                 'group relative w-full py-4 xs:py-5 px-5 rounded-[20px] font-semibold transition-all duration-300 animate-slide-up touch-manipulation active:scale-[0.98]',
                 index === 0 
-                  ? 'bg-gradient-to-r from-primary via-coral to-accent text-white shadow-button' 
+                  ? 'bg-primary text-white shadow-button' 
                   : 'bg-surface-warm text-text-deep shadow-soft hover:shadow-card',
                 `stagger-${index + 1}`
               ]"
@@ -1497,7 +2044,7 @@ const constellationPoints = computed(() => {
       <div class="sticky bottom-0 glass border-t border-border/50 p-4 xs:p-5 bottom-bar-safe">
         <button
           @click="goToPreferences"
-          class="w-full bg-gradient-to-r from-primary via-coral to-accent text-white text-base xs:text-lg py-4 xs:py-5 rounded-[20px] font-semibold shadow-button touch-manipulation active:scale-[0.98] transition-all duration-300"
+          class="w-full bg-primary text-white text-base xs:text-lg py-4 xs:py-5 rounded-[20px] font-semibold shadow-button touch-manipulation active:scale-[0.98] transition-all duration-300"
           :disabled="selectedTags.length === 0"
           :class="{ 'opacity-50 grayscale': selectedTags.length === 0 }"
         >
@@ -1710,7 +2257,7 @@ const constellationPoints = computed(() => {
       <div class="sticky bottom-0 bg-surface/90 backdrop-blur-lg border-t border-border p-3 xs:p-4 bottom-bar-safe">
         <button
           @click="goToDiscovery"
-          class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white text-base xs:text-lg py-3.5 xs:py-4 rounded-xl xs:rounded-2xl font-medium shadow-button touch-manipulation active:scale-[0.98]"
+          class="w-full bg-primary text-white text-base xs:text-lg py-3.5 xs:py-4 rounded-xl xs:rounded-2xl font-medium shadow-button touch-manipulation active:scale-[0.98]"
         >
           {{ t('onboarding.continueBtn') }}
         </button>
@@ -1824,29 +2371,58 @@ const constellationPoints = computed(() => {
           <!-- Shared Tags Sparkles -->
           <div 
             v-if="sharedTags.length > 0"
-            class="absolute top-4 start-4 z-10 flex items-center gap-1 px-2.5 xs:px-3 py-1 xs:py-1.5 bg-gradient-to-r from-primary to-accent text-white rounded-full text-[10px] xs:text-xs font-medium shadow-soft transition-opacity"
+            class="absolute top-4 start-4 z-10 flex items-center gap-1 px-2.5 xs:px-3 py-1 xs:py-1.5 bg-primary text-white rounded-full text-[10px] xs:text-xs font-medium shadow-soft transition-opacity"
             :class="swipeDirection ? 'opacity-0' : 'opacity-100'"
           >
             <span>✨</span>
             {{ sharedTags.length }} {{ t('discovery.shared') }}
           </div>
 
-          <!-- Photo -->
+          <!-- Photo Carousel -->
           <div class="relative aspect-[4/5] xs:aspect-[4/5] overflow-hidden">
+            <!-- Photo indicators -->
+            <div 
+              v-if="getAllPhotos(currentProfile).length > 1"
+              class="absolute top-2 inset-x-2 z-20 flex gap-1"
+            >
+              <div 
+                v-for="(photo, index) in getAllPhotos(currentProfile)"
+                :key="index"
+                class="flex-1 h-0.5 rounded-full transition-all"
+                :class="index === currentPhotoIndex ? 'bg-white' : 'bg-white/40'"
+              ></div>
+            </div>
+            
+            <!-- Tap zones for photo navigation -->
+            <div 
+              v-if="getAllPhotos(currentProfile).length > 1"
+              class="absolute inset-0 z-10 flex"
+            >
+              <div 
+                class="w-1/3 h-full cursor-pointer" 
+                @click.stop="prevPhoto"
+              ></div>
+              <div class="w-1/3 h-full"></div>
+              <div 
+                class="w-1/3 h-full cursor-pointer" 
+                @click.stop="nextPhoto"
+              ></div>
+            </div>
+            
             <img 
-              :src="currentProfile.photo" 
+              :src="getAllPhotos(currentProfile)[currentPhotoIndex] || currentProfile.photo" 
               :alt="currentProfile.name"
               class="w-full h-full object-cover"
               loading="lazy"
             />
             <!-- Gradient Overlay -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
             
             <!-- Profile Info -->
             <div class="absolute bottom-0 inset-x-0 p-4 xs:p-5 text-white">
               <!-- Mood Badge -->
-              <div class="inline-flex items-center gap-1 xs:gap-1.5 px-2.5 xs:px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-[10px] xs:text-xs mb-2 xs:mb-3">
-                <span>{{ moodOptions.find(m => m.id === currentProfile.mood)?.emoji }}</span>
+              <div class="inline-flex items-center gap-1.5 xs:gap-2 px-3 xs:px-3.5 py-1.5 bg-white/30 backdrop-blur-md rounded-full text-[11px] xs:text-xs font-medium border border-white/40 shadow-sm mb-2 xs:mb-3">
+                <span class="text-sm">{{ moodOptions.find(m => m.id === currentProfile.mood)?.emoji }}</span>
                 <span>{{ t(`moods.${currentProfile.mood}`) }}</span>
               </div>
 
@@ -1863,14 +2439,14 @@ const constellationPoints = computed(() => {
                   v-for="tagId in currentProfile.tags" 
                   :key="tagId"
                   :class="[
-                    'inline-flex items-center gap-1 xs:gap-1.5 px-2 xs:px-3 py-0.5 xs:py-1 rounded-full text-[10px] xs:text-xs font-medium',
+                    'inline-flex items-center gap-1 xs:gap-1.5 px-2.5 xs:px-3 py-1 xs:py-1.5 rounded-full text-[10px] xs:text-xs font-semibold transition-all',
                     sharedTags.includes(tagId) 
-                      ? 'bg-primary text-white' 
-                      : 'bg-white/20 backdrop-blur-sm'
+                      ? 'bg-primary text-white shadow-md' 
+                      : 'bg-white/25 backdrop-blur-md text-white border border-white/30'
                   ]"
                 >
-                  {{ disabilityTags.find(t => t.id === tagId)?.icon }}
-                  {{ t(`tags.${tagId}`) }}
+                  <span>{{ disabilityTags.find(t => t.id === tagId)?.icon }}</span>
+                  <span>{{ t(`tags.${tagId}`) }}</span>
                 </span>
               </div>
             </div>
@@ -1879,11 +2455,11 @@ const constellationPoints = computed(() => {
           <!-- Bio & Prompt -->
           <div class="p-4 xs:p-5">
             <!-- Profile Prompt -->
-            <div class="bg-gradient-to-r from-primary-light to-accent/10 rounded-xl p-3 xs:p-4 mb-3 xs:mb-4 border border-primary/20">
-              <p class="text-[10px] xs:text-xs font-semibold text-primary uppercase tracking-wide mb-1">
+            <div class="bg-gradient-to-br from-primary-light via-peach/40 to-accent/20 rounded-xl p-3 xs:p-4 mb-3 xs:mb-4 border border-primary/25 shadow-sm">
+              <p class="text-[10px] xs:text-xs font-bold text-primary uppercase tracking-wider mb-1.5">
                 {{ t(`profilePrompts.${currentProfile.promptId}`) }}
               </p>
-              <p class="text-sm xs:text-base text-text-deep font-medium">
+              <p class="text-sm xs:text-base text-text-deep font-medium leading-relaxed">
                 "{{ getLocalized(currentProfile.promptAnswer) }}"
               </p>
             </div>
@@ -1901,12 +2477,64 @@ const constellationPoints = computed(() => {
             </h3>
             <div class="flex flex-wrap gap-1.5 xs:gap-2">
               <span 
-                v-for="interest in getLocalized(currentProfile.interests, [])"
+                v-for="(interest, idx) in getLocalized(currentProfile.interests, [])"
                 :key="interest"
-                class="px-2.5 xs:px-3 py-1 xs:py-1.5 bg-gradient-to-r from-primary-light to-primary-light/50 text-primary rounded-full text-xs xs:text-sm font-medium"
+                :class="[
+                  'px-2.5 xs:px-3 py-1 xs:py-1.5 rounded-full text-xs xs:text-sm font-medium border transition-transform hover:scale-105',
+                  interestColorClasses[idx % interestColorClasses.length]
+                ]"
               >
                 {{ interest }}
               </span>
+            </div>
+            
+            <!-- Ask Me About It - Celebration Prompt -->
+            <div v-if="currentProfile.askMeAnswer" class="mt-4 bg-gradient-to-br from-violet-light via-rose-light to-indigo-light rounded-xl p-3 xs:p-4 border border-violet/20 shadow-sm">
+              <p class="text-[10px] xs:text-xs font-bold text-violet uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <span class="text-sm">💜</span>
+                {{ t('askMeAboutIt.title') }}
+              </p>
+              <p class="text-[10px] xs:text-xs text-lavender mb-1.5 italic">
+                {{ t(`askMeAboutIt.prompts.${currentProfile.askMePromptId}`) }}
+              </p>
+              <p class="text-sm xs:text-base text-text-deep font-medium leading-relaxed">
+                "{{ currentProfile.askMeAnswer }}"
+              </p>
+            </div>
+            
+            <!-- Time Preferences -->
+            <div v-if="currentProfile.responsePace || currentProfile.datePace || (currentProfile.preferredTimes && currentProfile.preferredTimes.length > 0)" class="mt-4">
+              <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <span class="text-sm">🕐</span>
+                {{ t('timePreferences.title') }}
+              </h3>
+              <div class="flex flex-wrap gap-1.5">
+                <!-- Preferred Times -->
+                <span 
+                  v-for="time in (currentProfile.preferredTimes || [])"
+                  :key="time"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-light text-indigo border border-indigo/20 rounded-full text-xs font-medium"
+                >
+                  <span>{{ timeOptions.find(t => t.id === time)?.emoji }}</span>
+                  <span>{{ t(`timePreferences.times.${time}`) }}</span>
+                </span>
+                <!-- Response Pace -->
+                <span 
+                  v-if="currentProfile.responsePace"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-light text-amber border border-amber/20 rounded-full text-xs font-medium"
+                >
+                  <span>{{ responsePaceOptions.find(p => p.id === currentProfile.responsePace)?.emoji }}</span>
+                  <span>{{ t(`timePreferences.responsePaceOptions.${currentProfile.responsePace}`) }}</span>
+                </span>
+                <!-- Date Pace -->
+                <span 
+                  v-if="currentProfile.datePace"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-light text-emerald border border-emerald/20 rounded-full text-xs font-medium"
+                >
+                  <span>{{ datePaceOptions.find(p => p.id === currentProfile.datePace)?.emoji }}</span>
+                  <span>{{ t(`timePreferences.datePaceOptions.${currentProfile.datePace}`) }}</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -1945,18 +2573,10 @@ const constellationPoints = computed(() => {
             </svg>
           </button>
           
-          <!-- Super Like Button -->
-          <button
-            class="w-12 h-12 xs:w-14 xs:h-14 bg-surface rounded-full shadow-card border-2 border-amber-400/30 flex items-center justify-center touch-manipulation active:scale-90 active:border-amber-400"
-            :aria-label="t('a11y.superLike')"
-          >
-            <span class="text-xl xs:text-2xl">⭐</span>
-          </button>
-          
           <!-- Connect Button -->
           <button
             @click="connectProfile"
-            class="w-16 h-16 xs:w-20 xs:h-20 bg-gradient-to-r from-primary to-accent rounded-full shadow-button flex items-center justify-center touch-manipulation active:scale-90"
+            class="w-16 h-16 xs:w-20 xs:h-20 bg-primary rounded-full shadow-button flex items-center justify-center touch-manipulation active:scale-90"
             :aria-label="t('a11y.connectProfile')"
           >
             <svg class="w-7 h-7 xs:w-9 xs:h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -1966,9 +2586,8 @@ const constellationPoints = computed(() => {
         </div>
         
         <!-- Button Labels -->
-        <div class="flex items-center justify-center gap-4 xs:gap-6 mt-2 xs:mt-3">
+        <div class="flex items-center justify-center gap-8 xs:gap-12 mt-2 xs:mt-3">
           <span class="w-14 xs:w-16 text-center text-xs xs:text-sm text-text-muted">{{ t('discovery.passBtn') }}</span>
-          <span class="w-12 xs:w-14 text-center text-xs xs:text-sm text-amber-500">{{ t('discovery.superBtn') }}</span>
           <span class="w-16 xs:w-20 text-center text-xs xs:text-sm text-primary font-medium">{{ t('discovery.connectBtn') }}</span>
         </div>
       </div>
@@ -2020,7 +2639,7 @@ const constellationPoints = computed(() => {
           <h2 class="text-xl font-semibold text-text-deep mb-2">{{ t('matches.noMatches') }}</h2>
           <p class="text-text-muted max-w-xs">{{ t('matches.noMatchesDescription') }}</p>
           <button
-            @click="currentView = 'discovery'"
+            @click="navigateTo('discovery')"
             class="btn-primary mt-6"
           >
             {{ t('nav.discover') }}
@@ -2035,9 +2654,12 @@ const constellationPoints = computed(() => {
             class="card p-3 xs:p-4 flex items-center gap-3 xs:gap-4 cursor-pointer hover:shadow-lg transition-shadow"
             @click="openChat(match)"
           >
-            <!-- Avatar -->
-            <div class="relative flex-shrink-0">
-              <div class="w-14 h-14 xs:w-16 xs:h-16 rounded-2xl overflow-hidden bg-surface shadow-soft">
+            <!-- Avatar - clickable to view profile -->
+            <div 
+              class="relative flex-shrink-0"
+              @click.stop="openProfileView(getMatchProfile(match))"
+            >
+              <div class="w-14 h-14 xs:w-16 xs:h-16 rounded-2xl overflow-hidden bg-surface shadow-soft ring-2 ring-transparent hover:ring-primary/50 transition-all">
                 <img 
                   v-if="getMatchProfile(match).picture_url"
                   :src="getMatchProfile(match).picture_url"
@@ -2050,6 +2672,10 @@ const constellationPoints = computed(() => {
               </div>
               <!-- Online indicator -->
               <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-secondary rounded-full border-2 border-surface"></div>
+              <!-- View profile hint -->
+              <div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity rounded-2xl">
+                <span class="text-white text-xs">👁️</span>
+              </div>
             </div>
             
             <!-- Info -->
@@ -2100,8 +2726,11 @@ const constellationPoints = computed(() => {
             </svg>
           </button>
           
-          <!-- Match Info -->
-          <div class="flex items-center gap-2 xs:gap-3 flex-1">
+          <!-- Match Info - Clickable to view profile -->
+          <div 
+            class="flex items-center gap-2 xs:gap-3 flex-1 cursor-pointer hover:bg-primary-light/30 rounded-xl p-1 -m-1 transition-colors"
+            @click="openProfileView(getChatPartnerProfile())"
+          >
             <div class="relative">
               <img 
                 :src="mockChat.matchPhoto" 
@@ -2113,7 +2742,7 @@ const constellationPoints = computed(() => {
                 class="absolute -bottom-0.5 -end-0.5 w-3 xs:w-3.5 h-3 xs:h-3.5 bg-success rounded-full border-2 border-surface"
               ></span>
             </div>
-            <div>
+            <div class="flex-1">
               <h1 class="text-sm xs:text-base font-semibold text-text-deep">
                 {{ mockChat.matchName }}
               </h1>
@@ -2122,18 +2751,56 @@ const constellationPoints = computed(() => {
                 {{ t('chat.online') }}
               </p>
             </div>
+            <span class="text-text-muted text-xs">👁️</span>
           </div>
           
-          <!-- Profile Button -->
+          <!-- Disconnect Button -->
           <button
-            @click="goToProfile"
-            class="btn-icon bg-background touch-manipulation"
-            :aria-label="t('nav.profile')"
+            @click="showDisconnectConfirm = true"
+            class="btn-icon bg-background touch-manipulation text-danger/70 hover:text-danger hover:bg-danger/10"
+            :aria-label="t('chat.disconnect')"
+            :title="t('chat.disconnect')"
           >
-            <span class="text-lg">👤</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/>
+            </svg>
           </button>
         </div>
       </header>
+      
+      <!-- Disconnect Confirmation Dialog -->
+      <Transition name="fade">
+        <div 
+          v-if="showDisconnectConfirm"
+          class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          @click.self="showDisconnectConfirm = false"
+        >
+          <div class="bg-surface rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-scale-in text-center">
+            <div class="w-16 h-16 mx-auto mb-4 bg-danger/10 rounded-full flex items-center justify-center">
+              <span class="text-3xl">💔</span>
+            </div>
+            <h3 class="text-xl font-bold text-text-deep mb-2">{{ t('chat.disconnectTitle') }}</h3>
+            <p class="text-text-muted mb-6">{{ t('chat.disconnectMessage') }}</p>
+            
+            <div class="flex gap-3">
+              <button
+                @click="showDisconnectConfirm = false"
+                class="flex-1 btn-secondary py-3"
+                :disabled="isDisconnecting"
+              >
+                {{ t('cancel') }}
+              </button>
+              <button
+                @click="handleDisconnect"
+                class="flex-1 bg-danger text-white font-semibold py-3 rounded-xl active:scale-[0.98] disabled:opacity-50"
+                :disabled="isDisconnecting"
+              >
+                {{ isDisconnecting ? '...' : t('chat.disconnectConfirm') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
       
       <!-- Messages -->
       <main class="flex-1 px-3 xs:px-4 py-3 xs:py-4 overflow-auto momentum-scroll hide-scrollbar">
@@ -2147,19 +2814,16 @@ const constellationPoints = computed(() => {
           
           <!-- Messages -->
           <div 
-            v-for="(message, index) in mockChat.messages" 
+            v-for="message in mockChat.messages" 
             :key="message.id"
-            class="flex animate-slide-up relative"
-            :class="[
-              message.sender === 'me' ? 'justify-end' : 'justify-start',
-              `stagger-${index + 1}`
-            ]"
+            class="flex relative"
+            :class="message.sender === 'me' ? 'justify-end' : 'justify-start'"
           >
             <div 
               :class="[
                 'max-w-[80%] px-3 xs:px-4 py-2.5 xs:py-3 rounded-2xl relative',
                 message.sender === 'me' 
-                  ? 'bg-gradient-to-br from-primary to-indigo-600 text-white rounded-ee-md' 
+                  ? 'bg-primary text-white rounded-ee-md' 
                   : 'bg-surface text-text-deep rounded-es-md shadow-soft',
                 message.isIcebreaker ? 'ring-2 ring-accent/50' : ''
               ]"
@@ -2228,7 +2892,7 @@ const constellationPoints = computed(() => {
                 v-for="prompt in icebreakers"
                 :key="prompt.id"
                 @click="sendIcebreaker(prompt)"
-                class="px-3 xs:px-4 py-2 bg-gradient-to-r from-primary-light to-accent/10 text-primary rounded-full text-xs xs:text-sm font-medium touch-manipulation active:scale-95"
+                class="px-3 xs:px-4 py-2 bg-primary-light text-primary rounded-full text-xs xs:text-sm font-medium touch-manipulation active:scale-95"
               >
                 {{ prompt.text }}
               </button>
@@ -2277,7 +2941,7 @@ const constellationPoints = computed(() => {
           <!-- Send Button -->
           <button
             @click="sendMessage"
-            class="w-10 h-10 xs:w-11 xs:h-11 rounded-full bg-gradient-to-r from-primary to-accent text-white shadow-button flex items-center justify-center shrink-0 touch-manipulation active:scale-90"
+            class="w-10 h-10 xs:w-11 xs:h-11 rounded-full bg-primary text-white shadow-button flex items-center justify-center shrink-0 touch-manipulation active:scale-90"
             :disabled="!newMessage.trim()"
             :class="{ 'opacity-50': !newMessage.trim() }"
           >
@@ -2331,20 +2995,85 @@ const constellationPoints = computed(() => {
         <div class="max-w-lg mx-auto space-y-4 xs:space-y-6">
           
           <!-- Photo Section -->
-          <div class="text-center animate-slide-up">
-            <div class="relative inline-block">
-              <img 
-                :src="userProfile.photo" 
-                alt="Profile Photo"
-                class="w-24 xs:w-32 h-24 xs:h-32 rounded-full object-cover ring-4 ring-primary/20 mx-auto"
-              />
-              <button 
-                class="absolute bottom-0 end-0 w-9 xs:w-10 h-9 xs:h-10 bg-primary text-white rounded-full flex items-center justify-center shadow-button touch-manipulation active:scale-90"
+          <div class="animate-slide-up">
+            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-3 xs:mb-4 flex items-center gap-2">
+              <span>📷</span>
+              {{ t('profile.photos') }}
+            </h3>
+            
+            <!-- Photo Grid -->
+            <div class="grid grid-cols-3 gap-2 xs:gap-3">
+              <!-- Main/Primary Photo -->
+              <div class="relative aspect-[3/4] rounded-xl overflow-hidden ring-2 ring-primary">
+                <img 
+                  :src="userProfile.photo" 
+                  alt="Primary Photo"
+                  class="w-full h-full object-cover"
+                />
+                <div class="absolute top-1 start-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+                  Main
+                </div>
+              </div>
+              
+              <!-- Additional Photos -->
+              <div 
+                v-for="(photo, index) in userProfile.photos.filter(p => !p.is_primary)"
+                :key="photo.id"
+                class="relative aspect-[3/4] rounded-xl overflow-hidden bg-surface border border-border group"
               >
-                <span class="text-base xs:text-lg">📷</span>
-              </button>
+                <img 
+                  :src="photo.image" 
+                  :alt="`Photo ${index + 2}`"
+                  class="w-full h-full object-cover"
+                />
+                <!-- Photo actions overlay -->
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <button 
+                    @click="setPrimaryPhoto(photo.id)"
+                    class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center touch-manipulation"
+                    :title="t('profile.setAsPrimary')"
+                  >
+                    ⭐
+                  </button>
+                  <button 
+                    @click="deletePhoto(photo.id)"
+                    class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center touch-manipulation"
+                    :title="t('delete')"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Add Photo Button -->
+              <label 
+                v-if="userProfile.photos.length < 6"
+                class="aspect-[3/4] rounded-xl border-2 border-dashed border-primary/40 bg-primary-light/30 flex flex-col items-center justify-center cursor-pointer hover:bg-primary-light/50 transition-colors touch-manipulation"
+                :class="{ 'opacity-50 cursor-not-allowed': isUploadingPhoto }"
+              >
+                <input 
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  @change="handlePhotoUpload"
+                  :disabled="isUploadingPhoto"
+                />
+                <span v-if="isUploadingPhoto" class="text-2xl animate-spin">⏳</span>
+                <span v-else class="text-2xl">➕</span>
+                <span class="text-xs text-primary mt-1 font-medium">
+                  {{ isUploadingPhoto ? 'Uploading...' : 'Add Photo' }}
+                </span>
+              </label>
             </div>
-            <p class="text-xs xs:text-sm text-text-muted mt-2">{{ t('profile.photoHint') }}</p>
+            
+            <!-- Upload error -->
+            <p v-if="photoUploadError" class="text-xs text-red-500 mt-2 text-center">
+              {{ photoUploadError }}
+            </p>
+            
+            <p class="text-xs text-text-muted mt-2 text-center">
+              {{ t('profile.photoHint') }} ({{ userProfile.photos.length }}/6)
+            </p>
           </div>
 
           <!-- Basic Info -->
@@ -2444,6 +3173,134 @@ const constellationPoints = computed(() => {
                   type="text"
                   class="input-field"
                   :placeholder="t(`profilePrompts.${userProfile.promptId}`)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Ask Me About It - Celebration Prompt -->
+          <div class="card p-4 xs:p-5 animate-slide-up stagger-2 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-700">
+            <h3 class="text-xs xs:text-sm font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide mb-2 flex items-center gap-2">
+              <span>💜</span>
+              {{ t('askMeAboutIt.title') }}
+            </h3>
+            <p class="text-xs text-text-muted mb-4">{{ t('askMeAboutIt.subtitle') }}</p>
+            
+            <div class="space-y-3 xs:space-y-4">
+              <!-- Prompt Selection -->
+              <div class="flex flex-wrap gap-1.5 xs:gap-2">
+                <button
+                  v-for="prompt in askMePrompts"
+                  :key="prompt.id"
+                  @click="userProfile.askMePromptId = prompt.id"
+                  :class="[
+                    'px-3 xs:px-4 py-2 rounded-full text-xs xs:text-sm font-medium transition-colors touch-manipulation active:scale-95',
+                    userProfile.askMePromptId === prompt.id 
+                      ? 'bg-purple-500 text-white' 
+                      : 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
+                  ]"
+                >
+                  <span class="me-1">{{ prompt.emoji }}</span>
+                  {{ t(`askMeAboutIt.prompts.${prompt.id}`).substring(0, 20) }}...
+                </button>
+              </div>
+              
+              <!-- Answer -->
+              <div v-if="userProfile.askMePromptId">
+                <label class="block text-xs xs:text-sm font-medium text-purple-700 dark:text-purple-300 mb-1 xs:mb-1.5">
+                  {{ t(`askMeAboutIt.prompts.${userProfile.askMePromptId}`) }}
+                </label>
+                <textarea 
+                  v-model="userProfile.askMeAnswer"
+                  class="input-field min-h-[80px]"
+                  :placeholder="t(`askMeAboutIt.prompts.${userProfile.askMePromptId}`)"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Time Preferences -->
+          <div class="card p-4 xs:p-5 animate-slide-up stagger-2">
+            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-2">
+              <span>⏰</span>
+              {{ t('timePreferences.title') }}
+            </h3>
+            <p class="text-xs text-text-muted mb-4">{{ t('timePreferences.subtitle') }}</p>
+            
+            <div class="space-y-4">
+              <!-- Preferred Times -->
+              <div>
+                <p class="text-xs xs:text-sm text-text-muted mb-2">{{ t('timePreferences.preferredTimes') }}</p>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="time in timeOptions"
+                    :key="time.id"
+                    @click="toggleTime(time.id)"
+                    :class="[
+                      'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs xs:text-sm transition-all touch-manipulation active:scale-95',
+                      (userProfile.preferredTimes || []).includes(time.id)
+                        ? 'bg-primary text-white'
+                        : 'bg-surface border border-border text-text-muted'
+                    ]"
+                  >
+                    <span>{{ time.emoji }}</span>
+                    <span>{{ t(`timePreferences.times.${time.id}`) }}</span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Response Pace -->
+              <div>
+                <p class="text-xs xs:text-sm text-text-muted mb-2">{{ t('timePreferences.responsePace') }}</p>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="pace in responsePaceOptions"
+                    :key="pace.id"
+                    @click="userProfile.responsePace = pace.id"
+                    :class="[
+                      'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs xs:text-sm transition-all touch-manipulation active:scale-95',
+                      userProfile.responsePace === pace.id
+                        ? 'bg-accent text-white'
+                        : 'bg-surface border border-border text-text-muted'
+                    ]"
+                  >
+                    <span>{{ pace.emoji }}</span>
+                    <span>{{ t(`timePreferences.responsePaceOptions.${pace.id}`) }}</span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Date Pace -->
+              <div>
+                <p class="text-xs xs:text-sm text-text-muted mb-2">{{ t('timePreferences.datePace') }}</p>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="pace in datePaceOptions"
+                    :key="pace.id"
+                    @click="userProfile.datePace = pace.id"
+                    :class="[
+                      'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs xs:text-sm transition-all touch-manipulation active:scale-95',
+                      userProfile.datePace === pace.id
+                        ? 'bg-success text-white'
+                        : 'bg-surface border border-border text-text-muted'
+                    ]"
+                  >
+                    <span>{{ pace.emoji }}</span>
+                    <span>{{ t(`timePreferences.datePaceOptions.${pace.id}`) }}</span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Time Notes -->
+              <div>
+                <label class="block text-xs xs:text-sm font-medium text-text-deep mb-1.5">
+                  {{ t('timePreferences.notes') }}
+                </label>
+                <input 
+                  v-model="userProfile.timeNotes"
+                  type="text"
+                  class="input-field"
+                  :placeholder="t('timePreferences.notesPlaceholder')"
                 />
               </div>
             </div>
@@ -2611,12 +3468,15 @@ const constellationPoints = computed(() => {
               <span 
                 v-for="(interest, index) in userProfile.interests"
                 :key="index"
-                class="inline-flex items-center gap-1.5 xs:gap-2 px-3 xs:px-4 py-1.5 xs:py-2 bg-gradient-to-r from-primary-light to-accent/10 text-primary rounded-full text-xs xs:text-sm font-medium"
+                :class="[
+                  'inline-flex items-center gap-1.5 xs:gap-2 px-3 xs:px-4 py-1.5 xs:py-2 rounded-full text-xs xs:text-sm font-medium border transition-all',
+                  interestColorClasses[index % interestColorClasses.length]
+                ]"
               >
                 {{ interest }}
                 <button 
                   @click="removeInterest(index)"
-                  class="text-primary/70 active:text-danger touch-manipulation"
+                  class="opacity-60 hover:opacity-100 active:text-danger touch-manipulation transition-opacity"
                 >
                   ×
                 </button>
@@ -2625,7 +3485,7 @@ const constellationPoints = computed(() => {
               <!-- Add Interest Button -->
               <button
                 @click="addInterest"
-                class="inline-flex items-center gap-1 px-3 xs:px-4 py-1.5 xs:py-2 border-2 border-dashed border-primary/30 text-primary rounded-full text-xs xs:text-sm font-medium touch-manipulation active:border-primary active:bg-primary-light"
+                class="inline-flex items-center gap-1 px-3 xs:px-4 py-1.5 xs:py-2 border-2 border-dashed border-text-muted/30 text-text-muted rounded-full text-xs xs:text-sm font-medium touch-manipulation hover:border-primary hover:text-primary hover:bg-primary-light/50 active:border-primary active:bg-primary-light transition-all"
               >
                 <span>+</span>
                 {{ t('profile.addInterest') }}
@@ -2661,9 +3521,25 @@ const constellationPoints = computed(() => {
           <!-- Save Button -->
           <button
             @click="saveProfile"
-            class="w-full bg-gradient-to-r from-primary to-indigo-600 text-white text-base xs:text-lg py-3.5 xs:py-4 rounded-xl xs:rounded-2xl font-medium shadow-button touch-manipulation active:scale-[0.98] animate-slide-up stagger-7"
+            class="w-full bg-primary text-white text-base xs:text-lg py-3.5 xs:py-4 rounded-xl xs:rounded-2xl font-medium shadow-button touch-manipulation active:scale-[0.98] animate-slide-up stagger-7"
           >
             {{ t('profile.saveChanges') }}
+          </button>
+          
+          <!-- Cleanup Button -->
+          <button
+            @click="handleCleanup"
+            class="w-full bg-surface border-2 border-amber-400/30 text-amber-600 text-base xs:text-lg py-3.5 xs:py-4 rounded-xl xs:rounded-2xl font-medium touch-manipulation active:scale-[0.98] active:bg-amber-50 mt-4 animate-slide-up stagger-8"
+          >
+            🧹 {{ t('profile.cleanup') }}
+          </button>
+          
+          <!-- Logout Button -->
+          <button
+            @click="handleLogout"
+            class="w-full bg-surface border-2 border-danger/30 text-danger text-base xs:text-lg py-3.5 xs:py-4 rounded-xl xs:rounded-2xl font-medium touch-manipulation active:scale-[0.98] active:bg-danger/10 mt-3 animate-slide-up stagger-9"
+          >
+            🚪 {{ t('logout') }}
           </button>
           
           <!-- Bottom spacing for safe area -->
@@ -2671,6 +3547,177 @@ const constellationPoints = computed(() => {
         </div>
       </main>
     </div>
+
+    <!-- Profile View Overlay -->
+    <Transition name="fade">
+      <div 
+        v-if="viewingProfile"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        @click.self="closeProfileView"
+      >
+        <div class="bg-surface rounded-3xl max-w-md w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-scale-in">
+          <!-- Photo Section -->
+          <div class="relative h-48 xs:h-56 overflow-hidden flex-shrink-0">
+            <!-- Photo indicators -->
+            <div 
+              v-if="getAllPhotos(viewingProfile).length > 1"
+              class="absolute top-3 inset-x-3 z-20 flex gap-1"
+            >
+              <div 
+                v-for="(photo, index) in getAllPhotos(viewingProfile)"
+                :key="index"
+                class="flex-1 h-1 rounded-full transition-all"
+                :class="index === viewingProfilePhotoIndex ? 'bg-white' : 'bg-white/40'"
+              ></div>
+            </div>
+            
+            <!-- Tap zones for photo navigation -->
+            <div 
+              v-if="getAllPhotos(viewingProfile).length > 1"
+              class="absolute inset-0 z-10 flex"
+            >
+              <div 
+                class="w-1/3 h-full cursor-pointer" 
+                @click="prevViewingPhoto"
+              ></div>
+              <div class="w-1/3 h-full"></div>
+              <div 
+                class="w-1/3 h-full cursor-pointer" 
+                @click="nextViewingPhoto"
+              ></div>
+            </div>
+            
+            <img 
+              :src="getAllPhotos(viewingProfile)[viewingProfilePhotoIndex] || viewingProfile.photo || viewingProfile.picture_url" 
+              :alt="viewingProfile.name || viewingProfile.display_name"
+              class="w-full h-full object-cover"
+            />
+            
+            <!-- Close button -->
+            <button 
+              @click="closeProfileView"
+              class="absolute top-3 end-3 z-30 w-10 h-10 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white touch-manipulation"
+            >
+              ✕
+            </button>
+            
+            <!-- Gradient Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
+            
+            <!-- Name & Age -->
+            <div class="absolute bottom-4 inset-x-4 text-white z-10">
+              <h2 class="text-2xl font-bold">
+                {{ viewingProfile.name || viewingProfile.display_name }}
+                <span v-if="viewingProfile.age" class="font-normal text-white/80">, {{ viewingProfile.age }}</span>
+              </h2>
+              <p v-if="viewingProfile.city" class="text-white/70 text-sm flex items-center gap-1 mt-1">
+                📍 {{ viewingProfile.city }}
+              </p>
+            </div>
+          </div>
+          
+          <!-- Profile Details -->
+          <div class="p-4">
+            <!-- Mood Badge -->
+            <div 
+              v-if="viewingProfile.mood || viewingProfile.current_mood"
+              class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-primary-light to-peach/50 rounded-full text-primary text-sm font-medium border border-primary/15 shadow-sm mb-3"
+            >
+              <span class="text-base">{{ moodOptions.find(m => m.id === (viewingProfile.mood || viewingProfile.current_mood))?.emoji }}</span>
+              <span>{{ t(`moods.${viewingProfile.mood || viewingProfile.current_mood}`) }}</span>
+            </div>
+            
+            <!-- Bio -->
+            <div v-if="viewingProfile.bio" class="mb-4">
+              <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">{{ t('profile.about') }}</h3>
+              <p class="text-text-deep">{{ viewingProfile.bio }}</p>
+            </div>
+            
+            <!-- Ask Me About It -->
+            <div 
+              v-if="viewingProfile.askMeAnswer || viewingProfile.ask_me_answer" 
+              class="mb-4 bg-gradient-to-br from-violet-light via-rose-light to-indigo-light rounded-xl p-3 border border-violet/20 shadow-sm"
+            >
+              <p class="text-xs font-bold text-violet uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <span class="text-sm">💜</span>
+                {{ t('askMeAboutIt.title') }}
+              </p>
+              <p v-if="viewingProfile.askMePromptId || viewingProfile.ask_me_prompt_id" class="text-xs text-lavender mb-1.5 italic">
+                {{ t(`askMeAboutIt.prompts.${viewingProfile.askMePromptId || viewingProfile.ask_me_prompt_id}`) }}
+              </p>
+              <p class="text-text-deep font-medium leading-relaxed">
+                "{{ viewingProfile.askMeAnswer || viewingProfile.ask_me_answer }}"
+              </p>
+            </div>
+            
+            <!-- Tags -->
+            <div v-if="viewingProfile.tags?.length || viewingProfile.disability_tags?.length" class="mb-4">
+              <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">{{ t('profile.myTags') }}</h3>
+              <div class="flex flex-wrap gap-1.5">
+                <span 
+                  v-for="tag in (viewingProfile.tags || viewingProfile.disability_tags || [])"
+                  :key="typeof tag === 'string' ? tag : tag.code"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-primary-light to-coral/20 text-primary border border-primary/20 rounded-full text-xs font-medium"
+                >
+                  {{ typeof tag === 'string' ? t(`tags.${tag}`) : (tag.icon + ' ' + t(`tags.${tag.code}`)) }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Interests -->
+            <div v-if="viewingProfile.interests?.length" class="mb-4">
+              <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">{{ t('profile.interests') }}</h3>
+              <div class="flex flex-wrap gap-1.5">
+                <span 
+                  v-for="(interest, idx) in viewingProfile.interests"
+                  :key="typeof interest === 'string' ? interest : interest.name"
+                  :class="[
+                    'px-2.5 py-1 rounded-full text-xs font-medium border',
+                    interestColorClasses[idx % interestColorClasses.length]
+                  ]"
+                >
+                  {{ typeof interest === 'string' ? interest : interest.name }}
+                </span>
+              </div>
+            </div>
+            
+            <!-- Time Preferences -->
+            <div v-if="viewingProfile.responsePace || viewingProfile.response_pace || viewingProfile.datePace || viewingProfile.date_pace" class="mb-4">
+              <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <span class="text-sm">🕐</span>
+                {{ t('timePreferences.title') }}
+              </h3>
+              <div class="flex flex-wrap gap-1.5">
+                <span 
+                  v-if="viewingProfile.responsePace || viewingProfile.response_pace"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-light text-amber border border-amber/20 rounded-full text-xs font-medium"
+                >
+                  <span>{{ responsePaceOptions.find(p => p.id === (viewingProfile.responsePace || viewingProfile.response_pace))?.emoji }}</span>
+                  <span>{{ t(`timePreferences.responsePaceOptions.${viewingProfile.responsePace || viewingProfile.response_pace}`) }}</span>
+                </span>
+                <span 
+                  v-if="viewingProfile.datePace || viewingProfile.date_pace"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-light text-emerald border border-emerald/20 rounded-full text-xs font-medium"
+                >
+                  <span>{{ datePaceOptions.find(p => p.id === (viewingProfile.datePace || viewingProfile.date_pace))?.emoji }}</span>
+                  <span>{{ t(`timePreferences.datePaceOptions.${viewingProfile.datePace || viewingProfile.date_pace}`) }}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Actions -->
+          <div class="p-4 pt-0 flex gap-2">
+            <button 
+              @click="closeProfileView"
+              class="flex-1 btn-secondary text-sm"
+            >
+              {{ t('back') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
 
     <!-- Match Animation Overlay -->
     <Transition name="fade">

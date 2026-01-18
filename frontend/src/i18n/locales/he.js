@@ -11,6 +11,7 @@ export default {
   skip: 'דלג',
   done: 'סיום',
   save: 'שמור',
+  logout: 'התנתק',
   cancel: 'ביטול',
   edit: 'ערוך',
   delete: 'מחק',
@@ -96,6 +97,10 @@ export default {
     yesterday: 'אתמול',
     icebreaker: 'שובר קרח',
     icebreakers: 'שוברי קרח',
+    disconnect: 'נתק',
+    disconnectTitle: 'להתנתק מההתאמה?',
+    disconnectMessage: 'פעולה זו תסיר את האדם הזה מההתאמות שלך ותמחק את כל ההודעות. לא ניתן לבטל פעולה זו.',
+    disconnectConfirm: 'נתק',
   },
   
   // Icebreaker prompts
@@ -110,6 +115,50 @@ export default {
     laughMost: 'מה שגורם לי לצחוק הכי הרבה זה...',
     perfectSunday: 'יום ראשון מושלם נראה כמו...',
     convinced: 'אני משוכנע/ת ש...',
+  },
+  
+  // Ask Me About It - Celebration prompts
+  askMeAboutIt: {
+    title: 'תשאלו אותי על זה',
+    subtitle: 'חגגו את מה שהופך אתכם למיוחדים',
+    prompts: {
+      coolestThing: "הדבר הכי מגניב במצב שלי זה...",
+      superpower: "כוח העל שלי מלהיות שונה הוא...",
+      wishPeopleKnew: "מה שהייתי רוצה שאנשים ידעו זה...",
+      proudOf: "משהו שאני גאה שהתגברתי עליו זה...",
+      dontLetStop: "אני לא נותן/ת לשום דבר לעצור אותי מ...",
+      loveAboutCommunity: "מה שאני אוהב/ת בקהילת המוגבלות זה...",
+    },
+  },
+  
+  // Time Preferences
+  timePreferences: {
+    title: 'העדפות זמן',
+    subtitle: 'עזרו לאחרים לדעת מתי אתם זמינים',
+    preferredTimes: 'הזמנים הטובים בשבילי',
+    times: {
+      morning: 'בוקר',
+      afternoon: 'צהריים',
+      evening: 'ערב',
+      night: 'לילה',
+      flexible: 'גמיש',
+    },
+    responsePace: 'קצב התגובה שלי',
+    responsePaceOptions: {
+      quick: 'אני מגיב/ה מהר',
+      moderate: 'תוך כמה שעות',
+      slow: 'עשוי לקחת יום או יותר',
+      variable: 'תלוי באנרגיה שלי',
+    },
+    datePace: 'העדפות מפגש',
+    datePaceOptions: {
+      ready: 'מוכן/ה להיפגש בקרוב',
+      slow: 'מעדיף/ה לשוחח קודם',
+      virtual: 'מעדיף/ה דייטים וירטואליים',
+      flexible: 'פתוח/ה לכל דבר',
+    },
+    notes: 'הערות נוספות',
+    notesPlaceholder: 'למשל: יש לי פיזיותרפיה בימי שלישי, אני ציפור לילה...',
   },
   
   // Profile
@@ -131,7 +180,15 @@ export default {
     prompt: 'שאלת פרופיל',
     promptAnswer: 'התשובה שלך',
     saveChanges: 'שמור שינויים',
-    photoHint: 'לחץ לשינוי תמונה',
+    photoHint: 'לחץ על תמונות לניהול',
+    setAsPrimary: 'הגדר כתמונה ראשית',
+    addPhoto: 'הוסף תמונה',
+    uploadingPhoto: 'מעלה...',
+    maxPhotos: 'מותר עד 6 תמונות',
+    cleanup: 'נקה את ההתאמות והצ\'אטים שלי',
+    cleanupConfirm: 'פעולה זו תמחק את כל ההתאמות, ההודעות והסוויפים שלך. האם אתה בטוח?',
+    cleanupSuccess: 'כל ההתאמות והצ\'אטים נוקו בהצלחה!',
+    cleanupError: 'ניקוי נכשל. נסה שוב.',
   },
   
   // Looking For

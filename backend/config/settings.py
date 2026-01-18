@@ -41,6 +41,8 @@ INSTALLED_APPS: list[str] = [
     "rest_framework.authtoken",
     "corsheaders",
     "social_django",
+    "cloudinary_storage",
+    "cloudinary",
     # Local apps
     "users.apps.UsersConfig",
     "profiles.apps.ProfilesConfig",
@@ -64,7 +66,7 @@ ROOT_URLCONF: str = "config.urls"
 TEMPLATES: list[dict[str, Any]] = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -252,5 +254,29 @@ SOCIAL_AUTH_JSONFIELD_ENABLED: bool = True
 # Use custom user model
 SOCIAL_AUTH_USER_MODEL: str = "users.User"
 
+# =============================================================================
+# OpenAI Configuration (for AI-powered mock user responses)
+# =============================================================================
+
+OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+
+# Also expose Facebook credentials without the SOCIAL_AUTH prefix for our custom views
+FACEBOOK_APP_ID: str = os.getenv("FACEBOOK_APP_ID", "")
+FACEBOOK_APP_SECRET: str = os.getenv("FACEBOOK_APP_SECRET", "")
+
 # Frontend URL for redirects
 FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+# =============================================================================
+# Cloudinary Configuration (for image uploads)
+# =============================================================================
+
+CLOUDINARY_STORAGE: dict[str, str] = {
+    "CLOUD_NAME": os.getenv("CLOUDINARY_CLOUD_NAME", ""),
+    "API_KEY": os.getenv("CLOUDINARY_API_KEY", ""),
+    "API_SECRET": os.getenv("CLOUDINARY_API_SECRET", ""),
+}
+
+# Use Cloudinary for media files in production
+if os.getenv("CLOUDINARY_CLOUD_NAME"):
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"

@@ -4,8 +4,22 @@ test.describe('Discovery View', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Continue with Facebook/i }).click();
-    await page.getByRole('button', { name: /English/i }).click();
+    // Wait for language selection page
+    await expect(page.getByText('Choose Your Language').first()).toBeVisible({ timeout: 5000 });
+    // Click English language button (exact accessible name)
+    await page.getByRole('button', { name: 'Switch language - English' }).click();
+    // Wait for onboarding page
+    await expect(page.getByRole('heading', { name: 'The Deets' })).toBeVisible({ timeout: 5000 });
+    // Skip onboarding
     await page.getByRole('button', { name: 'Skip' }).click();
+    // Wait for preferences page and skip if visible
+    await page.waitForTimeout(500);
+    const skipBtn = page.getByRole('button', { name: 'Skip' });
+    if (await skipBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await skipBtn.click();
+    }
+    // Wait for discovery page
+    await expect(page.getByRole('heading', { name: 'Nomi Match' })).toBeVisible({ timeout: 10000 });
   });
 
   test('displays discovery header', async ({ page }) => {

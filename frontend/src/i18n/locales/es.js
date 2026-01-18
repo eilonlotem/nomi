@@ -11,6 +11,7 @@ export default {
   skip: 'Omitir',
   done: 'Listo',
   save: 'Guardar',
+  logout: 'Cerrar Sesión',
   cancel: 'Cancelar',
   edit: 'Editar',
   delete: 'Eliminar',
@@ -96,6 +97,10 @@ export default {
     yesterday: 'Ayer',
     icebreaker: 'Rompehielos',
     icebreakers: 'Rompehielos',
+    disconnect: 'Desconectar',
+    disconnectTitle: '¿Desconectar del match?',
+    disconnectMessage: 'Esto eliminará a esta persona de tus matches y borrará todos los mensajes del chat. Esta acción no se puede deshacer.',
+    disconnectConfirm: 'Desconectar',
   },
   
   // Icebreaker prompts
@@ -132,6 +137,10 @@ export default {
     promptAnswer: 'Tu respuesta',
     saveChanges: 'Guardar Cambios',
     photoHint: 'Toca para cambiar foto',
+    cleanup: 'Borrar Mis Matches y Chats',
+    cleanupConfirm: 'Esto eliminará todos tus matches, mensajes y swipes. ¿Estás seguro?',
+    cleanupSuccess: '¡Todos los matches y chats borrados correctamente!',
+    cleanupError: 'Error al borrar datos. Inténtalo de nuevo.',
   },
   
   // Looking For

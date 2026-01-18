@@ -11,6 +11,7 @@ export default {
   skip: 'Skip',
   done: 'Done',
   save: 'Save',
+  logout: 'Log Out',
   cancel: 'Cancel',
   edit: 'Edit',
   delete: 'Delete',
@@ -80,6 +81,7 @@ export default {
     matchedOn: 'Matched',
     startChat: 'Start Chat',
     viewProfile: 'View Profile',
+    tapToViewProfile: 'Tap to view profile',
   },
   
   // Chat
@@ -96,6 +98,10 @@ export default {
     yesterday: 'Yesterday',
     icebreaker: 'Icebreaker',
     icebreakers: 'Icebreakers',
+    disconnect: 'Disconnect',
+    disconnectTitle: 'Disconnect from match?',
+    disconnectMessage: 'This will remove this person from your matches and delete all chat messages. This action cannot be undone.',
+    disconnectConfirm: 'Disconnect',
   },
   
   // Icebreaker prompts
@@ -110,6 +116,50 @@ export default {
     laughMost: 'The thing that makes me laugh most is...',
     perfectSunday: 'My perfect Sunday looks like...',
     convinced: "I'm convinced that...",
+  },
+  
+  // Ask Me About It - Celebration prompts
+  askMeAboutIt: {
+    title: 'Ask Me About It',
+    subtitle: 'Celebrate what makes you, you',
+    prompts: {
+      coolestThing: "The coolest thing about my condition is...",
+      superpower: "My superpower from being different is...",
+      wishPeopleKnew: "What I wish people knew is...",
+      proudOf: "Something I'm proud of overcoming is...",
+      dontLetStop: "I don't let anything stop me from...",
+      loveAboutCommunity: "What I love about the disability community is...",
+    },
+  },
+  
+  // Time Preferences
+  timePreferences: {
+    title: 'Time Preferences',
+    subtitle: 'Help others know when you\'re available',
+    preferredTimes: 'Best times for me',
+    times: {
+      morning: 'Morning',
+      afternoon: 'Afternoon',
+      evening: 'Evening',
+      night: 'Night',
+      flexible: 'Flexible',
+    },
+    responsePace: 'My response pace',
+    responsePaceOptions: {
+      quick: 'I respond quickly',
+      moderate: 'Within a few hours',
+      slow: 'May take a day or more',
+      variable: 'Depends on my energy',
+    },
+    datePace: 'Meeting preferences',
+    datePaceOptions: {
+      ready: 'Ready to meet soon',
+      slow: 'Prefer to chat first',
+      virtual: 'Virtual dates preferred',
+      flexible: 'Open to whatever feels right',
+    },
+    notes: 'Additional notes',
+    notesPlaceholder: 'e.g. I have PT on Tuesdays, I\'m a night owl...',
   },
   
   // Profile
@@ -131,7 +181,15 @@ export default {
     prompt: 'Profile Prompt',
     promptAnswer: 'Your answer',
     saveChanges: 'Save Changes',
-    photoHint: 'Tap to change photo',
+    photoHint: 'Tap photos to manage',
+    setAsPrimary: 'Set as primary photo',
+    addPhoto: 'Add Photo',
+    uploadingPhoto: 'Uploading...',
+    maxPhotos: 'Maximum 6 photos allowed',
+    cleanup: 'Clear My Matches & Chats',
+    cleanupConfirm: 'This will delete all your matches, messages, and swipes. Are you sure?',
+    cleanupSuccess: 'All matches and chats cleared successfully!',
+    cleanupError: 'Failed to clear data. Please try again.',
   },
   
   // Looking For

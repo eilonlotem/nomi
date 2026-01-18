@@ -101,6 +101,14 @@ class ProfileSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
             "current_mood",
             "prompt_id",
             "prompt_answer",
+            # Ask Me About It - celebration prompts
+            "ask_me_prompt_id",
+            "ask_me_answer",
+            # Time preferences
+            "preferred_times",
+            "response_pace",
+            "date_pace",
+            "time_notes",
             "photos",
             "looking_for",
             "is_visible",
@@ -193,6 +201,13 @@ class ProfileCardSerializer(serializers.ModelSerializer):  # type: ignore[type-a
             "current_mood",
             "prompt_id",
             "prompt_answer",
+            # Ask Me About It - celebration prompts
+            "ask_me_prompt_id",
+            "ask_me_answer",
+            # Time preferences
+            "preferred_times",
+            "response_pace",
+            "date_pace",
             "primary_photo",
             "age",
         ]

@@ -6,8 +6,22 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
 // Facebook App ID - set this in .env file
 const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID || ''
 
-// Auth state
-const user = ref(null)
+// Load saved user data from localStorage on initialization
+const loadSavedUser = () => {
+  try {
+    const savedUserData = localStorage.getItem('user_data')
+    if (savedUserData) {
+      return JSON.parse(savedUserData)
+    }
+  } catch (e) {
+    console.warn('Failed to parse saved user data:', e)
+    localStorage.removeItem('user_data')
+  }
+  return null
+}
+
+// Auth state - initialize from localStorage
+const user = ref(loadSavedUser())
 const token = ref(localStorage.getItem('auth_token') || null)
 const isLoading = ref(false)
 const error = ref(null)
@@ -15,50 +29,10 @@ const isAuthenticated = computed(() => !!token.value && !!user.value)
 const facebookSDKLoaded = ref(false)
 
 /**
- * Initialize Facebook SDK with timeout
+ * Initialize Facebook SDK with timeout (kept for potential future use)
  */
 const initFacebookSDK = () => {
-  return new Promise((resolve, reject) => {
-    if (facebookSDKLoaded.value) {
-      resolve()
-      return
-    }
-
-    // Set a timeout in case SDK fails to load
-    const timeout = setTimeout(() => {
-      reject(new Error('Facebook SDK load timeout'))
-    }, 5000)
-
-    // Load Facebook SDK
-    window.fbAsyncInit = function() {
-      clearTimeout(timeout)
-      window.FB.init({
-        appId: FACEBOOK_APP_ID,
-        cookie: true,
-        xfbml: true,
-        version: 'v18.0'
-      })
-      facebookSDKLoaded.value = true
-      resolve()
-    }
-
-    // Load the SDK script
-    if (!document.getElementById('facebook-jssdk')) {
-      const script = document.createElement('script')
-      script.id = 'facebook-jssdk'
-      script.src = 'https://connect.facebook.net/en_US/sdk.js'
-      script.async = true
-      script.defer = true
-      script.onerror = () => {
-        clearTimeout(timeout)
-        reject(new Error('Facebook SDK failed to load'))
-      }
-      document.head.appendChild(script)
-    } else {
-      clearTimeout(timeout)
-      resolve()
-    }
-  })
+  return Promise.resolve() // No longer needed for redirect flow
 }
 
 /**
@@ -69,8 +43,8 @@ const isHttps = () => {
 }
 
 /**
- * Login with Facebook
- * Opens Facebook login popup and sends token to backend
+ * Login with Facebook using redirect flow (no popup)
+ * Redirects user to Facebook, then back to our app
  */
 const loginWithFacebook = async () => {
   isLoading.value = true
@@ -82,43 +56,92 @@ const loginWithFacebook = async () => {
       throw new Error('Facebook login requires HTTPS. Please use HTTPS or localhost for development.')
     }
 
-    // Initialize SDK if not already done
-    await initFacebookSDK()
-
-    // Check if FB SDK is available
-    if (!window.FB) {
-      throw new Error('Facebook SDK not loaded')
+    if (!FACEBOOK_APP_ID) {
+      throw new Error('Facebook App ID not configured')
     }
 
-    // Open Facebook login dialog
-    const authResponse = await new Promise((resolve, reject) => {
-      window.FB.login((response) => {
-        if (response.authResponse) {
-          resolve(response.authResponse)
-        } else {
-          // Check if it's the HTTPS error
-          if (window.location.protocol === 'http:') {
-            reject(new Error('Facebook requires HTTPS. Using mock login for development.'))
-          } else {
-            reject(new Error('Facebook login cancelled or failed'))
-          }
-        }
-      }, {
-        scope: 'email,public_profile,user_birthday,user_gender',
-        return_scopes: true
-      })
-    })
+    // Build Facebook OAuth URL for redirect flow
+    const redirectUri = encodeURIComponent(window.location.origin + '/auth/facebook/callback')
+    const scope = encodeURIComponent('email,public_profile,user_birthday,user_gender')
+    const state = encodeURIComponent(JSON.stringify({ 
+      returnUrl: window.location.pathname,
+      timestamp: Date.now() 
+    }))
+    
+    // Store state in localStorage for verification when we return
+    localStorage.setItem('fb_auth_state', state)
+    
+    // Redirect to Facebook OAuth
+    const facebookAuthUrl = `https://www.facebook.com/v18.0/dialog/oauth?` +
+      `client_id=${FACEBOOK_APP_ID}` +
+      `&redirect_uri=${redirectUri}` +
+      `&scope=${scope}` +
+      `&state=${state}` +
+      `&response_type=code`
+    
+    console.log('Redirecting to Facebook OAuth:', facebookAuthUrl)
+    
+    // Redirect to Facebook (this will navigate away from the app)
+    window.location.href = facebookAuthUrl
+    
+    // This won't be reached as we're redirecting
+    return { success: true, redirecting: true }
 
-    console.log('Facebook auth response:', authResponse)
+  } catch (err) {
+    console.error('Facebook login error:', err)
+    error.value = err.message
+    isLoading.value = false
+    return {
+      success: false,
+      error: err.message,
+    }
+  }
+}
 
-    // Send access token to backend for validation and user creation
+/**
+ * Handle Facebook OAuth callback (called when returning from Facebook)
+ */
+const handleFacebookCallback = async () => {
+  isLoading.value = true
+  error.value = null
+
+  try {
+    // Get the authorization code from URL
+    const urlParams = new URLSearchParams(window.location.search)
+    const code = urlParams.get('code')
+    const returnedState = urlParams.get('state')
+    const errorParam = urlParams.get('error')
+    const errorDescription = urlParams.get('error_description')
+
+    // Check for errors from Facebook
+    if (errorParam) {
+      throw new Error(errorDescription || `Facebook auth error: ${errorParam}`)
+    }
+
+    if (!code) {
+      throw new Error('No authorization code received from Facebook')
+    }
+
+    // Verify state matches what we sent
+    const storedState = localStorage.getItem('fb_auth_state')
+    if (storedState && returnedState !== storedState) {
+      console.warn('State mismatch - possible CSRF attack')
+      // Continue anyway for now, but log warning
+    }
+    
+    // Clear stored state
+    localStorage.removeItem('fb_auth_state')
+
+    // Send authorization code to backend
+    const redirectUri = window.location.origin + '/auth/facebook/callback'
     const backendResponse = await fetch(`${API_URL}/auth/facebook/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        access_token: authResponse.accessToken,
+        code: code,
+        redirect_uri: redirectUri,
       }),
     })
 
@@ -133,8 +156,12 @@ const loginWithFacebook = async () => {
     token.value = data.token
     user.value = data.user
     localStorage.setItem('auth_token', data.token)
+    localStorage.setItem('user_data', JSON.stringify(data.user))
     
     console.log('Login successful:', data)
+    
+    // Clean URL (remove code and state params)
+    window.history.replaceState({}, document.title, window.location.pathname)
     
     return {
       success: true,
@@ -144,8 +171,12 @@ const loginWithFacebook = async () => {
     }
 
   } catch (err) {
-    console.error('Facebook login error:', err)
+    console.error('Facebook callback error:', err)
     error.value = err.message
+    
+    // Clean URL even on error
+    window.history.replaceState({}, document.title, window.location.pathname)
+    
     return {
       success: false,
       error: err.message,
@@ -153,6 +184,14 @@ const loginWithFacebook = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+/**
+ * Check if current URL is a Facebook callback
+ */
+const isFacebookCallback = () => {
+  return window.location.pathname === '/auth/facebook/callback' && 
+         (window.location.search.includes('code=') || window.location.search.includes('error='))
 }
 
 /**
@@ -184,6 +223,7 @@ const mockLogin = async (provider) => {
     token.value = mockToken
     user.value = mockUser
     localStorage.setItem('auth_token', mockToken)
+    localStorage.setItem('user_data', JSON.stringify(mockUser))
 
     return {
       success: true,
@@ -250,6 +290,7 @@ const logout = async () => {
     token.value = null
     user.value = null
     localStorage.removeItem('auth_token')
+    localStorage.removeItem('user_data')
   }
 }
 
@@ -268,7 +309,18 @@ const validateToken = async () => {
 
     if (response.ok) {
       const data = await response.json()
-      user.value = data.user
+      
+      // Merge server data with saved data to preserve is_onboarded status
+      const savedUser = loadSavedUser()
+      const mergedUser = {
+        ...savedUser,
+        ...data.user,
+        // Preserve is_onboarded if it was true locally (in case backend doesn't track it)
+        is_onboarded: data.user.is_onboarded || savedUser?.is_onboarded || false,
+      }
+      
+      user.value = mergedUser
+      localStorage.setItem('user_data', JSON.stringify(mergedUser))
       return true
     } else {
       // Token is invalid, clear it
@@ -277,6 +329,10 @@ const validateToken = async () => {
     }
   } catch (err) {
     console.error('Token validation error:', err)
+    // On network error, still use cached user data if available
+    if (user.value) {
+      return true
+    }
     return false
   }
 }
@@ -317,6 +373,8 @@ export function useAuth() {
     // Actions
     login,
     loginWithFacebook,
+    handleFacebookCallback,
+    isFacebookCallback,
     mockLogin,
     logout,
     validateToken,

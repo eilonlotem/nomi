@@ -230,6 +230,13 @@ export const matchingApi = {
   getMatches: () => apiRequest('/matches/'),
   
   /**
+   * Cleanup all matches, swipes, messages for current user
+   */
+  cleanup: () => apiRequest('/cleanup/', {
+    method: 'POST',
+  }),
+  
+  /**
    * Block a user
    */
   blockUser: (userId, reason = '', description = '') => apiRequest('/block/', {
@@ -242,6 +249,14 @@ export const matchingApi = {
    */
   unblockUser: (userId) => apiRequest(`/block/${userId}/`, {
     method: 'DELETE',
+  }),
+  
+  /**
+   * Disconnect/unmatch from a match (also clears chat)
+   * @param {number} matchId - Match ID to disconnect from
+   */
+  unmatch: (matchId) => apiRequest(`/matches/${matchId}/unmatch/`, {
+    method: 'POST',
   }),
 }
 

@@ -27,16 +27,16 @@ test.describe('Login Flow', () => {
   test('Facebook login navigates to language selection', async ({ page }) => {
     await page.getByRole('button', { name: /Continue with Facebook/i }).click();
     
-    // Should show language selection
-    await expect(page.getByRole('heading', { name: 'Choose Your Language' })).toBeVisible();
+    // Should show language selection (use .first() as there are h1 and h2)
+    await expect(page.getByRole('heading', { name: 'Choose Your Language' }).first()).toBeVisible();
     await expect(page.getByText('Connected')).toBeVisible();
   });
 
   test('Instagram login navigates to language selection', async ({ page }) => {
     await page.getByRole('button', { name: /Continue with Instagram/i }).click();
     
-    // Should show language selection
-    await expect(page.getByRole('heading', { name: 'Choose Your Language' })).toBeVisible();
+    // Should show language selection (use .first() as there are h1 and h2)
+    await expect(page.getByRole('heading', { name: 'Choose Your Language' }).first()).toBeVisible();
   });
 
   test('shows terms and privacy links', async ({ page }) => {

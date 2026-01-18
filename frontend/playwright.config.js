@@ -1,6 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
+ * Load test environment variables
+ * Default setup: Local frontend against production backend
+ */
+import { config } from 'dotenv';
+config({ path: '.env.test' });
+
+/**
  * Playwright configuration for Nomi UI tests
  * @see https://playwright.dev/docs/test-configuration
  */
@@ -64,5 +71,9 @@ export default defineConfig({
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
+    env: {
+      // Use production backend for testing
+      VITE_API_URL: process.env.VITE_API_URL || 'https://backend-production-8f63.up.railway.app/api',
+    },
   },
 });

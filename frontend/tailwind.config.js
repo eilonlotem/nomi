@@ -7,37 +7,51 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Warm, earthy palette - unique and inviting
-        primary: '#E07A5F',        // Terracotta - warm and distinctive
-        'primary-hover': '#C96A50',
-        'primary-light': '#FAE5E0',
-        'primary-dark': '#B5634D',
+        // Rich, warm palette - vibrant and distinctive
+        primary: '#D96852',        // Rich terracotta - bolder
+        'primary-hover': '#C45A45',
+        'primary-light': '#FFE8E3',
+        'primary-dark': '#B84D39',
         
-        secondary: '#81B29A',      // Sage green - calming
-        'secondary-light': '#D8EBE2',
+        secondary: '#4AA488',      // Deep sage - richer green
+        'secondary-light': '#D5EFE6',
         
-        accent: '#F2CC8F',         // Warm honey gold
-        'accent-dark': '#D4A84B',
+        accent: '#E8A848',         // Rich golden amber
+        'accent-dark': '#C78B2D',
         
-        coral: '#F4978E',          // Soft coral
-        lavender: '#B8A9C9',       // Muted lavender
-        peach: '#FFDAB9',          // Soft peach
+        coral: '#FF7B6B',          // Vibrant coral
+        lavender: '#9B8DC2',       // Rich lavender
+        peach: '#FFB896',          // Warm peach
+        
+        // Extended palette for variety
+        teal: '#32A89C',           // Ocean teal
+        'teal-light': '#D8F3F0',
+        rose: '#E85A7A',           // Rose pink
+        'rose-light': '#FFEAEF',
+        indigo: '#6366F1',         // Electric indigo
+        'indigo-light': '#EEF0FF',
+        amber: '#F59E0B',          // Warm amber
+        'amber-light': '#FEF3C7',
+        emerald: '#059669',        // Deep emerald
+        'emerald-light': '#D1FAE5',
+        violet: '#8B5CF6',         // Rich violet
+        'violet-light': '#EDE9FE',
         
         background: '#FDF8F3',     // Warm cream
         'background-alt': '#F5EDE6',
         surface: '#FFFFFF',
-        'surface-warm': '#FFF9F5',
+        'surface-warm': '#FFFAF7',
         
-        'text-deep': '#2D3436',
+        'text-deep': '#1F2937',
         'text-muted': '#6B7280',
         'text-light': '#9CA3AF',
         
         border: '#E8DED5',
         'border-light': '#F3EDE7',
         
-        success: '#81B29A',
-        danger: '#E07A5F',
-        warning: '#F2CC8F',
+        success: '#059669',
+        danger: '#DC2626',
+        warning: '#F59E0B',
       },
       fontFamily: {
         display: ['Fraunces', 'Georgia', 'serif'],

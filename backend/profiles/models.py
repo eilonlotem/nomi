@@ -112,6 +112,55 @@ class Profile(models.Model):
     prompt_id = models.CharField(max_length=50, choices=PROMPT_CHOICES, blank=True)
     prompt_answer = models.CharField(max_length=300, blank=True)
 
+    # "Ask Me About It" - Celebration prompts about disability
+    ASK_ME_PROMPT_CHOICES: list[tuple[str, str]] = [
+        ("coolestThing", "The coolest thing about my [disability/difference] is..."),
+        ("superpower", "My superpower from being [neurodivergent/disabled] is..."),
+        ("wishPeopleKnew", "What I wish people knew about [my condition] is..."),
+        ("proudOf", "Something I'm proud of overcoming is..."),
+        ("dontLetStop", "I don't let my [condition] stop me from..."),
+        ("loveAboutCommunity", "What I love about the disability community is..."),
+    ]
+    ask_me_prompt_id = models.CharField(max_length=50, blank=True)
+    ask_me_answer = models.CharField(max_length=300, blank=True)
+
+    # Time Preferences - Best times for dates/meetings
+    TIME_PREFERENCE_CHOICES: list[tuple[str, str]] = [
+        ("morning", "Morning (before noon)"),
+        ("afternoon", "Afternoon (noon-5pm)"),
+        ("evening", "Evening (5pm-9pm)"),
+        ("night", "Night (after 9pm)"),
+        ("flexible", "I'm flexible"),
+    ]
+    preferred_times = models.JSONField(default=list)  # List of time preference codes
+    
+    # Additional time-related preferences
+    response_pace = models.CharField(
+        max_length=50,
+        choices=[
+            ("quick", "I respond quickly"),
+            ("moderate", "I respond within a few hours"),
+            ("slow", "I may take a day or more to respond"),
+            ("variable", "It depends on my energy/health"),
+        ],
+        blank=True,
+    )
+    date_pace = models.CharField(
+        max_length=50,
+        choices=[
+            ("ready", "Ready to meet soon"),
+            ("slow", "Prefer to chat first"),
+            ("virtual", "Virtual dates preferred"),
+            ("flexible", "Open to whatever feels right"),
+        ],
+        blank=True,
+    )
+    time_notes = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Additional notes about scheduling (e.g., 'I have PT on Tuesdays')",
+    )
+
     # Visibility
     is_visible = models.BooleanField(default=True)
     show_distance = models.BooleanField(default=True)

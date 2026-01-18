@@ -45,14 +45,21 @@ async function loginAndOnboard(page) {
   // Mock login should be very fast since we blocked FB SDK
   await expect(page.getByRole('heading', { name: 'Choose Your Language' }).first()).toBeVisible({ timeout: 10000 });
   
-  // Select English
-  await page.getByRole('button', { name: /English/i }).click();
+  // Select English (button name includes "Switch language")
+  await page.getByRole('button', { name: /Switch language.*English/i }).click();
   
-  // Wait for transition
+  // Wait for transition to onboarding
   await page.waitForTimeout(1000);
   
-  // If on onboarding, skip it
-  const skipButton = page.getByRole('button', { name: 'Skip' });
+  // Skip onboarding (identity tags)
+  let skipButton = page.getByRole('button', { name: 'Skip' });
+  if (await skipButton.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await skipButton.click();
+    await page.waitForTimeout(500);
+  }
+  
+  // Skip preferences (looking for) - there might be another Skip button
+  skipButton = page.getByRole('button', { name: 'Skip' });
   if (await skipButton.isVisible({ timeout: 3000 }).catch(() => false)) {
     await skipButton.click();
     await page.waitForTimeout(500);

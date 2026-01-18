@@ -4,7 +4,8 @@ test.describe('Onboarding Flow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.getByRole('button', { name: /Continue with Facebook/i }).click();
-    await page.getByRole('button', { name: /English/i }).click();
+    await page.waitForTimeout(500);
+    await page.getByRole('button', { name: /Switch language.*English/i }).click();
   });
 
   test('displays onboarding header and content', async ({ page }) => {

@@ -1,0 +1,91 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - button "Accessibility" [ref=e4] [cursor=pointer]:
+    - generic [ref=e5]: ⚙️
+  - generic [ref=e6]:
+    - banner [ref=e7]:
+      - generic [ref=e8]:
+        - button "Go back" [ref=e9] [cursor=pointer]:
+          - img [ref=e10]
+        - generic [ref=e12]:
+          - heading "Looking For" [level=1] [ref=e13]
+          - paragraph [ref=e14]: Step 2 of 2
+        - button "Skip" [ref=e15] [cursor=pointer]
+    - main [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e20]: 💝
+          - heading "Who catches your eye?" [level=2] [ref=e21]
+          - paragraph [ref=e22]: Tell us what you're looking for so we can find your perfect matches.
+        - generic [ref=e23]:
+          - heading "👥 I'm interested in..." [level=3] [ref=e24]:
+            - generic [ref=e25]: 👥
+            - text: I'm interested in...
+          - generic [ref=e26]:
+            - button "👨 Men" [ref=e27] [cursor=pointer]:
+              - generic [ref=e28]: 👨
+              - generic [ref=e29]: Men
+            - button "👩 Women" [ref=e30] [cursor=pointer]:
+              - generic [ref=e31]: 👩
+              - generic [ref=e32]: Women
+            - button "🧑 Non-binary" [ref=e33] [cursor=pointer]:
+              - generic [ref=e34]: 🧑
+              - generic [ref=e35]: Non-binary
+            - button "💫 Everyone" [ref=e36] [cursor=pointer]:
+              - generic [ref=e37]: 💫
+              - generic [ref=e38]: Everyone
+        - generic [ref=e39]:
+          - heading "💕 What are you looking for?" [level=3] [ref=e40]:
+            - generic [ref=e41]: 💕
+            - text: What are you looking for?
+          - generic [ref=e42]:
+            - button "💕 Casual Dating" [ref=e43] [cursor=pointer]:
+              - generic [ref=e44]:
+                - generic [ref=e45]: 💕
+                - generic [ref=e46]: Casual Dating
+            - button "💍 Serious Relationship" [ref=e47] [cursor=pointer]:
+              - generic [ref=e48]:
+                - generic [ref=e49]: 💍
+                - generic [ref=e50]: Serious Relationship
+            - button "🤝 Just Friends" [ref=e51] [cursor=pointer]:
+              - generic [ref=e52]:
+                - generic [ref=e53]: 🤝
+                - generic [ref=e54]: Just Friends
+            - button "🎯 Activity Partners" [ref=e55] [cursor=pointer]:
+              - generic [ref=e56]:
+                - generic [ref=e57]: 🎯
+                - generic [ref=e58]: Activity Partners
+        - generic [ref=e59]:
+          - heading "🎂 Age Range" [level=3] [ref=e60]:
+            - generic [ref=e61]: 🎂
+            - text: Age Range
+          - generic [ref=e62]:
+            - generic [ref=e63]:
+              - generic [ref=e64]: Min
+              - spinbutton [ref=e65]: "18"
+            - generic [ref=e66]: –
+            - generic [ref=e67]:
+              - generic [ref=e68]: Max
+              - spinbutton [ref=e69]: "50"
+          - generic [ref=e70]:
+            - generic [ref=e71]: "18"
+            - generic [ref=e74]: "50"
+        - generic [ref=e75]:
+          - heading "📍 Location" [level=3] [ref=e76]:
+            - generic [ref=e77]: 📍
+            - text: Location
+          - generic [ref=e78]:
+            - generic [ref=e79]: Your city or area
+            - textbox "e.g. Tel Aviv, New York..." [ref=e80]
+          - generic [ref=e81]:
+            - generic [ref=e82]:
+              - generic [ref=e83]: Maximum distance
+              - generic [ref=e84]: 50 km
+            - slider [ref=e85] [cursor=pointer]: "50"
+            - generic [ref=e86]:
+              - generic [ref=e87]: 5 km
+              - generic [ref=e88]: 200 km
+    - button "Continue to Discovery" [ref=e90] [cursor=pointer]
+```

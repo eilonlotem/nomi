@@ -24,7 +24,7 @@ test.describe('Language Selection', () => {
   });
 
   test('selecting English proceeds to onboarding', async ({ page }) => {
-    await page.getByRole('button', { name: /English/i }).click();
+    await page.getByRole('button', { name: /Switch language.*English/i }).click();
     
     // Should show onboarding
     await expect(page.getByRole('heading', { name: 'The Deets' })).toBeVisible();
@@ -32,7 +32,7 @@ test.describe('Language Selection', () => {
   });
 
   test('selecting Hebrew sets RTL direction', async ({ page }) => {
-    await page.getByRole('button', { name: /עברית/i }).click();
+    await page.getByRole('button', { name: /Switch language.*עברית/i }).click();
     
     // Check RTL is applied
     const body = page.locator('body');
@@ -40,7 +40,7 @@ test.describe('Language Selection', () => {
   });
 
   test('selecting Arabic sets RTL direction', async ({ page }) => {
-    await page.getByRole('button', { name: /العربية/i }).click();
+    await page.getByRole('button', { name: /Switch language.*العربية/i }).click();
     
     // Check RTL is applied
     const body = page.locator('body');

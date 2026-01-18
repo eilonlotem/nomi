@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ROUTES } from './router'
 import { useI18n } from './composables/useI18n'
 import { useAuth } from './composables/useAuth'
-import { profileApi, matchingApi, chatApi, userApi, clearCache } from './services/api'
+import { profileApi, matchingApi, chatApi, userApi, clearCache, getPhotoUrl } from './services/api'
 
 const { t, locale, isRTL, dir, setLocale, getLanguages } = useI18n()
 
@@ -210,6 +210,20 @@ const setPrimaryPhoto = async (photoId) => {
   }
 }
 
+// Get primary photo URL for profile editing
+const getPrimaryPhotoUrl = () => {
+  // First check if there's a primary photo in the photos array
+  const primaryPhoto = userProfile.value.photos?.find(p => p.is_primary)
+  if (primaryPhoto) {
+    return getPhotoUrl(primaryPhoto)
+  }
+  // Fall back to the main photo field
+  if (userProfile.value.photo) {
+    return getPhotoUrl(userProfile.value.photo)
+  }
+  return ''
+}
+
 // Photo carousel for discovery cards
 const currentPhotoIndex = ref(0)
 
@@ -222,7 +236,7 @@ const getAllPhotos = (profile) => {
   // First, add all uploaded photos from the photos array
   const uploadedPhotos = profile.photos || []
   for (const photo of uploadedPhotos) {
-    const url = photo.image || photo.url
+    const url = getPhotoUrl(photo)
     if (url && !photos.includes(url)) {
       photos.push(url)
     }
@@ -231,11 +245,11 @@ const getAllPhotos = (profile) => {
   // If no photos yet, add main photo (from picture_url or primary photo)
   if (photos.length === 0) {
     if (profile.photo) {
-      photos.push(profile.photo)
+      photos.push(getPhotoUrl(profile.photo))
     } else if (profile.picture_url) {
-      photos.push(profile.picture_url)
-    } else if (profile.primary_photo?.url || profile.primary_photo?.image) {
-      photos.push(profile.primary_photo.url || profile.primary_photo.image)
+      photos.push(getPhotoUrl(profile.picture_url))
+    } else if (profile.primary_photo) {
+      photos.push(getPhotoUrl(profile.primary_photo))
     }
   }
   
@@ -998,11 +1012,9 @@ const goBack = () => {
     router.back()
   } else {
     // Fallback logic for direct URL access
-    if (currentView.value === 'language') {
+    if (currentView.value === 'onboarding') {
       navigateTo('login')
       loggedInWith.value = null
-    } else if (currentView.value === 'onboarding') {
-      navigateTo('language')
     } else if (currentView.value === 'onboarding-preferences') {
       navigateTo('onboarding')
     } else if (currentView.value === 'discovery') {
@@ -1423,8 +1435,8 @@ const handleSocialLogin = async (provider) => {
       await fetchDiscoveryProfiles()
       await fetchMatches()
     } else {
-      // Navigate to language selection for onboarding
-      navigateTo('language')
+      // Navigate directly to onboarding (Hebrew only)
+      navigateTo('onboarding')
     }
   } else {
     loginError.value = result.error || 'Login failed. Please try again.'
@@ -1531,7 +1543,7 @@ const initializeApp = async () => {
       if (user.value.is_onboarded) {
         navigateTo('discovery')
       } else {
-        navigateTo('language')
+        navigateTo('onboarding')
       }
     } else {
       // Not authenticated, just fetch tags
@@ -1573,7 +1585,7 @@ onMounted(async () => {
       if (user.value?.is_onboarded) {
         navigateTo('discovery')
       } else {
-        navigateTo('language')
+        navigateTo('onboarding')
       }
       
       // Continue with normal initialization to load profile data
@@ -2438,7 +2450,7 @@ const constellationPoints = computed(() => {
             </div>
             
             <img 
-              :src="getAllPhotos(currentProfile)[currentPhotoIndex] || currentProfile.photo" 
+              :src="getAllPhotos(currentProfile)[currentPhotoIndex] || getPhotoUrl(currentProfile.photo || currentProfile.picture_url)" 
               :alt="currentProfile.name"
               class="w-full h-full object-cover"
               loading="lazy"
@@ -3032,14 +3044,17 @@ const constellationPoints = computed(() => {
             <!-- Photo Grid -->
             <div class="grid grid-cols-3 gap-2 xs:gap-3">
               <!-- Main/Primary Photo -->
-              <div class="relative aspect-[3/4] rounded-xl overflow-hidden ring-2 ring-primary">
+              <div 
+                v-if="getPrimaryPhotoUrl()"
+                class="relative aspect-[3/4] rounded-xl overflow-hidden ring-2 ring-primary"
+              >
                 <img 
-                  :src="userProfile.photo" 
+                  :src="getPrimaryPhotoUrl()" 
                   alt="Primary Photo"
                   class="w-full h-full object-cover"
                 />
                 <div class="absolute top-1 start-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">
-                  Main
+                  {{ t('profile.main') }}
                 </div>
               </div>
               
@@ -3050,7 +3065,7 @@ const constellationPoints = computed(() => {
                 class="relative aspect-[3/4] rounded-xl overflow-hidden bg-surface border border-border group"
               >
                 <img 
-                  :src="photo.image" 
+                  :src="getPhotoUrl(photo)" 
                   :alt="`Photo ${index + 2}`"
                   class="w-full h-full object-cover"
                 />
@@ -3521,31 +3536,6 @@ const constellationPoints = computed(() => {
             </div>
           </div>
 
-          <!-- Language Selector -->
-          <div class="card p-4 xs:p-5 animate-slide-up stagger-6">
-            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-3 xs:mb-4 flex items-center gap-2">
-              <span>🌍</span>
-              {{ t('languageSelection.title') }}
-            </h3>
-            
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                v-for="lang in availableLanguages"
-                :key="lang.code"
-                @click="setLocale(lang.code)"
-                :class="[
-                  'flex items-center gap-1.5 xs:gap-2 px-3 xs:px-4 py-2.5 xs:py-3 rounded-xl transition-all touch-manipulation active:scale-95',
-                  locale === lang.code 
-                    ? 'bg-primary text-white' 
-                    : 'bg-surface border border-border text-text-deep'
-                ]"
-              >
-                <span class="text-lg xs:text-xl">{{ lang.flag }}</span>
-                <span class="text-xs xs:text-sm font-medium">{{ lang.nativeName }}</span>
-              </button>
-            </div>
-          </div>
-
           <!-- Save Button -->
           <button
             @click="saveProfile"
@@ -3616,7 +3606,7 @@ const constellationPoints = computed(() => {
             </div>
             
             <img 
-              :src="getAllPhotos(viewingProfileData.raw)[viewingProfilePhotoIndex] || viewingProfileData.raw.photo || viewingProfileData.raw.picture_url" 
+              :src="getAllPhotos(viewingProfileData.raw)[viewingProfilePhotoIndex] || getPhotoUrl(viewingProfileData.raw.photo || viewingProfileData.raw.picture_url)" 
               :alt="viewingProfileData.name"
               class="w-full h-full object-contain"
             />
@@ -3788,7 +3778,7 @@ const constellationPoints = computed(() => {
             <div class="text-3xl xs:text-4xl animate-heart-beat">💜</div>
             <div class="w-20 xs:w-28 h-20 xs:h-28 rounded-full border-4 border-white overflow-hidden shadow-xl animate-slide-in-right">
               <img 
-                :src="matchedProfile?.photo" 
+                :src="getPhotoUrl(matchedProfile?.photo || matchedProfile?.picture_url)" 
                 :alt="matchedProfile?.name"
                 class="w-full h-full object-cover"
               />

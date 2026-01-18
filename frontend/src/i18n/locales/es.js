@@ -137,6 +137,7 @@ export default {
     promptAnswer: 'Tu respuesta',
     saveChanges: 'Guardar Cambios',
     photoHint: 'Toca para cambiar foto',
+    main: 'Principal',
     cleanup: 'Borrar Mis Matches y Chats',
     cleanupConfirm: 'Esto eliminará todos tus matches, mensajes y swipes. ¿Estás seguro?',
     cleanupSuccess: '¡Todos los matches y chats borrados correctamente!',

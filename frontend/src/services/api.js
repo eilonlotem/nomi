@@ -4,6 +4,39 @@
  */
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+const MEDIA_BASE_URL = API_URL.replace('/api', '')
+
+/**
+ * Get full URL for a photo
+ * Handles both external URLs (https://...) and relative paths (/media/...)
+ * @param {object|string} photo - Photo object with image/url fields, or direct URL string
+ * @returns {string} Full URL to the photo
+ */
+export const getPhotoUrl = (photo) => {
+  if (!photo) return ''
+  
+  // If it's a string, handle it directly
+  if (typeof photo === 'string') {
+    if (photo.startsWith('http://') || photo.startsWith('https://')) {
+      return photo
+    }
+    // Relative path - prepend media base URL
+    return `${MEDIA_BASE_URL}${photo}`
+  }
+  
+  // It's an object with image and/or url fields
+  // Prefer url field (for external URLs), then image field
+  const url = photo.url || photo.image || ''
+  
+  if (!url) return ''
+  
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  
+  // Relative path - prepend media base URL
+  return `${MEDIA_BASE_URL}${url}`
+}
 
 /**
  * Simple in-memory cache with TTL

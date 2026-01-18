@@ -40,9 +40,7 @@ const routes = [
   },
   {
     path: '/language',
-    name: ROUTES.LANGUAGE,
-    component: EmptyView,
-    meta: { requiresAuth: true, title: 'Choose Language' }
+    redirect: '/onboarding'  // Hebrew only - skip language selection
   },
   {
     path: '/onboarding',
@@ -128,7 +126,7 @@ router.beforeEach((to, from, next) => {
   
   // If route requires onboarding but user hasn't completed it
   if (to.meta.requiresOnboarding && !isOnboarded && isAuthenticated) {
-    next({ name: ROUTES.LANGUAGE })
+    next({ name: ROUTES.ONBOARDING })
     return
   }
   
@@ -137,7 +135,7 @@ router.beforeEach((to, from, next) => {
     if (isOnboarded) {
       next({ name: ROUTES.DISCOVERY })
     } else {
-      next({ name: ROUTES.LANGUAGE })
+      next({ name: ROUTES.ONBOARDING })
     }
     return
   }

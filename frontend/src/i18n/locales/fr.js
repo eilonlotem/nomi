@@ -137,6 +137,7 @@ export default {
     promptAnswer: 'Votre réponse',
     saveChanges: 'Enregistrer les Modifications',
     photoHint: 'Appuyez pour changer la photo',
+    main: 'Principal',
     cleanup: 'Effacer Mes Matchs et Discussions',
     cleanupConfirm: 'Cela supprimera tous vos matchs, messages et swipes. Êtes-vous sûr?',
     cleanupSuccess: 'Tous les matchs et discussions effacés avec succès!',

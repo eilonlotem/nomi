@@ -32,11 +32,11 @@ export const translations = {
   ar,
 }
 
-// Default language
-export const defaultLocale = 'en'
+// Default language - Hebrew only
+export const defaultLocale = 'he'
 
 // Fallback language (used when a translation is missing)
-export const fallbackLocale = 'en'
+export const fallbackLocale = 'he'
 
 // Get language config by code
 export function getLanguageConfig(code) {

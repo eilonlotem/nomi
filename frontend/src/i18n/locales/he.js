@@ -182,6 +182,7 @@ export default {
     saveChanges: 'שמור שינויים',
     photoHint: 'לחץ על תמונות לניהול',
     setAsPrimary: 'הגדר כתמונה ראשית',
+    main: 'ראשית',
     addPhoto: 'הוסף תמונה',
     uploadingPhoto: 'מעלה...',
     maxPhotos: 'מותר עד 6 תמונות',

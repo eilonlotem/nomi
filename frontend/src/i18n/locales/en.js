@@ -183,6 +183,7 @@ export default {
     saveChanges: 'Save Changes',
     photoHint: 'Tap photos to manage',
     setAsPrimary: 'Set as primary photo',
+    main: 'Main',
     addPhoto: 'Add Photo',
     uploadingPhoto: 'Uploading...',
     maxPhotos: 'Maximum 6 photos allowed',

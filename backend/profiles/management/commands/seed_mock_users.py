@@ -641,11 +641,16 @@ class Command(BaseCommand):
             profile.interests.add(interest)
         
         # Create looking for preferences
+        # Map gender values to preference values (male->men, female->women)
+        raw_genders = user_data.get("looking_for_genders", ["men", "women"])
+        gender_map = {"male": "men", "female": "women"}
+        genders = [gender_map.get(g, g) for g in raw_genders]
+        
         LookingFor.objects.create(
             profile=profile,
             min_age=18,
             max_age=50,
             max_distance=100,
-            genders=user_data.get("looking_for_genders", ["male", "female"]),
+            genders=genders,
             relationship_types=user_data.get("relationship_types", ["serious"]),
         )

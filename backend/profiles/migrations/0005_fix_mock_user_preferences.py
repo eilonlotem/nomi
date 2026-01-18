@@ -3,7 +3,7 @@ from django.db import migrations
 
 
 def fix_mock_user_preferences(apps, schema_editor):
-    """Fix mock users that have empty gender preferences."""
+    """Fix all users that have incorrect or empty gender preferences."""
     Profile = apps.get_model('profiles', 'Profile')
     LookingFor = apps.get_model('profiles', 'LookingFor')
     
@@ -14,13 +14,35 @@ def fix_mock_user_preferences(apps, schema_editor):
         'nonbinary': ['men', 'women', 'nonbinary'],
     }
     
+    # Value mapping (fix incorrect values)
+    value_map = {'male': 'men', 'female': 'women'}
+    
+    # Fix ALL LookingFor records, not just mock users
+    for lf in LookingFor.objects.all():
+        changed = False
+        new_genders = []
+        
+        # Fix incorrect values (male->men, female->women)
+        for g in (lf.genders or []):
+            if g in value_map:
+                new_genders.append(value_map[g])
+                changed = True
+            else:
+                new_genders.append(g)
+        
+        # Fix empty preferences based on profile gender
+        if not new_genders:
+            profile_gender = lf.profile.gender
+            new_genders = gender_prefs.get(profile_gender, ['men', 'women'])
+            changed = True
+        
+        if changed:
+            lf.genders = new_genders
+            lf.save()
+    
+    # Create LookingFor for profiles that don't have one
     for profile in Profile.objects.filter(user__username__startswith='mock_'):
-        try:
-            lf = LookingFor.objects.get(profile=profile)
-            if not lf.genders:  # Empty genders list
-                lf.genders = gender_prefs.get(profile.gender, ['men', 'women'])
-                lf.save()
-        except LookingFor.DoesNotExist:
+        if not LookingFor.objects.filter(profile=profile).exists():
             LookingFor.objects.create(
                 profile=profile,
                 genders=gender_prefs.get(profile.gender, ['men', 'women']),

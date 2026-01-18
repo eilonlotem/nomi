@@ -4,6 +4,7 @@ Using StrEnum to ensure type safety and prevent typos.
 """
 from enum import Enum
 
+
 # Python 3.9 compatible StrEnum
 class StrEnum(str, Enum):
     """String enum that is compatible with Python 3.9+."""
@@ -20,35 +21,15 @@ class StrEnum(str, Enum):
 
 
 class Gender(StrEnum):
-    """Gender values for user profiles."""
+    """
+    Gender values used for both profile gender AND preferences.
+    Use the same values everywhere to avoid confusion.
+    """
     MALE = "male"
     FEMALE = "female"
     NONBINARY = "nonbinary"
     OTHER = "other"
-    PREFER_NOT_TO_SAY = "prefer_not_to_say"
-
-
-class GenderPreference(StrEnum):
-    """Gender preference values for what users are looking for."""
-    MEN = "men"
-    WOMEN = "women"
-    NONBINARY = "nonbinary"
-    EVERYONE = "everyone"
-
-    @classmethod
-    def from_gender(cls, gender: str) -> "GenderPreference":
-        """Convert a Gender value to the corresponding GenderPreference."""
-        mapping = {
-            Gender.MALE: cls.MEN,
-            Gender.FEMALE: cls.WOMEN,
-            Gender.NONBINARY: cls.NONBINARY,
-            Gender.OTHER: cls.NONBINARY,
-            "male": cls.MEN,      # Handle raw strings too
-            "female": cls.WOMEN,
-            "nonbinary": cls.NONBINARY,
-            "other": cls.NONBINARY,
-        }
-        return mapping.get(gender, cls.NONBINARY)
+    EVERYONE = "everyone"  # Only used in preferences (looking_for.genders)
 
 
 class Mood(StrEnum):

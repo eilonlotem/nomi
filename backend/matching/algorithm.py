@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Optional
 
 from django.db.models import Q, QuerySet
 
-from profiles.enums import Gender, GenderPreference, Mood
+from profiles.enums import Gender, Mood
 
 if TYPE_CHECKING:
     from profiles.models import LookingFor, Profile
@@ -623,26 +623,24 @@ class CandidateFilter:
         
         # Check if user wants to see this candidate's gender
         candidate_gender = candidate_profile.gender or ""
-        if user_prefs and GenderPreference.EVERYONE not in user_prefs:
+        if user_prefs and Gender.EVERYONE not in user_prefs:
             # If user has specific preferences, candidate must match
             if not candidate_gender:
                 # Candidate has no gender set - don't show to users with specific prefs
                 return False
-            # Use enum to map gender -> preference (avoids typos!)
-            candidate_category = GenderPreference.from_gender(candidate_gender)
-            if candidate_category not in user_prefs:
+            # Direct comparison - no conversion needed since we use same values
+            if candidate_gender not in user_prefs:
                 return False
         
         # Check if candidate wants to see the user's gender
         user_gender = user_profile.gender or ""
-        if candidate_prefs and GenderPreference.EVERYONE not in candidate_prefs:
+        if candidate_prefs and Gender.EVERYONE not in candidate_prefs:
             # If candidate has specific preferences, user must match
             if not user_gender:
                 # User has no gender set - don't match with candidates who have prefs
                 return False
-            # Use enum to map gender -> preference (avoids typos!)
-            user_category = GenderPreference.from_gender(user_gender)
-            if user_category not in candidate_prefs:
+            # Direct comparison - no conversion needed since we use same values
+            if user_gender not in candidate_prefs:
                 return False
         
         return True

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 
 from django.test import TestCase
 
-from profiles.enums import Gender, GenderPreference, Mood
+from profiles.enums import Gender, Mood
 from .algorithm import CandidateFilter, CompatibilityBreakdown, MatchingAlgorithm
 
 
@@ -56,35 +56,35 @@ class GenderFilterTests(TestCase):
         self.f = CandidateFilter()
 
     def test_woman_looking_for_men(self):
-        user = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[GenderPreference.MEN]))
-        male = MockProfile(gender=Gender.MALE, looking_for=MockLookingFor(genders=[GenderPreference.WOMEN]))
-        female = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[GenderPreference.MEN]))
+        user = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[Gender.MALE]))
+        male = MockProfile(gender=Gender.MALE, looking_for=MockLookingFor(genders=[Gender.FEMALE]))
+        female = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[Gender.MALE]))
         
         self.assertTrue(self.f._check_gender_preferences(user, male))
         self.assertFalse(self.f._check_gender_preferences(user, female))
 
     def test_man_looking_for_women(self):
-        user = MockProfile(gender=Gender.MALE, looking_for=MockLookingFor(genders=[GenderPreference.WOMEN]))
-        female = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[GenderPreference.MEN]))
-        male = MockProfile(gender=Gender.MALE, looking_for=MockLookingFor(genders=[GenderPreference.WOMEN]))
+        user = MockProfile(gender=Gender.MALE, looking_for=MockLookingFor(genders=[Gender.FEMALE]))
+        female = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[Gender.MALE]))
+        male = MockProfile(gender=Gender.MALE, looking_for=MockLookingFor(genders=[Gender.FEMALE]))
         
         self.assertTrue(self.f._check_gender_preferences(user, female))
         self.assertFalse(self.f._check_gender_preferences(user, male))
 
     def test_mutual_preference_required(self):
-        woman = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[GenderPreference.MEN]))
-        gay_man = MockProfile(gender=Gender.MALE, looking_for=MockLookingFor(genders=[GenderPreference.MEN]))
+        woman = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[Gender.MALE]))
+        gay_man = MockProfile(gender=Gender.MALE, looking_for=MockLookingFor(genders=[Gender.MALE]))
         self.assertFalse(self.f._check_gender_preferences(woman, gay_man))
 
     def test_everyone_matches_all(self):
-        user = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[GenderPreference.EVERYONE]))
+        user = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[Gender.EVERYONE]))
         for g in [Gender.MALE, Gender.FEMALE, Gender.NONBINARY]:
-            cand = MockProfile(gender=g, looking_for=MockLookingFor(genders=[GenderPreference.EVERYONE]))
+            cand = MockProfile(gender=g, looking_for=MockLookingFor(genders=[Gender.EVERYONE]))
             self.assertTrue(self.f._check_gender_preferences(user, cand))
 
     def test_no_gender_filtered(self):
-        user = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[GenderPreference.MEN]))
-        no_gender = MockProfile(gender="", looking_for=MockLookingFor(genders=[GenderPreference.WOMEN]))
+        user = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[Gender.MALE]))
+        no_gender = MockProfile(gender="", looking_for=MockLookingFor(genders=[Gender.FEMALE]))
         self.assertFalse(self.f._check_gender_preferences(user, no_gender))
 
     def test_empty_prefs_matches_all(self):
@@ -142,15 +142,15 @@ class FullFilterTests(TestCase):
     def test_perfect_match(self):
         user = MockProfile(gender=Gender.FEMALE, dob=dob(28), 
                           lat=Decimal("32.08"), lng=Decimal("34.78"),
-                          looking_for=MockLookingFor(genders=[GenderPreference.MEN], min_age=25, max_age=35))
+                          looking_for=MockLookingFor(genders=[Gender.MALE], min_age=25, max_age=35))
         cand = MockProfile(gender=Gender.MALE, dob=dob(30),
                           lat=Decimal("32.16"), lng=Decimal("34.84"),
-                          looking_for=MockLookingFor(genders=[GenderPreference.WOMEN], min_age=25, max_age=35))
+                          looking_for=MockLookingFor(genders=[Gender.FEMALE], min_age=25, max_age=35))
         self.assertTrue(self.f.is_relevant(user, cand))
 
     def test_gender_mismatch(self):
-        user = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[GenderPreference.MEN]))
-        cand = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[GenderPreference.WOMEN]))
+        user = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[Gender.MALE]))
+        cand = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[Gender.FEMALE]))
         self.assertFalse(self.f.is_relevant(user, cand))
 
 

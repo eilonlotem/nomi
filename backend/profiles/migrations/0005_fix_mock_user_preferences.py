@@ -3,26 +3,31 @@ from django.db import migrations
 
 
 def fix_mock_user_preferences(apps, schema_editor):
-    """Fix all users that have incorrect or empty gender preferences."""
+    """Fix all users that have incorrect or empty gender preferences.
+    
+    We now use unified values: male/female/nonbinary for both profile.gender
+    and looking_for.genders. This migration converts any old 'men'/'women' 
+    values to 'male'/'female'.
+    """
     Profile = apps.get_model('profiles', 'Profile')
     LookingFor = apps.get_model('profiles', 'LookingFor')
     
-    # Gender mapping for what each gender typically looks for
+    # Gender mapping for what each gender typically looks for (using unified values)
     gender_prefs = {
-        'male': ['women'],
-        'female': ['men'],
-        'nonbinary': ['men', 'women', 'nonbinary'],
+        'male': ['female'],
+        'female': ['male'],
+        'nonbinary': ['male', 'female', 'nonbinary'],
     }
     
-    # Value mapping (fix incorrect values)
-    value_map = {'male': 'men', 'female': 'women'}
+    # Value mapping (fix old men/women values to unified male/female)
+    value_map = {'men': 'male', 'women': 'female'}
     
-    # Fix ALL LookingFor records, not just mock users
+    # Fix ALL LookingFor records
     for lf in LookingFor.objects.all():
         changed = False
         new_genders = []
         
-        # Fix incorrect values (male->men, female->women)
+        # Fix old values (men->male, women->female)
         for g in (lf.genders or []):
             if g in value_map:
                 new_genders.append(value_map[g])
@@ -33,7 +38,7 @@ def fix_mock_user_preferences(apps, schema_editor):
         # Fix empty preferences based on profile gender
         if not new_genders:
             profile_gender = lf.profile.gender
-            new_genders = gender_prefs.get(profile_gender, ['men', 'women'])
+            new_genders = gender_prefs.get(profile_gender, ['male', 'female'])
             changed = True
         
         if changed:
@@ -45,7 +50,7 @@ def fix_mock_user_preferences(apps, schema_editor):
         if not LookingFor.objects.filter(profile=profile).exists():
             LookingFor.objects.create(
                 profile=profile,
-                genders=gender_prefs.get(profile.gender, ['men', 'women']),
+                genders=gender_prefs.get(profile.gender, ['male', 'female']),
                 min_age=18,
                 max_age=50,
                 max_distance=100,

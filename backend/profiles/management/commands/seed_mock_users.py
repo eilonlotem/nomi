@@ -586,9 +586,11 @@ class Command(BaseCommand):
         """
         username = user_data["username"]
         
-        # Check if user exists - if so, skip entirely (don't update)
-        if User.objects.filter(username=username).exists():
-            self.stdout.write(f"  ⏭️  Exists: {username} (manage via admin)")
+        # Check if user exists - if so, ensure they have photos
+        existing_user = User.objects.filter(username=username).first()
+        if existing_user:
+            # Ensure existing user has photos
+            self._ensure_photos(existing_user, user_data)
             return False
         
         # Create new user
@@ -618,20 +620,9 @@ class Command(BaseCommand):
 
     def _create_profile(self, user: Any, user_data: dict[str, Any]) -> None:
         """Create the initial profile for a new mock user."""
-        static_prefix = f"/{settings.STATIC_URL.strip('/')}"
-        local_photo_base = f"{static_prefix}/mock_profiles/{user.username}"
-
-        # Use locally stored mock images (generated via OpenAI) if available
-        if user_data.get("use_local_images", True):
-            user_data = {
-                **user_data,
-                "picture_url": f"{local_photo_base}/1.png",
-                "additional_photos": [
-                    f"{local_photo_base}/2.png",
-                    f"{local_photo_base}/3.png",
-                ],
-            }
-
+        # Use the Unsplash URLs directly from user_data
+        # (Local image generation via OpenAI is optional - set use_local_images=True if images exist)
+        
         profile = Profile.objects.create(
             user=user,
             display_name=user_data.get("display_name", user_data["first_name"]),
@@ -700,3 +691,35 @@ class Command(BaseCommand):
                 is_primary=False,
                 order=i,
             )
+
+    def _ensure_photos(self, user: Any, user_data: dict[str, Any]) -> None:
+        """Ensure existing mock user has photos created."""
+        if not hasattr(user, "profile"):
+            return
+        
+        profile = user.profile
+        
+        # Check if profile already has photos
+        if profile.photos.exists():
+            return
+        
+        # Create primary photo from picture_url
+        picture_url = user_data.get("picture_url")
+        if picture_url:
+            ProfilePhoto.objects.create(
+                profile=profile,
+                url=picture_url,
+                is_primary=True,
+                order=0,
+            )
+        
+        # Additional photos
+        for i, photo_url in enumerate(user_data.get("additional_photos", []), start=1):
+            ProfilePhoto.objects.create(
+                profile=profile,
+                url=photo_url,
+                is_primary=False,
+                order=i,
+            )
+        
+        self.stdout.write(f"  📷 Added photos: {user.username}")

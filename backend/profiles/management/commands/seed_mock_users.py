@@ -15,7 +15,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework.authtoken.models import Token
 
-from profiles.models import Profile, DisabilityTag, Interest, LookingFor
+from profiles.models import Profile, ProfilePhoto, DisabilityTag, Interest, LookingFor
 
 
 User = get_user_model()
@@ -41,7 +41,11 @@ MOCK_USERS: list[dict[str, Any]] = [
         "mood": "open",
         "prompt_id": "laughMost",
         "prompt_answer": "When my cat judges my life choices from across the room",
-        "picture_url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop",
+        "picture_url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=600&fit=crop",
+        "additional_photos": [
+            "https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?w=400&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=400&h=600&fit=crop",
+        ],
         "city": "Tel Aviv",
         "looking_for_genders": ["male", "nonbinary"],
         "relationship_types": ["serious", "casual"],
@@ -142,7 +146,11 @@ MOCK_USERS: list[dict[str, Any]] = [
         "mood": "open",
         "prompt_id": "perfectSunday",
         "prompt_answer": "Slow morning with Turkish coffee, a good book, and an afternoon beach walk",
-        "picture_url": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=500&fit=crop",
+        "picture_url": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=600&fit=crop",
+        "additional_photos": [
+            "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=400&h=600&fit=crop",
+        ],
         "city": "Rishon LeZion",
         "looking_for_genders": ["male"],
         "relationship_types": ["serious"],
@@ -167,7 +175,11 @@ MOCK_USERS: list[dict[str, Any]] = [
         "mood": "chatty",
         "prompt_id": "convinced",
         "prompt_answer": "The best meals are the ones shared with someone special",
-        "picture_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=500&fit=crop",
+        "picture_url": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=600&fit=crop",
+        "additional_photos": [
+            "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=600&fit=crop",
+            "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=600&fit=crop",
+        ],
         "city": "Tel Aviv",
         "looking_for_genders": ["female"],
         "relationship_types": ["serious", "casual"],
@@ -653,3 +665,22 @@ class Command(BaseCommand):
             genders=genders,
             relationship_types=user_data.get("relationship_types", ["serious"]),
         )
+        
+        # Create profile photos
+        # Primary photo from picture_url
+        if user_data.get("picture_url"):
+            ProfilePhoto.objects.create(
+                profile=profile,
+                url=user_data["picture_url"],
+                is_primary=True,
+                order=0,
+            )
+        
+        # Additional photos
+        for i, photo_url in enumerate(user_data.get("additional_photos", []), start=1):
+            ProfilePhoto.objects.create(
+                profile=profile,
+                url=photo_url,
+                is_primary=False,
+                order=i,
+            )

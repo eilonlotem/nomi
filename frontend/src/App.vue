@@ -219,17 +219,23 @@ const getAllPhotos = (profile) => {
   
   const photos = []
   
-  // Add main photo (from picture_url or primary photo)
-  if (profile.photo) {
-    photos.push(profile.photo)
-  }
-  
-  // Add uploaded photos (excluding primary if already added via picture_url)
+  // First, add all uploaded photos from the photos array
   const uploadedPhotos = profile.photos || []
   for (const photo of uploadedPhotos) {
     const url = photo.image || photo.url
     if (url && !photos.includes(url)) {
       photos.push(url)
+    }
+  }
+  
+  // If no photos yet, add main photo (from picture_url or primary photo)
+  if (photos.length === 0) {
+    if (profile.photo) {
+      photos.push(profile.photo)
+    } else if (profile.picture_url) {
+      photos.push(profile.picture_url)
+    } else if (profile.primary_photo?.url || profile.primary_photo?.image) {
+      photos.push(profile.primary_photo.url || profile.primary_photo.image)
     }
   }
   
@@ -3556,8 +3562,8 @@ const constellationPoints = computed(() => {
         @click.self="closeProfileView"
       >
         <div class="bg-surface rounded-3xl max-w-md w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-scale-in">
-          <!-- Photo Section -->
-          <div class="relative h-48 xs:h-56 overflow-hidden flex-shrink-0">
+          <!-- Photo Section - Full image display -->
+          <div class="relative overflow-hidden flex-shrink-0 bg-black">
             <!-- Photo indicators -->
             <div 
               v-if="getAllPhotos(viewingProfile).length > 1"
@@ -3590,7 +3596,7 @@ const constellationPoints = computed(() => {
             <img 
               :src="getAllPhotos(viewingProfile)[viewingProfilePhotoIndex] || viewingProfile.photo || viewingProfile.picture_url" 
               :alt="viewingProfile.name || viewingProfile.display_name"
-              class="w-full h-full object-cover"
+              class="w-full max-h-[60vh] object-contain"
             />
             
             <!-- Close button -->

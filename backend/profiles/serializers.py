@@ -38,7 +38,7 @@ class ProfilePhotoSerializer(serializers.ModelSerializer):  # type: ignore[type-
 
     class Meta:
         model = ProfilePhoto
-        fields: list[str] = ["id", "image", "is_primary", "order", "uploaded_at"]
+        fields: list[str] = ["id", "image", "url", "is_primary", "order", "uploaded_at"]
         read_only_fields: list[str] = ["id", "uploaded_at"]
 
 
@@ -182,6 +182,7 @@ class ProfileCardSerializer(serializers.ModelSerializer):  # type: ignore[type-a
 
     disability_tags = DisabilityTagSerializer(many=True, read_only=True)
     interests = InterestSerializer(many=True, read_only=True)
+    photos = ProfilePhotoSerializer(many=True, read_only=True)
     primary_photo = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
     user_id = serializers.IntegerField(source="user.id", read_only=True)
@@ -208,6 +209,7 @@ class ProfileCardSerializer(serializers.ModelSerializer):  # type: ignore[type-a
             "preferred_times",
             "response_pace",
             "date_pace",
+            "photos",
             "primary_photo",
             "age",
         ]

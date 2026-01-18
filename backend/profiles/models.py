@@ -185,7 +185,9 @@ class ProfilePhoto(models.Model):
         on_delete=models.CASCADE,
         related_name="photos",
     )
-    image = models.ImageField(upload_to="profile_photos/")
+    image = models.ImageField(upload_to="profile_photos/", blank=True)
+    # URL field for external images (e.g., from Unsplash for mock data)
+    url = models.URLField(max_length=500, blank=True)
     is_primary = models.BooleanField(default=False)
     order = models.PositiveIntegerField(default=0)
     uploaded_at = models.DateTimeField(auto_now_add=True)

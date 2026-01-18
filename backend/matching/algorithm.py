@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING, Optional
 
 from django.db.models import Q, QuerySet
 
+from profiles.enums import Gender, GenderPreference, Mood
+
 if TYPE_CHECKING:
     from profiles.models import LookingFor, Profile
     from users.models import User
@@ -410,28 +412,28 @@ class MatchingAlgorithm:
             breakdown.mood_compatibility_score = 50.0
             return
         
-        # Mood compatibility matrix
+        # Mood compatibility matrix using enums
         # Higher scores for complementary or matching moods
         mood_compatibility = {
-            ("lowEnergy", "lowEnergy"): 90,    # Both low energy - understanding
-            ("lowEnergy", "open"): 70,         # Low + open works
-            ("lowEnergy", "chatty"): 40,       # Mismatch
-            ("lowEnergy", "adventurous"): 30,  # Significant mismatch
+            (Mood.LOW_ENERGY, Mood.LOW_ENERGY): 90,    # Both low energy - understanding
+            (Mood.LOW_ENERGY, Mood.OPEN): 70,          # Low + open works
+            (Mood.LOW_ENERGY, Mood.CHATTY): 40,        # Mismatch
+            (Mood.LOW_ENERGY, Mood.ADVENTUROUS): 30,   # Significant mismatch
             
-            ("open", "lowEnergy"): 70,
-            ("open", "open"): 85,
-            ("open", "chatty"): 90,
-            ("open", "adventurous"): 80,
+            (Mood.OPEN, Mood.LOW_ENERGY): 70,
+            (Mood.OPEN, Mood.OPEN): 85,
+            (Mood.OPEN, Mood.CHATTY): 90,
+            (Mood.OPEN, Mood.ADVENTUROUS): 80,
             
-            ("chatty", "lowEnergy"): 40,
-            ("chatty", "open"): 90,
-            ("chatty", "chatty"): 95,
-            ("chatty", "adventurous"): 85,
+            (Mood.CHATTY, Mood.LOW_ENERGY): 40,
+            (Mood.CHATTY, Mood.OPEN): 90,
+            (Mood.CHATTY, Mood.CHATTY): 95,
+            (Mood.CHATTY, Mood.ADVENTUROUS): 85,
             
-            ("adventurous", "lowEnergy"): 30,
-            ("adventurous", "open"): 80,
-            ("adventurous", "chatty"): 85,
-            ("adventurous", "adventurous"): 100,
+            (Mood.ADVENTUROUS, Mood.LOW_ENERGY): 30,
+            (Mood.ADVENTUROUS, Mood.OPEN): 80,
+            (Mood.ADVENTUROUS, Mood.CHATTY): 85,
+            (Mood.ADVENTUROUS, Mood.ADVENTUROUS): 100,
         }
         
         score = mood_compatibility.get((user_mood, candidate_mood), 50)
@@ -619,34 +621,28 @@ class CandidateFilter:
         except Exception:
             pass
         
-        # Gender mapping: profile gender -> preference category
-        gender_mapping = {
-            "male": "men",
-            "female": "women",
-            "nonbinary": "nonbinary",
-            "other": "nonbinary",
-        }
-        
         # Check if user wants to see this candidate's gender
         candidate_gender = candidate_profile.gender or ""
-        if user_prefs and "everyone" not in user_prefs:
+        if user_prefs and GenderPreference.EVERYONE not in user_prefs:
             # If user has specific preferences, candidate must match
             if not candidate_gender:
                 # Candidate has no gender set - don't show to users with specific prefs
                 return False
-            candidate_category = gender_mapping.get(candidate_gender)
-            if not candidate_category or candidate_category not in user_prefs:
+            # Use enum to map gender -> preference (avoids typos!)
+            candidate_category = GenderPreference.from_gender(candidate_gender)
+            if candidate_category not in user_prefs:
                 return False
         
         # Check if candidate wants to see the user's gender
         user_gender = user_profile.gender or ""
-        if candidate_prefs and "everyone" not in candidate_prefs:
+        if candidate_prefs and GenderPreference.EVERYONE not in candidate_prefs:
             # If candidate has specific preferences, user must match
             if not user_gender:
                 # User has no gender set - don't match with candidates who have prefs
                 return False
-            user_category = gender_mapping.get(user_gender)
-            if not user_category or user_category not in candidate_prefs:
+            # Use enum to map gender -> preference (avoids typos!)
+            user_category = GenderPreference.from_gender(user_gender)
+            if user_category not in candidate_prefs:
                 return False
         
         return True

@@ -641,10 +641,10 @@ class Command(BaseCommand):
             profile.interests.add(interest)
         
         # Create looking for preferences
-        # Map gender values to preference values (male->men, female->women)
-        raw_genders = user_data.get("looking_for_genders", ["men", "women"])
-        gender_map = {"male": "men", "female": "women"}
-        genders = [gender_map.get(g, g) for g in raw_genders]
+        # Use GenderPreference enum to ensure correct values
+        from profiles.enums import GenderPreference
+        raw_genders = user_data.get("looking_for_genders", [GenderPreference.MEN, GenderPreference.WOMEN])
+        genders = [GenderPreference.from_gender(g) if g in ("male", "female") else g for g in raw_genders]
         
         LookingFor.objects.create(
             profile=profile,

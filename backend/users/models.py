@@ -43,7 +43,7 @@ class User(AbstractUser):
     preferred_language = models.CharField(
         max_length=5,
         choices=LANGUAGE_CHOICES,
-        default="en",
+        default="he",  # Hebrew is the default language
     )
 
     # Account status

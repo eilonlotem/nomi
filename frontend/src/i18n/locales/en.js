@@ -191,6 +191,8 @@ export default {
     cleanupConfirm: 'This will delete all your matches, messages, and swipes. Are you sure?',
     cleanupSuccess: 'All matches and chats cleared successfully!',
     cleanupError: 'Failed to clear data. Please try again.',
+    noPhoto: 'No photo',
+    unknownUser: 'User',
   },
   
   // Looking For
@@ -267,5 +269,14 @@ export default {
     orContinueWith: 'or continue with',
     loginWithFacebook: 'Continue with Facebook',
     loginWithInstagram: 'Continue with Instagram',
+    connecting: 'Connecting...',
+    readyToFind: 'Ready to find your person?',
+    inclusive: '100% Inclusive',
+    termsText: 'By continuing, you agree to our',
+    terms: 'Terms',
+    and: 'and',
+    privacyPolicy: 'Privacy Policy',
+    devMode: 'Dev Mode (Mock Login)',
+    aboutUs: 'About Us',
   },
 }

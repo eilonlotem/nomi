@@ -190,6 +190,8 @@ export default {
     cleanupConfirm: 'פעולה זו תמחק את כל ההתאמות, ההודעות והסוויפים שלך. האם אתה בטוח?',
     cleanupSuccess: 'כל ההתאמות והצ\'אטים נוקו בהצלחה!',
     cleanupError: 'ניקוי נכשל. נסה שוב.',
+    noPhoto: 'אין תמונה',
+    unknownUser: 'משתמש',
   },
   
   // Looking For
@@ -266,5 +268,14 @@ export default {
     orContinueWith: 'או המשך עם',
     loginWithFacebook: 'המשך עם פייסבוק',
     loginWithInstagram: 'המשך עם אינסטגרם',
+    connecting: 'מתחבר...',
+    readyToFind: 'מוכנים למצוא את האדם שלכם?',
+    inclusive: '100% הכלה',
+    termsText: 'בהמשך, את/ה מסכים/ה ל',
+    terms: 'תנאי השימוש',
+    and: 'ו',
+    privacyPolicy: 'מדיניות הפרטיות',
+    devMode: 'מצב פיתוח (התחברות מדומה)',
+    aboutUs: 'עלינו',
   },
 }

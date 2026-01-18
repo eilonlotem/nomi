@@ -142,6 +142,8 @@ export default {
     cleanupConfirm: 'سيؤدي هذا إلى حذف جميع التطابقات والرسائل والتمريرات. هل أنت متأكد؟',
     cleanupSuccess: 'تم مسح جميع التطابقات والمحادثات بنجاح!',
     cleanupError: 'فشل في مسح البيانات. يرجى المحاولة مرة أخرى.',
+    noPhoto: 'لا توجد صورة',
+    unknownUser: 'مستخدم',
   },
   
   // Looking For

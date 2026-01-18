@@ -484,6 +484,7 @@ const handleDisconnect = async () => {
 // View profile overlay state
 const viewingProfile = ref(null)
 const viewingProfilePhotoIndex = ref(0)
+const viewingProfileImageError = ref(false)
 const viewingProfileData = computed(() => {
   const profile = viewingProfile.value
   if (!profile) return null
@@ -507,6 +508,7 @@ const viewingProfileData = computed(() => {
 const openProfileView = (profile) => {
   viewingProfile.value = profile
   viewingProfilePhotoIndex.value = 0
+  viewingProfileImageError.value = false
 }
 
 // Close profile view
@@ -1696,7 +1698,7 @@ const constellationPoints = computed(() => {
           <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center animate-pulse">
             <span class="text-3xl">💜</span>
           </div>
-          <p class="text-text-muted text-lg font-medium">Loading...</p>
+          <p class="text-text-muted text-lg font-medium">{{ t('auth.connecting') }}</p>
         </div>
       </div>
     </Transition>
@@ -1819,14 +1821,14 @@ const constellationPoints = computed(() => {
         
         <!-- Distinctive Typography -->
         <h1 class="font-display text-6xl xs:text-7xl font-semibold text-gradient mb-2 tracking-tight">
-          nomi
+          {{ t('appName') }}
         </h1>
-        <p class="text-lg xs:text-xl text-text-deep font-medium mb-1">Find Your Connection</p>
+        <p class="text-lg xs:text-xl text-text-deep font-medium mb-1">{{ t('tagline') }}</p>
         
         <!-- Warm tagline with hand-drawn feel -->
         <p class="text-sm xs:text-base text-text-muted mb-12 xs:mb-14 flex items-center justify-center gap-2">
           <span class="inline-block animate-wiggle" style="animation-delay: 0s;">✿</span>
-          <span class="italic">Because everyone deserves love</span>
+          <span class="italic">{{ t('motto') }}</span>
           <span class="inline-block animate-wiggle" style="animation-delay: 0.2s;">✿</span>
         </p>
 
@@ -1834,21 +1836,21 @@ const constellationPoints = computed(() => {
         <div class="mb-10 xs:mb-12 grid grid-cols-3 gap-3 animate-slide-up stagger-1">
           <div class="bg-surface-warm p-4 rounded-[20px] shadow-soft">
             <p class="text-2xl xs:text-3xl font-display font-bold text-primary">12K+</p>
-            <p class="text-[11px] xs:text-xs text-text-muted mt-1">Members</p>
+            <p class="text-[11px] xs:text-xs text-text-muted mt-1">{{ t('stats.members') }}</p>
           </div>
           <div class="bg-surface-warm p-4 rounded-[20px] shadow-soft">
             <p class="text-2xl xs:text-3xl font-display font-bold text-secondary">3.2K</p>
-            <p class="text-[11px] xs:text-xs text-text-muted mt-1">Matches</p>
+            <p class="text-[11px] xs:text-xs text-text-muted mt-1">{{ t('stats.connections') }}</p>
           </div>
           <div class="bg-surface-warm p-4 rounded-[20px] shadow-soft">
             <p class="text-2xl xs:text-3xl font-display font-bold text-accent-dark">89%</p>
-            <p class="text-[11px] xs:text-xs text-text-muted mt-1">Happy</p>
+            <p class="text-[11px] xs:text-xs text-text-muted mt-1">{{ t('stats.happy') }}</p>
           </div>
         </div>
         
         <!-- Login prompt -->
         <p class="text-sm xs:text-base text-text-muted mb-6 animate-slide-up stagger-2 font-medium">
-          Ready to find your person?
+          {{ t('auth.readyToFind') }}
         </p>
 
         <!-- Error Message -->
@@ -1859,7 +1861,7 @@ const constellationPoints = computed(() => {
           {{ loginError }}
         </div>
 
-        <!-- Social Login Buttons with unique styling -->
+        <!-- Social Login Button -->
         <div class="flex flex-col gap-4 animate-slide-up stagger-3">
           <!-- Facebook -->
           <button
@@ -1877,44 +1879,37 @@ const constellationPoints = computed(() => {
             <svg v-else class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
             </svg>
-            <span>{{ authLoading ? 'Connecting...' : 'Continue with Facebook' }}</span>
-          </button>
-
-          <!-- Instagram -->
-          <button
-            @click="handleSocialLogin('instagram')"
-            :disabled="authLoading"
-            class="group relative flex items-center justify-center gap-3 w-full py-5 bg-gradient-to-r from-[#F77737] via-[#E1306C] to-[#833AB4] text-white rounded-[20px] font-semibold shadow-soft overflow-hidden touch-manipulation active:scale-[0.98] transition-all duration-300 text-base xs:text-lg disabled:opacity-60 disabled:cursor-not-allowed"
-            aria-label="Continue with Instagram"
-          >
-            <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-            </svg>
-            <span>Continue with Instagram</span>
+            <span>{{ authLoading ? t('auth.connecting') : t('auth.loginWithFacebook') }}</span>
           </button>
         </div>
 
         <!-- Dev mode indicator -->
         <div v-if="!hasFacebookConfig" class="mt-4 text-center">
           <span class="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-xs font-medium">
-            <span>⚠️</span> Dev Mode (Mock Login)
+            <span>⚠️</span> {{ t('auth.devMode') }}
           </span>
         </div>
 
         <!-- Organic divider -->
         <div class="my-8 flex items-center gap-4 animate-slide-up stagger-4">
           <div class="flex-1 h-[2px] bg-gradient-to-r from-transparent via-border to-transparent"></div>
-          <span class="text-text-light text-xs font-medium">100% Inclusive</span>
+          <span class="text-text-light text-xs font-medium">{{ t('auth.inclusive') }}</span>
           <div class="flex-1 h-[2px] bg-gradient-to-r from-transparent via-border to-transparent"></div>
         </div>
 
         <!-- Terms with warm styling -->
         <p class="text-xs xs:text-sm text-text-muted animate-slide-up stagger-5 leading-relaxed">
-          By continuing, you agree to our 
-          <a href="#" class="text-primary font-medium hover:underline">Terms</a> 
-          and 
-          <a href="#" class="text-primary font-medium hover:underline">Privacy Policy</a>
+          {{ t('auth.termsText') }}
+          <a href="/terms.html" target="_blank" class="text-primary font-medium hover:underline">{{ t('auth.terms') }}</a> 
+          {{ t('auth.and') }}
+          <a href="/privacy.html" target="_blank" class="text-primary font-medium hover:underline">{{ t('auth.privacyPolicy') }}</a>
+        </p>
+        
+        <!-- About Us link -->
+        <p class="mt-4 animate-slide-up stagger-5">
+          <a href="/about.html" target="_blank" class="text-primary font-medium hover:underline text-sm">
+            {{ t('auth.aboutUs') }} →
+          </a>
         </p>
       </div>
     </div>
@@ -3116,14 +3111,18 @@ const constellationPoints = computed(() => {
               <!-- Main/Primary Photo -->
               <div 
                 v-if="getPrimaryPhotoUrl()"
-                class="relative aspect-[3/4] rounded-xl overflow-hidden ring-2 ring-primary"
+                class="relative aspect-[3/4] rounded-xl overflow-hidden ring-2 ring-primary bg-gradient-to-br from-primary/20 to-accent/20"
               >
                 <img 
                   :src="getPrimaryPhotoUrl()" 
                   alt="Primary Photo"
                   class="w-full h-full object-cover"
+                  @error="$event.target.style.opacity = '0'"
                 />
-                <div class="absolute top-1 start-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium">
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span class="text-4xl opacity-30">👤</span>
+                </div>
+                <div class="absolute top-1 start-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium z-10">
                   {{ t('profile.main') }}
                 </div>
               </div>
@@ -3132,13 +3131,17 @@ const constellationPoints = computed(() => {
               <div 
                 v-for="(photo, index) in userProfile.photos.filter(p => !p.is_primary)"
                 :key="photo.id"
-                class="relative aspect-[3/4] rounded-xl overflow-hidden bg-surface border border-border group"
+                class="relative aspect-[3/4] rounded-xl overflow-hidden bg-gradient-to-br from-primary/10 to-accent/10 border border-border group"
               >
                 <img 
                   :src="getPhotoUrl(photo)" 
                   :alt="`Photo ${index + 2}`"
                   class="w-full h-full object-cover"
+                  @error="$event.target.style.opacity = '0'"
                 />
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span class="text-3xl opacity-30">📷</span>
+                </div>
                 <!-- Photo actions overlay -->
                 <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                   <button 
@@ -3675,11 +3678,24 @@ const constellationPoints = computed(() => {
               ></div>
             </div>
             
+            <!-- Profile Photo -->
             <img 
+              v-if="!viewingProfileImageError && (getAllPhotos(viewingProfileData.raw).length > 0 || viewingProfileData.raw.photo || viewingProfileData.raw.picture_url)"
               :src="getAllPhotos(viewingProfileData.raw)[viewingProfilePhotoIndex] || getPhotoUrl(viewingProfileData.raw.photo || viewingProfileData.raw.picture_url)" 
               :alt="viewingProfileData.name"
               class="w-full h-full object-contain"
+              @error="viewingProfileImageError = true"
             />
+            <!-- Placeholder when no photo or image error -->
+            <div 
+              v-else
+              class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/30 to-accent/30"
+            >
+              <div class="text-center">
+                <span class="text-7xl block mb-3 opacity-80">👤</span>
+                <span class="text-white/70 text-sm font-medium">{{ t('profile.noPhoto') || 'No photo' }}</span>
+              </div>
+            </div>
             
             <!-- Close button -->
             <button 
@@ -3695,7 +3711,7 @@ const constellationPoints = computed(() => {
             <!-- Name & Age -->
             <div class="absolute bottom-4 inset-x-4 text-white z-10">
               <h2 class="text-2xl font-bold">
-                {{ viewingProfileData.name }}
+                {{ viewingProfileData.name || t('profile.unknownUser') || 'User' }}
                 <span v-if="viewingProfileData.age" class="font-normal text-white/80">, {{ viewingProfileData.age }}</span>
               </h2>
               <p v-if="viewingProfileData.city" class="text-white/70 text-sm flex items-center gap-1 mt-1">

@@ -142,6 +142,8 @@ export default {
     cleanupConfirm: 'Esto eliminará todos tus matches, mensajes y swipes. ¿Estás seguro?',
     cleanupSuccess: '¡Todos los matches y chats borrados correctamente!',
     cleanupError: 'Error al borrar datos. Inténtalo de nuevo.',
+    noPhoto: 'Sin foto',
+    unknownUser: 'Usuario',
   },
   
   // Looking For

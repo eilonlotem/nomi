@@ -134,20 +134,34 @@ const handleFacebookCallback = async () => {
 
     // Send authorization code to backend
     const redirectUri = window.location.origin + '/auth/facebook/callback'
-    const backendResponse = await fetch(`${API_URL}/auth/facebook/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        code: code,
-        redirect_uri: redirectUri,
-      }),
-    })
+    console.log('Sending auth code to backend:', API_URL + '/auth/facebook/')
+    
+    let backendResponse
+    try {
+      backendResponse = await fetch(`${API_URL}/auth/facebook/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: code,
+          redirect_uri: redirectUri,
+        }),
+      })
+    } catch (fetchError) {
+      console.error('Network error during auth:', fetchError)
+      throw new Error(`Network error: Could not connect to server. Please try again.`)
+    }
 
     if (!backendResponse.ok) {
-      const errorData = await backendResponse.json()
-      throw new Error(errorData.error || 'Backend authentication failed')
+      let errorMessage = 'Backend authentication failed'
+      try {
+        const errorData = await backendResponse.json()
+        errorMessage = errorData.error || errorData.detail || errorMessage
+      } catch (e) {
+        errorMessage = `Server error (${backendResponse.status})`
+      }
+      throw new Error(errorMessage)
     }
 
     const data = await backendResponse.json()

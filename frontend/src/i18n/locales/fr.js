@@ -142,6 +142,8 @@ export default {
     cleanupConfirm: 'Cela supprimera tous vos matchs, messages et swipes. Êtes-vous sûr?',
     cleanupSuccess: 'Tous les matchs et discussions effacés avec succès!',
     cleanupError: 'Échec de la suppression. Veuillez réessayer.',
+    noPhoto: 'Pas de photo',
+    unknownUser: 'Utilisateur',
   },
   
   // Looking For

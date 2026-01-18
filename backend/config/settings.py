@@ -188,11 +188,24 @@ REST_FRAMEWORK: dict[str, Any] = {
 
 
 # CORS Settings
-CORS_ALLOWED_ORIGINS: list[str] = os.getenv(
-    "CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173"
-).split(",")
+# Default includes localhost for development and production frontend URLs
+_default_origins = "http://localhost:5173,http://127.0.0.1:5173,https://frontend-ylalo.vercel.app"
+CORS_ALLOWED_ORIGINS: list[str] = os.getenv("CORS_ALLOWED_ORIGINS", _default_origins).split(",")
 
 CORS_ALLOW_CREDENTIALS: bool = True
+
+# Allow all headers for preflight requests
+CORS_ALLOW_HEADERS: list[str] = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 
 # For development - allow all origins
 if DEBUG:

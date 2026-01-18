@@ -1,0 +1,77 @@
+# Nomi Project Rules
+
+You are working on **Nomi**, an inclusive dating app for people with disabilities.
+
+## Required Reading
+**IMPORTANT**: Before making any changes to this codebase, you MUST read the following files:
+- `PRODUCT_REQUIREMENTS.md` - Full product specification, features, and requirements
+- `README.md` - Project structure, setup, and technical overview
+
+Use the read_file tool to load these documents at the start of any task involving new features, bug fixes, or architectural decisions.
+
+## Core Principles
+
+### 1. Accessibility First
+- All UI components MUST have proper ARIA labels
+- Touch targets must be at least 44x44px
+- Support reduced motion preferences
+- Ensure high contrast ratios (WCAG AA minimum)
+- Test with screen readers in mind
+
+### 2. RTL Support
+- Hebrew (he) and Arabic (ar) require RTL layout
+- Use logical CSS properties (start/end instead of left/right)
+- Test UI in both LTR and RTL modes
+- Use `dir="rtl"` attribute appropriately
+
+### 3. Internationalization
+- All user-facing text must be translatable
+- Support 5 languages: English, Hebrew, Spanish, French, Arabic
+- Use i18n keys, never hardcode user-facing strings
+- DisabilityTag names are stored per-language (name_en, name_he, etc.)
+
+### 4. Disability-Inclusive Design
+- Never use ableist language in code or UI
+- Disability tags are for self-identification and celebration
+- "Ask Me About It" prompts celebrate disability experiences
+- Mood/energy settings acknowledge variable capacity
+
+## Technical Standards
+
+### Frontend (Vue 3 + Tailwind)
+- Use Composition API with `<script setup>`
+- Use composables from `src/composables/` for API calls
+- Follow existing component patterns in App.vue
+- Mobile-first responsive design
+
+### Backend (Django REST Framework)
+- Follow existing model patterns in profiles/models.py and matching/models.py
+- Use type hints (see py.typed marker)
+- Serializers in *_serializers.py files
+- Views in *_views.py files
+
+### Matching Algorithm
+When modifying the matching algorithm (`matching/algorithm.py`):
+- Preserve the weighted scoring system
+- Shared disability tags have highest weight (20%)
+- Always calculate bidirectional compatibility
+- Run CandidateFilter before scoring
+
+### API Conventions
+- All endpoints under `/api/`
+- Use standard REST verbs (GET, POST, PUT, DELETE)
+- Return proper HTTP status codes
+- Include pagination for list endpoints
+
+## Testing Requirements
+- Frontend: Playwright E2E tests in `frontend/tests/`
+- Backend: pytest tests in each app's `tests.py`
+- Test RTL layouts for Hebrew/Arabic
+- Test accessibility with automated tools
+
+## What NOT to Do
+- Don't remove accessibility features for "simplicity"
+- Don't hardcode English strings in the UI
+- Don't skip RTL testing
+- Don't modify matching algorithm weights without discussion
+- Don't expose user disability information without consent

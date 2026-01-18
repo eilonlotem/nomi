@@ -441,6 +441,24 @@ const handleDisconnect = async () => {
 // View profile overlay state
 const viewingProfile = ref(null)
 const viewingProfilePhotoIndex = ref(0)
+const viewingProfileData = computed(() => {
+  const profile = viewingProfile.value
+  if (!profile) return null
+  return {
+    raw: profile,
+    name: profile.name || profile.display_name || '',
+    age: profile.age || profile.user_age || null,
+    city: profile.city || '',
+    mood: profile.mood || profile.current_mood || '',
+    bio: profile.bio || '',
+    askMePromptId: profile.askMePromptId || profile.ask_me_prompt_id || '',
+    askMeAnswer: profile.askMeAnswer || profile.ask_me_answer || '',
+    tags: profile.tags || profile.disability_tags || [],
+    interests: profile.interests || [],
+    responsePace: profile.responsePace || profile.response_pace || '',
+    datePace: profile.datePace || profile.date_pace || '',
+  }
+})
 
 // Open user profile view
 const openProfileView = (profile) => {
@@ -2289,15 +2307,8 @@ const constellationPoints = computed(() => {
       <!-- Header -->
       <header class="sticky top-0 z-20 bg-surface/90 backdrop-blur-lg header-safe">
         <div class="flex items-center justify-between px-3 xs:px-4 py-2 xs:py-3">
-          <button
-            @click="goBack"
-            class="btn-icon bg-background shadow-soft touch-manipulation"
-            :aria-label="t('a11y.goBack')"
-          >
-            <svg class="w-5 h-5 xs:w-6 xs:h-6 text-text-deep flip-rtl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-          </button>
+          <!-- Spacer for layout balance -->
+          <div class="w-10 xs:w-11"></div>
           
           <div class="text-center">
             <h1 class="text-base xs:text-lg font-semibold text-text-deep">{{ t('discovery.title') }}</h1>
@@ -3568,20 +3579,20 @@ const constellationPoints = computed(() => {
     <!-- Profile View Overlay -->
     <Transition name="fade">
       <div 
-        v-if="viewingProfile"
-        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+        v-if="viewingProfileData"
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center"
         @click.self="closeProfileView"
       >
-        <div class="bg-surface rounded-3xl max-w-md w-full max-h-[85vh] overflow-y-auto shadow-2xl animate-scale-in">
+        <div class="bg-surface w-full h-full overflow-y-auto shadow-2xl animate-scale-in">
           <!-- Photo Section - Full image display -->
-          <div class="relative overflow-hidden flex-shrink-0 bg-black">
+          <div class="relative overflow-hidden flex-shrink-0 bg-black h-[55vh]">
             <!-- Photo indicators -->
             <div 
-              v-if="getAllPhotos(viewingProfile).length > 1"
+              v-if="getAllPhotos(viewingProfileData.raw).length > 1"
               class="absolute top-3 inset-x-3 z-20 flex gap-1"
             >
               <div 
-                v-for="(photo, index) in getAllPhotos(viewingProfile)"
+                v-for="(photo, index) in getAllPhotos(viewingProfileData.raw)"
                 :key="index"
                 class="flex-1 h-1 rounded-full transition-all"
                 :class="index === viewingProfilePhotoIndex ? 'bg-white' : 'bg-white/40'"
@@ -3590,7 +3601,7 @@ const constellationPoints = computed(() => {
             
             <!-- Tap zones for photo navigation -->
             <div 
-              v-if="getAllPhotos(viewingProfile).length > 1"
+              v-if="getAllPhotos(viewingProfileData.raw).length > 1"
               class="absolute inset-0 z-10 flex"
             >
               <div 
@@ -3605,9 +3616,9 @@ const constellationPoints = computed(() => {
             </div>
             
             <img 
-              :src="getAllPhotos(viewingProfile)[viewingProfilePhotoIndex] || viewingProfile.photo || viewingProfile.picture_url" 
-              :alt="viewingProfile.name || viewingProfile.display_name"
-              class="w-full max-h-[60vh] object-contain"
+              :src="getAllPhotos(viewingProfileData.raw)[viewingProfilePhotoIndex] || viewingProfileData.raw.photo || viewingProfileData.raw.picture_url" 
+              :alt="viewingProfileData.name"
+              class="w-full h-full object-contain"
             />
             
             <!-- Close button -->
@@ -3624,55 +3635,55 @@ const constellationPoints = computed(() => {
             <!-- Name & Age -->
             <div class="absolute bottom-4 inset-x-4 text-white z-10">
               <h2 class="text-2xl font-bold">
-                {{ viewingProfile.name || viewingProfile.display_name }}
-                <span v-if="viewingProfile.age" class="font-normal text-white/80">, {{ viewingProfile.age }}</span>
+                {{ viewingProfileData.name }}
+                <span v-if="viewingProfileData.age" class="font-normal text-white/80">, {{ viewingProfileData.age }}</span>
               </h2>
-              <p v-if="viewingProfile.city" class="text-white/70 text-sm flex items-center gap-1 mt-1">
-                📍 {{ viewingProfile.city }}
+              <p v-if="viewingProfileData.city" class="text-white/70 text-sm flex items-center gap-1 mt-1">
+                📍 {{ viewingProfileData.city }}
               </p>
             </div>
           </div>
           
           <!-- Profile Details -->
-          <div class="p-4">
+          <div class="p-5">
             <!-- Mood Badge -->
             <div 
-              v-if="viewingProfile.mood || viewingProfile.current_mood"
+              v-if="viewingProfileData.mood"
               class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-primary-light to-peach/50 rounded-full text-primary text-sm font-medium border border-primary/15 shadow-sm mb-3"
             >
-              <span class="text-base">{{ moodOptions.find(m => m.id === (viewingProfile.mood || viewingProfile.current_mood))?.emoji }}</span>
-              <span>{{ t(`moods.${viewingProfile.mood || viewingProfile.current_mood}`) }}</span>
+              <span class="text-base">{{ moodOptions.find(m => m.id === viewingProfileData.mood)?.emoji }}</span>
+              <span>{{ t(`moods.${viewingProfileData.mood}`) }}</span>
             </div>
             
             <!-- Bio -->
-            <div v-if="viewingProfile.bio" class="mb-4">
+            <div v-if="viewingProfileData.bio" class="mb-4">
               <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">{{ t('profile.about') }}</h3>
-              <p class="text-text-deep">{{ viewingProfile.bio }}</p>
+              <p class="text-text-deep">{{ viewingProfileData.bio }}</p>
             </div>
             
             <!-- Ask Me About It -->
             <div 
-              v-if="viewingProfile.askMeAnswer || viewingProfile.ask_me_answer" 
+              v-if="viewingProfileData.askMeAnswer" 
               class="mb-4 bg-gradient-to-br from-violet-light via-rose-light to-indigo-light rounded-xl p-3 border border-violet/20 shadow-sm"
             >
               <p class="text-xs font-bold text-violet uppercase tracking-wider mb-1 flex items-center gap-1.5">
                 <span class="text-sm">💜</span>
                 {{ t('askMeAboutIt.title') }}
               </p>
-              <p v-if="viewingProfile.askMePromptId || viewingProfile.ask_me_prompt_id" class="text-xs text-lavender mb-1.5 italic">
-                {{ t(`askMeAboutIt.prompts.${viewingProfile.askMePromptId || viewingProfile.ask_me_prompt_id}`) }}
+              <p v-if="viewingProfileData.askMePromptId" class="text-xs text-lavender mb-1.5 italic">
+                {{ t(`askMeAboutIt.prompts.${viewingProfileData.askMePromptId}`) }}
               </p>
               <p class="text-text-deep font-medium leading-relaxed">
-                "{{ viewingProfile.askMeAnswer || viewingProfile.ask_me_answer }}"
+                "{{ viewingProfileData.askMeAnswer }}"
               </p>
             </div>
             
             <!-- Tags -->
-            <div v-if="viewingProfile.tags?.length || viewingProfile.disability_tags?.length" class="mb-4">
+            <div v-if="viewingProfileData.tags?.length" class="mb-4">
               <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">{{ t('profile.myTags') }}</h3>
               <div class="flex flex-wrap gap-1.5">
                 <span 
-                  v-for="tag in (viewingProfile.tags || viewingProfile.disability_tags || [])"
+                  v-for="tag in viewingProfileData.tags"
                   :key="typeof tag === 'string' ? tag : tag.code"
                   class="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-primary-light to-coral/20 text-primary border border-primary/20 rounded-full text-xs font-medium"
                 >
@@ -3682,11 +3693,11 @@ const constellationPoints = computed(() => {
             </div>
             
             <!-- Interests -->
-            <div v-if="viewingProfile.interests?.length" class="mb-4">
+            <div v-if="viewingProfileData.interests?.length" class="mb-4">
               <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">{{ t('profile.interests') }}</h3>
               <div class="flex flex-wrap gap-1.5">
                 <span 
-                  v-for="(interest, idx) in viewingProfile.interests"
+                  v-for="(interest, idx) in viewingProfileData.interests"
                   :key="typeof interest === 'string' ? interest : interest.name"
                   :class="[
                     'px-2.5 py-1 rounded-full text-xs font-medium border',
@@ -3699,32 +3710,32 @@ const constellationPoints = computed(() => {
             </div>
             
             <!-- Time Preferences -->
-            <div v-if="viewingProfile.responsePace || viewingProfile.response_pace || viewingProfile.datePace || viewingProfile.date_pace" class="mb-4">
+            <div v-if="viewingProfileData.responsePace || viewingProfileData.datePace" class="mb-4">
               <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-1.5">
                 <span class="text-sm">🕐</span>
                 {{ t('timePreferences.title') }}
               </h3>
               <div class="flex flex-wrap gap-1.5">
                 <span 
-                  v-if="viewingProfile.responsePace || viewingProfile.response_pace"
+                  v-if="viewingProfileData.responsePace"
                   class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-light text-amber border border-amber/20 rounded-full text-xs font-medium"
                 >
-                  <span>{{ responsePaceOptions.find(p => p.id === (viewingProfile.responsePace || viewingProfile.response_pace))?.emoji }}</span>
-                  <span>{{ t(`timePreferences.responsePaceOptions.${viewingProfile.responsePace || viewingProfile.response_pace}`) }}</span>
+                  <span>{{ responsePaceOptions.find(p => p.id === viewingProfileData.responsePace)?.emoji }}</span>
+                  <span>{{ t(`timePreferences.responsePaceOptions.${viewingProfileData.responsePace}`) }}</span>
                 </span>
                 <span 
-                  v-if="viewingProfile.datePace || viewingProfile.date_pace"
+                  v-if="viewingProfileData.datePace"
                   class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-light text-emerald border border-emerald/20 rounded-full text-xs font-medium"
                 >
-                  <span>{{ datePaceOptions.find(p => p.id === (viewingProfile.datePace || viewingProfile.date_pace))?.emoji }}</span>
-                  <span>{{ t(`timePreferences.datePaceOptions.${viewingProfile.datePace || viewingProfile.date_pace}`) }}</span>
+                  <span>{{ datePaceOptions.find(p => p.id === viewingProfileData.datePace)?.emoji }}</span>
+                  <span>{{ t(`timePreferences.datePaceOptions.${viewingProfileData.datePace}`) }}</span>
                 </span>
               </div>
             </div>
           </div>
           
           <!-- Actions -->
-          <div class="p-4 pt-0 flex gap-2">
+          <div class="p-5 pt-0 flex gap-2 pb-8">
             <button 
               @click="closeProfileView"
               class="flex-1 btn-secondary text-sm"

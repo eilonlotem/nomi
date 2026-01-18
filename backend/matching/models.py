@@ -64,6 +64,10 @@ class Match(models.Model):
     # Compatibility score (calculated at match time)
     compatibility_score = models.PositiveIntegerField(default=0)
     shared_tags_count = models.PositiveIntegerField(default=0)
+    shared_interests_count = models.PositiveIntegerField(default=0)
+    
+    # Full compatibility breakdown stored as JSON
+    compatibility_breakdown = models.JSONField(default=dict, blank=True)
 
     class Meta:
         unique_together = ["user1", "user2"]

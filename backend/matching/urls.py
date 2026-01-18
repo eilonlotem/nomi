@@ -12,6 +12,7 @@ urlpatterns: list[URLPattern] = [
     path("swipe/", views.SwipeView.as_view(), name="swipe"),
     # Matches
     path("matches/", views.MatchListView.as_view(), name="matches-list"),
+    path("matches/<int:match_id>/unmatch/", views.UnmatchView.as_view(), name="unmatch"),
     # Conversations
     path(
         "conversations/", views.ConversationListView.as_view(), name="conversations-list"
@@ -24,4 +25,6 @@ urlpatterns: list[URLPattern] = [
     # Block
     path("block/", views.BlockUserView.as_view(), name="block-user"),
     path("block/<int:user_id>/", views.BlockUserView.as_view(), name="unblock-user"),
+    # Cleanup
+    path("cleanup/", views.CleanupView.as_view(), name="cleanup"),
 ]

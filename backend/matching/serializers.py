@@ -37,6 +37,8 @@ class MatchSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
             "matched_at",
             "compatibility_score",
             "shared_tags_count",
+            "shared_interests_count",
+            "compatibility_breakdown",
             "is_active",
         ]
 
@@ -82,9 +84,12 @@ class MessageSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
         read_only_fields: list[str] = ["id", "sender", "is_read", "read_at", "sent_at"]
 
     def get_sender_name(self, obj: Message) -> str:
-        if hasattr(obj.sender, "profile"):
-            return obj.sender.profile.display_name
-        return obj.sender.username
+        try:
+            if hasattr(obj.sender, "profile") and obj.sender.profile:
+                return obj.sender.profile.display_name or obj.sender.username
+        except Exception:
+            pass
+        return obj.sender.username if obj.sender else "Unknown"
 
     def get_is_mine(self, obj: Message) -> bool:
         request = self.context.get("request")

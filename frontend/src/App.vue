@@ -127,8 +127,8 @@ const userProfile = ref({
   datePace: '', // 'ready', 'slow', 'virtual', 'flexible'
   timeNotes: '',
   lookingFor: {
-    genders: [], // 'men', 'women', 'nonbinary', 'everyone'
-    relationshipTypes: [], // 'dating', 'serious', 'friends', 'activity'
+    genders: [], // 'male', 'female', 'nonbinary', 'everyone'
+    relationshipTypes: [], // 'casual', 'serious', 'friends', 'activity'
     ageRange: { min: 18, max: 50 },
     maxDistance: 50, // km
     location: '', // City/area
@@ -273,14 +273,14 @@ const prevPhoto = () => {
 
 // Looking for options
 const genderOptions = [
-  { id: 'men', emoji: '👨' },
-  { id: 'women', emoji: '👩' },
+  { id: 'male', emoji: '👨' },
+  { id: 'female', emoji: '👩' },
   { id: 'nonbinary', emoji: '🧑' },
   { id: 'everyone', emoji: '💫' },
 ]
 
 const relationshipOptions = [
-  { id: 'dating', emoji: '💕', gradient: 'from-pink-400 to-rose-500' },
+  { id: 'casual', emoji: '💕', gradient: 'from-pink-400 to-rose-500' },
   { id: 'serious', emoji: '💍', gradient: 'from-violet-400 to-purple-500' },
   { id: 'friends', emoji: '🤝', gradient: 'from-cyan-400 to-blue-500' },
   { id: 'activity', emoji: '🎯', gradient: 'from-amber-400 to-orange-500' },
@@ -330,6 +330,35 @@ const toggleTime = (timeId) => {
   }
   userProfile.value.preferredTimes = times
 }
+
+const normalizeGenderList = (genders = []) => {
+  const map = { men: 'male', women: 'female' }
+  const normalized = (genders || [])
+    .map(g => map[g] || g)
+    .filter(Boolean)
+  if (normalized.includes('everyone')) {
+    return ['everyone']
+  }
+  return [...new Set(normalized)]
+}
+
+const normalizeRelationshipTypes = (types = []) => {
+  const map = { dating: 'casual' }
+  return [...new Set((types || []).map(t => map[t] || t).filter(Boolean))]
+}
+
+const normalizeAgeRange = () => {
+  const range = userProfile.value.lookingFor.ageRange
+  const min = Math.max(18, Math.min(99, Number(range.min) || 18))
+  const max = Math.max(min, Math.min(99, Number(range.max) || min))
+  range.min = min
+  range.max = max
+}
+
+watch(
+  () => [userProfile.value.lookingFor.ageRange.min, userProfile.value.lookingFor.ageRange.max],
+  normalizeAgeRange,
+)
 
 // Toggle looking for options
 const toggleGender = (genderId) => {
@@ -1378,9 +1407,11 @@ const saveProfile = async () => {
       })
       
       // Save looking for preferences
+      const genders = normalizeGenderList(userProfile.value.lookingFor.genders)
+      const relationshipTypes = normalizeRelationshipTypes(userProfile.value.lookingFor.relationshipTypes)
       await profileApi.updateLookingFor({
-        genders: userProfile.value.lookingFor.genders,
-        relationship_types: userProfile.value.lookingFor.relationshipTypes,
+        genders: genders.length ? genders : ['everyone'],
+        relationship_types: relationshipTypes,
         min_age: userProfile.value.lookingFor.ageRange.min,
         max_age: userProfile.value.lookingFor.ageRange.max,
         max_distance: userProfile.value.lookingFor.maxDistance,
@@ -1527,8 +1558,8 @@ const initializeApp = async () => {
         // Load looking for preferences
         if (profile.looking_for) {
           userProfile.value.lookingFor = {
-            genders: profile.looking_for.genders || [],
-            relationshipTypes: profile.looking_for.relationship_types || [],
+            genders: normalizeGenderList(profile.looking_for.genders || []),
+            relationshipTypes: normalizeRelationshipTypes(profile.looking_for.relationship_types || []),
             ageRange: {
               min: profile.looking_for.min_age || 18,
               max: profile.looking_for.max_age || 50,
@@ -3032,7 +3063,7 @@ const constellationPoints = computed(() => {
       
       <!-- Content -->
       <main class="flex-1 px-3 xs:px-4 py-4 xs:py-6 overflow-auto momentum-scroll hide-scrollbar">
-        <div class="max-w-lg mx-auto space-y-4 xs:space-y-6">
+        <div class="w-full space-y-4 xs:space-y-6">
           
           <!-- Photo Section -->
           <div class="animate-slide-up">
@@ -3043,6 +3074,13 @@ const constellationPoints = computed(() => {
             
             <!-- Photo Grid -->
             <div class="grid grid-cols-3 gap-2 xs:gap-3">
+              <!-- Empty state -->
+              <div 
+                v-if="!getPrimaryPhotoUrl() && userProfile.photos.length === 0"
+                class="col-span-3 rounded-xl border-2 border-dashed border-border bg-surface/60 p-4 text-center text-xs text-text-muted"
+              >
+                {{ t('profile.addPhoto') }} — {{ t('profile.photoHint') }}
+              </div>
               <!-- Main/Primary Photo -->
               <div 
                 v-if="getPrimaryPhotoUrl()"

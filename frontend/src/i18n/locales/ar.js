@@ -161,13 +161,13 @@ export default {
     maxDistance: 'المسافة القصوى',
     km: 'كم',
     genders: {
-      men: 'رجال',
-      women: 'نساء',
+      male: 'رجال',
+      female: 'نساء',
       nonbinary: 'غير ثنائي',
       everyone: 'الجميع',
     },
     types: {
-      dating: 'مواعدة خفيفة',
+      casual: 'مواعدة خفيفة',
       serious: 'علاقة جدية',
       friends: 'أصدقاء فقط',
       activity: 'شركاء نشاط',

@@ -209,13 +209,13 @@ export default {
     maxDistance: 'מרחק מקסימלי',
     km: 'ק״מ',
     genders: {
-      men: 'גברים',
-      women: 'נשים',
+      male: 'גברים',
+      female: 'נשים',
       nonbinary: 'לא-בינארי',
       everyone: 'כולם',
     },
     types: {
-      dating: 'היכרויות קלילות',
+      casual: 'היכרויות קלילות',
       serious: 'קשר רציני',
       friends: 'רק חברות',
       activity: 'שותפים לפעילות',

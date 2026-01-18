@@ -37,13 +37,14 @@ class ProfileAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     list_display = [
         "display_name",
         "user",
+        "gender",
         "city",
         "current_mood",
         "is_visible",
         "created_at",
     ]
 
-    list_filter = ["is_visible", "current_mood", "city"]
+    list_filter = ["is_visible", "current_mood", "gender", "city"]
     search_fields = ["display_name", "user__username", "user__email", "city"]
 
     readonly_fields = ["created_at", "updated_at"]
@@ -54,10 +55,13 @@ class ProfileAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
 
     fieldsets = (
         (None, {"fields": ("user", "display_name", "bio")}),
+        ("Personal", {"fields": ("gender", "date_of_birth")}),
         ("Location", {"fields": ("city", "country", "latitude", "longitude")}),
         ("Identity", {"fields": ("disability_tags", "interests", "current_mood")}),
         ("Prompt", {"fields": ("prompt_id", "prompt_answer")}),
-        ("Settings", {"fields": ("is_visible", "show_distance")}),
+        ("Ask Me About It", {"fields": ("ask_me_prompt_id", "ask_me_answer")}),
+        ("Time Preferences", {"fields": ("preferred_times", "response_pace", "date_pace", "time_notes")}),
+        ("Settings", {"fields": ("is_visible", "show_distance", "picture_url")}),
         (
             "Timestamps",
             {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},

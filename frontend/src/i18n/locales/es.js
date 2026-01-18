@@ -161,13 +161,13 @@ export default {
     maxDistance: 'Distancia máxima',
     km: 'km',
     genders: {
-      men: 'Hombres',
-      women: 'Mujeres',
+      male: 'Hombres',
+      female: 'Mujeres',
       nonbinary: 'No binario',
       everyone: 'Todos',
     },
     types: {
-      dating: 'Citas casuales',
+      casual: 'Citas casuales',
       serious: 'Relación seria',
       friends: 'Solo amigos',
       activity: 'Compañeros de actividades',

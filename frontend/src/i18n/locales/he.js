@@ -278,4 +278,29 @@ export default {
     devMode: 'מצב פיתוח (התחברות מדומה)',
     aboutUs: 'עלינו',
   },
+  
+  // Invite Friends
+  inviteFriends: {
+    title: 'הזמן חברים',
+    subtitle: 'שתפו את האהבה!',
+    description: 'הזמינו את חברי הפייסבוק שלכם להצטרף לנומי ולמצוא את החיבורים שלהם.',
+    inviteButton: 'הזמן חברים',
+    loading: 'טוען חברים...',
+    noFriends: 'אין חברים להזמנה',
+    noFriendsDescription: 'התחברו עם פייסבוק כדי לראות חברים שניתן להזמין.',
+    invite: 'הזמן',
+    invited: 'הוזמן',
+    alreadyOnApp: 'כבר בנומי',
+    sendInvite: 'שלח הזמנה',
+    inviteSent: 'ההזמנה נשלחה!',
+    inviteError: 'שליחת ההזמנה נכשלה',
+    shareMessage: 'היי! אני משתמש/ת בנומי - אפליקציית היכרויות מכילה. בואו תצטרפו!',
+    close: 'סגור',
+    loginRequired: 'נא להתחבר עם פייסבוק כדי להזמין חברים',
+    stats: {
+      sent: 'הזמנות נשלחו',
+      accepted: 'הצטרפו',
+      pending: 'ממתין',
+    },
+  },
 }

@@ -4,7 +4,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from .models import User
+from .models import Invitation, User
 
 
 class UserSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
@@ -60,3 +60,49 @@ class SocialAuthSerializer(serializers.Serializer):  # type: ignore[type-arg]
     def validate(self, data: dict[str, Any]) -> dict[str, Any]:
         # In a real app, validate the access token with the provider
         return data
+
+
+class FacebookFriendSerializer(serializers.Serializer):  # type: ignore[type-arg]
+    """Serializer for Facebook friend data."""
+
+    id = serializers.CharField()
+    name = serializers.CharField()
+    picture_url = serializers.CharField(required=False, allow_blank=True)
+    is_app_user = serializers.BooleanField(default=False)
+    already_invited = serializers.BooleanField(default=False)
+
+
+class InvitationSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
+    """Serializer for Invitation model."""
+
+    sender_name = serializers.CharField(source="sender.first_name", read_only=True)
+
+    class Meta:
+        model = Invitation
+        fields: list[str] = [
+            "id",
+            "sender",
+            "sender_name",
+            "facebook_friend_id",
+            "facebook_friend_name",
+            "invited_user",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields: list[str] = [
+            "id",
+            "sender",
+            "sender_name",
+            "invited_user",
+            "status",
+            "created_at",
+            "updated_at",
+        ]
+
+
+class SendInvitationSerializer(serializers.Serializer):  # type: ignore[type-arg]
+    """Serializer for sending an invitation."""
+
+    facebook_friend_id = serializers.CharField()
+    facebook_friend_name = serializers.CharField(required=False, allow_blank=True)

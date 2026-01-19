@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ROUTES } from './router'
 import { useI18n } from './composables/useI18n'
 import { useAuth } from './composables/useAuth'
-import { profileApi, matchingApi, chatApi, userApi, clearCache, getPhotoUrl } from './services/api'
+import { profileApi, matchingApi, chatApi, userApi, inviteApi, clearCache, getPhotoUrl } from './services/api'
 
 const { t, locale, isRTL, dir, setLocale, getLanguages } = useI18n()
 
@@ -13,6 +13,7 @@ const {
   isLoading: authLoading, 
   error: authError, 
   isAuthenticated,
+  facebookAccessToken,
   login, 
   logout, 
   validateToken,
@@ -533,6 +534,13 @@ const prevViewingPhoto = () => {
 // Matches and conversations from backend
 const matches = ref([])
 const conversations = ref([])
+
+// Invite friends state
+const showInviteFriendsModal = ref(false)
+const facebookFriends = ref([])
+const inviteFriendsLoading = ref(false)
+const inviteFriendsError = ref(null)
+const invitationStats = ref({ total_sent: 0, accepted: 0, pending: 0 })
 
 // Mock chat data
 // Chat state
@@ -1111,6 +1119,72 @@ const handleLogout = async () => {
   chatMessages.value = []
   discoveryProfiles.value = []
   currentProfileIndex.value = 0
+}
+
+// Invite Friends Functions
+const openInviteFriends = async () => {
+  showInviteFriendsModal.value = true
+  await fetchFacebookFriends()
+  await fetchInvitationStats()
+}
+
+const closeInviteFriends = () => {
+  showInviteFriendsModal.value = false
+  inviteFriendsError.value = null
+}
+
+const fetchFacebookFriends = async () => {
+  if (!facebookAccessToken.value) {
+    inviteFriendsError.value = t('inviteFriends.loginRequired')
+    return
+  }
+
+  inviteFriendsLoading.value = true
+  inviteFriendsError.value = null
+
+  try {
+    const response = await inviteApi.getFacebookFriends(facebookAccessToken.value)
+    facebookFriends.value = response.friends || []
+  } catch (err) {
+    console.error('Failed to fetch Facebook friends:', err)
+    inviteFriendsError.value = err.message
+  } finally {
+    inviteFriendsLoading.value = false
+  }
+}
+
+const fetchInvitationStats = async () => {
+  try {
+    const stats = await inviteApi.getInvitationStats()
+    invitationStats.value = stats
+  } catch (err) {
+    console.error('Failed to fetch invitation stats:', err)
+  }
+}
+
+const sendInvitation = async (friend) => {
+  try {
+    await inviteApi.sendInvitation(friend.id, friend.name)
+    // Update the local state to show as invited
+    const friendIndex = facebookFriends.value.findIndex(f => f.id === friend.id)
+    if (friendIndex !== -1) {
+      facebookFriends.value[friendIndex].already_invited = true
+    }
+    // Update stats
+    invitationStats.value.total_sent++
+    invitationStats.value.pending++
+  } catch (err) {
+    console.error('Failed to send invitation:', err)
+    alert(t('inviteFriends.inviteError'))
+  }
+}
+
+const shareViaFacebook = () => {
+  // Open Facebook share dialog for inviting friends who aren't shown in the friends list
+  const shareUrl = encodeURIComponent(window.location.origin)
+  const shareText = encodeURIComponent(t('inviteFriends.shareMessage'))
+  const facebookShareUrl = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}&quote=${shareText}`
+  window.open(facebookShareUrl, '_blank', 'width=600,height=400')
 }
 
 const handleCleanup = async () => {
@@ -3618,6 +3692,15 @@ const constellationPoints = computed(() => {
           </button>
           
           <!-- Cleanup Button -->
+          <!-- Invite Friends Button -->
+          <button
+            @click="openInviteFriends"
+            class="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-base xs:text-lg py-3.5 xs:py-4 rounded-xl xs:rounded-2xl font-medium shadow-button touch-manipulation active:scale-[0.98] mt-4 animate-slide-up stagger-7 flex items-center justify-center gap-2"
+          >
+            <span class="text-xl">👥</span>
+            {{ t('inviteFriends.inviteButton') }}
+          </button>
+
           <button
             @click="handleCleanup"
             class="w-full bg-surface border-2 border-amber-400/30 text-amber-600 text-base xs:text-lg py-3.5 xs:py-4 rounded-xl xs:rounded-2xl font-medium touch-manipulation active:scale-[0.98] active:bg-amber-50 mt-4 animate-slide-up stagger-8"
@@ -3884,6 +3967,155 @@ const constellationPoints = computed(() => {
               class="text-white/80 font-medium py-3 touch-manipulation active:opacity-70"
             >
               {{ t('match.keepDiscovering') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Invite Friends Modal -->
+    <Transition name="fade">
+      <div 
+        v-if="showInviteFriendsModal"
+        class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+        @click.self="closeInviteFriends"
+      >
+        <div class="bg-surface w-full max-w-md max-h-[85vh] rounded-3xl shadow-2xl overflow-hidden animate-scale-in flex flex-col">
+          <!-- Modal Header -->
+          <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-5 flex-shrink-0">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="text-3xl">👥</span>
+                <div>
+                  <h2 class="text-xl font-bold">{{ t('inviteFriends.title') }}</h2>
+                  <p class="text-sm text-white/80">{{ t('inviteFriends.subtitle') }}</p>
+                </div>
+              </div>
+              <button 
+                @click="closeInviteFriends"
+                class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center touch-manipulation active:bg-white/30"
+                :aria-label="t('inviteFriends.close')"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <!-- Stats -->
+            <div class="flex gap-4 mt-4 text-sm">
+              <div class="flex items-center gap-1.5">
+                <span class="text-lg">📨</span>
+                <span>{{ invitationStats.total_sent }} {{ t('inviteFriends.stats.sent') }}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-lg">✅</span>
+                <span>{{ invitationStats.accepted }} {{ t('inviteFriends.stats.accepted') }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Description -->
+          <div class="p-4 border-b border-border bg-primary-light/30 flex-shrink-0">
+            <p class="text-sm text-text-muted">{{ t('inviteFriends.description') }}</p>
+          </div>
+          
+          <!-- Friends List -->
+          <div class="flex-1 overflow-y-auto momentum-scroll">
+            <!-- Loading State -->
+            <div v-if="inviteFriendsLoading" class="flex flex-col items-center justify-center py-12">
+              <div class="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+              <p class="mt-4 text-text-muted">{{ t('inviteFriends.loading') }}</p>
+            </div>
+            
+            <!-- Error State -->
+            <div v-else-if="inviteFriendsError" class="p-6 text-center">
+              <span class="text-4xl block mb-3">😔</span>
+              <p class="text-text-muted">{{ inviteFriendsError }}</p>
+              <button 
+                @click="fetchFacebookFriends"
+                class="mt-4 px-4 py-2 bg-primary text-white rounded-full text-sm font-medium touch-manipulation"
+              >
+                {{ t('profile.retry') || 'Retry' }}
+              </button>
+            </div>
+            
+            <!-- No Friends -->
+            <div v-else-if="facebookFriends.length === 0" class="p-6 text-center">
+              <span class="text-5xl block mb-4">🤷</span>
+              <h3 class="text-lg font-semibold text-text-deep mb-2">{{ t('inviteFriends.noFriends') }}</h3>
+              <p class="text-sm text-text-muted mb-4">{{ t('inviteFriends.noFriendsDescription') }}</p>
+              
+              <!-- Share via Facebook Button -->
+              <button 
+                @click="shareViaFacebook"
+                class="px-6 py-3 bg-[#1877F2] text-white rounded-full font-medium flex items-center gap-2 mx-auto touch-manipulation active:opacity-90"
+              >
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                Share on Facebook
+              </button>
+            </div>
+            
+            <!-- Friends List -->
+            <div v-else class="divide-y divide-border">
+              <div 
+                v-for="friend in facebookFriends"
+                :key="friend.id"
+                class="flex items-center gap-3 p-4 hover:bg-surface-hover transition-colors"
+              >
+                <!-- Friend Avatar -->
+                <div class="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex-shrink-0">
+                  <img 
+                    v-if="friend.picture_url"
+                    :src="friend.picture_url"
+                    :alt="friend.name"
+                    class="w-full h-full object-cover"
+                    @error="$event.target.style.display = 'none'"
+                  />
+                  <div v-else class="w-full h-full flex items-center justify-center text-xl">
+                    👤
+                  </div>
+                </div>
+                
+                <!-- Friend Info -->
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-text-deep truncate">{{ friend.name }}</p>
+                  <p v-if="friend.is_app_user" class="text-xs text-primary font-medium">
+                    ✨ {{ t('inviteFriends.alreadyOnApp') }}
+                  </p>
+                </div>
+                
+                <!-- Action Button -->
+                <button 
+                  v-if="!friend.is_app_user"
+                  @click="sendInvitation(friend)"
+                  :disabled="friend.already_invited"
+                  :class="[
+                    'px-4 py-2 rounded-full text-sm font-medium transition-all touch-manipulation flex-shrink-0',
+                    friend.already_invited
+                      ? 'bg-surface border border-primary/30 text-primary'
+                      : 'bg-primary text-white active:scale-95'
+                  ]"
+                >
+                  <span v-if="friend.already_invited" class="flex items-center gap-1">
+                    ✓ {{ t('inviteFriends.invited') }}
+                  </span>
+                  <span v-else>{{ t('inviteFriends.invite') }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Footer with Share Button -->
+          <div class="p-4 border-t border-border bg-surface flex-shrink-0">
+            <button 
+              @click="shareViaFacebook"
+              class="w-full py-3 bg-[#1877F2] text-white rounded-xl font-medium flex items-center justify-center gap-2 touch-manipulation active:opacity-90"
+            >
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              Share via Facebook
             </button>
           </div>
         </div>

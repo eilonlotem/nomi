@@ -167,7 +167,7 @@ POST /api/conversations/{id}/messages/ - Send message
 - **Framework**: Django 4.2 + Django REST Framework
 - **Database**: SQLite (development) / PostgreSQL (production)
 - **Authentication**: JWT + Social Auth
-- **Deployment**: Render
+- **Deployment**: Railway
 
 ---
 

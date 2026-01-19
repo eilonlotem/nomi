@@ -23,6 +23,7 @@ const loadSavedUser = () => {
 // Auth state - initialize from localStorage
 const user = ref(loadSavedUser())
 const token = ref(localStorage.getItem('auth_token') || null)
+const facebookAccessToken = ref(localStorage.getItem('fb_access_token') || null)
 const isLoading = ref(false)
 const error = ref(null)
 const isAuthenticated = computed(() => !!token.value && !!user.value)
@@ -62,7 +63,8 @@ const loginWithFacebook = async () => {
 
     // Build Facebook OAuth URL for redirect flow
     const redirectUri = encodeURIComponent(window.location.origin + '/auth/facebook/callback')
-    const scope = encodeURIComponent('email,public_profile,user_birthday,user_gender')
+    // Request user_friends permission to allow inviting friends
+    const scope = encodeURIComponent('email,public_profile,user_birthday,user_gender,user_friends')
     const state = encodeURIComponent(JSON.stringify({ 
       returnUrl: window.location.pathname,
       timestamp: Date.now() 
@@ -171,6 +173,12 @@ const handleFacebookCallback = async () => {
     user.value = data.user
     localStorage.setItem('auth_token', data.token)
     localStorage.setItem('user_data', JSON.stringify(data.user))
+    
+    // Store Facebook access token for features like invite friends
+    if (data.facebook_access_token) {
+      facebookAccessToken.value = data.facebook_access_token
+      localStorage.setItem('fb_access_token', data.facebook_access_token)
+    }
     
     console.log('Login successful:', data)
     
@@ -303,8 +311,10 @@ const logout = async () => {
     // Clear local state
     token.value = null
     user.value = null
+    facebookAccessToken.value = null
     localStorage.removeItem('auth_token')
     localStorage.removeItem('user_data')
+    localStorage.removeItem('fb_access_token')
   }
 }
 
@@ -379,6 +389,7 @@ export function useAuth() {
     // State
     user,
     token,
+    facebookAccessToken,
     isLoading,
     error,
     isAuthenticated,

@@ -14,6 +14,10 @@ urlpatterns: list[URLPattern] = [
     path("facebook/", views.FacebookAuthView.as_view(), name="facebook-auth"),
     # Facebook data deletion callback
     path("facebook/data-deletion/", views.FacebookDataDeletionView.as_view(), name="facebook-data-deletion"),
+    # Facebook friends and invitations
+    path("facebook/friends/", views.FacebookFriendsView.as_view(), name="facebook-friends"),
+    path("invitations/", views.InvitationsView.as_view(), name="invitations"),
+    path("invitations/stats/", views.InvitationStatsView.as_view(), name="invitation-stats"),
     # Current user
     path("me/", views.CurrentUserView.as_view(), name="current-user"),
     path("language/", views.UpdateLanguageView.as_view(), name="update-language"),

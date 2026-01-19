@@ -221,4 +221,29 @@ export default {
     loginWithFacebook: 'تابع مع فيسبوك',
     loginWithInstagram: 'تابع مع إنستغرام',
   },
+  
+  // Invite Friends
+  inviteFriends: {
+    title: 'دعوة أصدقاء',
+    subtitle: 'شاركوا الحب!',
+    description: 'ادعُ أصدقاءك على فيسبوك للانضمام إلى نومي وإيجاد اتصالاتهم.',
+    inviteButton: 'دعوة أصدقاء',
+    loading: 'جاري تحميل الأصدقاء...',
+    noFriends: 'لا يوجد أصدقاء للدعوة',
+    noFriendsDescription: 'اتصل بفيسبوك لرؤية الأصدقاء الذين يمكنك دعوتهم.',
+    invite: 'دعوة',
+    invited: 'تمت الدعوة',
+    alreadyOnApp: 'موجود بالفعل على نومي',
+    sendInvite: 'إرسال دعوة',
+    inviteSent: 'تم إرسال الدعوة!',
+    inviteError: 'فشل في إرسال الدعوة',
+    shareMessage: 'مرحباً! أنا أستخدم نومي - تطبيق مواعدة شامل. انضموا إلي!',
+    close: 'إغلاق',
+    loginRequired: 'يرجى تسجيل الدخول بفيسبوك لدعوة الأصدقاء',
+    stats: {
+      sent: 'الدعوات المرسلة',
+      accepted: 'انضموا',
+      pending: 'قيد الانتظار',
+    },
+  },
 }

@@ -279,4 +279,29 @@ export default {
     devMode: 'Dev Mode (Mock Login)',
     aboutUs: 'About Us',
   },
+  
+  // Invite Friends
+  inviteFriends: {
+    title: 'Invite Friends',
+    subtitle: 'Share the love!',
+    description: 'Invite your Facebook friends to join Nomi and find their connections.',
+    inviteButton: 'Invite Friends',
+    loading: 'Loading friends...',
+    noFriends: 'No friends to invite',
+    noFriendsDescription: 'Connect with Facebook to see friends you can invite.',
+    invite: 'Invite',
+    invited: 'Invited',
+    alreadyOnApp: 'Already on Nomi',
+    sendInvite: 'Send Invite',
+    inviteSent: 'Invite sent!',
+    inviteError: 'Failed to send invite',
+    shareMessage: "Hey! I'm using Nomi - an inclusive dating app. Join me!",
+    close: 'Close',
+    loginRequired: 'Please log in with Facebook to invite friends',
+    stats: {
+      sent: 'Invites sent',
+      accepted: 'Joined',
+      pending: 'Pending',
+    },
+  },
 }

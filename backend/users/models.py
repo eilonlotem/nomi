@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+if TYPE_CHECKING:
+    from django.db.models import Manager
 
 
 class User(AbstractUser):
@@ -74,3 +77,56 @@ class User(AbstractUser):
                 < (self.date_of_birth.month, self.date_of_birth.day)
             )
         return None
+
+
+class Invitation(models.Model):
+    """
+    Model to track invitations sent by users to their Facebook friends.
+    """
+
+    STATUS_CHOICES: list[tuple[str, str]] = [
+        ("pending", "Pending"),
+        ("accepted", "Accepted"),
+        ("expired", "Expired"),
+    ]
+
+    # The user who sent the invitation
+    sender = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="sent_invitations",
+    )
+
+    # Facebook ID of the invited friend (they might not be a user yet)
+    facebook_friend_id = models.CharField(max_length=255)
+    facebook_friend_name = models.CharField(max_length=255, blank=True)
+
+    # If the invited friend joins, link to their user account
+    invited_user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="received_invitations",
+        blank=True,
+        null=True,
+    )
+
+    # Status of the invitation
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default="pending",
+    )
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Invitation"
+        verbose_name_plural = "Invitations"
+        ordering = ["-created_at"]
+        # Prevent duplicate invitations from the same sender to the same friend
+        unique_together = ["sender", "facebook_friend_id"]
+
+    def __str__(self) -> str:
+        return f"{self.sender.username} invited {self.facebook_friend_name or self.facebook_friend_id}"

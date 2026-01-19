@@ -12,8 +12,14 @@ from rest_framework.views import APIView
 
 from profiles.models import Profile
 
-from .models import User
-from .serializers import UserRegistrationSerializer, UserSerializer
+from .models import Invitation, User
+from .serializers import (
+    FacebookFriendSerializer,
+    InvitationSerializer,
+    SendInvitationSerializer,
+    UserRegistrationSerializer,
+    UserSerializer,
+)
 
 
 class UserRegistrationView(generics.CreateAPIView):  # type: ignore[type-arg]
@@ -252,6 +258,8 @@ class FacebookAuthView(APIView):
                     "age": age,
                     "gender": fb_gender,
                 },
+                # Include Facebook access token for features like inviting friends
+                "facebook_access_token": access_token,
             }
         )
 
@@ -453,3 +461,167 @@ class FacebookDataDeletionView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class FacebookFriendsView(APIView):
+    """
+    Get Facebook friends who can be invited to the app.
+    
+    Requires the user_friends permission on Facebook.
+    Note: Only returns friends who also use the app (Facebook API limitation).
+    For inviting friends who don't use the app, we use the App Invite dialog.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        import os
+
+        user = cast(User, request.user)
+
+        # Get the Facebook access token from the request header or stored token
+        access_token: Optional[str] = request.headers.get("X-Facebook-Token")
+
+        if not access_token:
+            return Response(
+                {"error": "Facebook access token required. Please re-login with Facebook."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            # Fetch friends from Facebook Graph API
+            # Note: This only returns friends who also use this app
+            fb_params: dict[str, str] = {
+                "access_token": access_token,
+                "fields": "id,name,picture.type(large)",
+                "limit": "100",
+            }
+            fb_response = requests.get(
+                "https://graph.facebook.com/me/friends",
+                params=fb_params,
+                timeout=10,
+            )
+
+            if fb_response.status_code != 200:
+                error_data = fb_response.json()
+                error_msg = error_data.get("error", {}).get("message", "Failed to fetch friends")
+                return Response(
+                    {"error": f"Facebook API error: {error_msg}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            fb_data: dict[str, Any] = fb_response.json()
+            friends_data: list[dict[str, Any]] = fb_data.get("data", [])
+
+            # Get list of already-invited friend IDs
+            invited_friend_ids = set(
+                Invitation.objects.filter(sender=user).values_list(
+                    "facebook_friend_id", flat=True
+                )
+            )
+
+            # Get list of Facebook IDs of users already in the app
+            app_user_fb_ids = set(
+                User.objects.filter(
+                    social_provider="facebook",
+                    social_id__isnull=False,
+                ).exclude(pk=user.pk).values_list("social_id", flat=True)
+            )
+
+            # Format the response
+            friends: list[dict[str, Any]] = []
+            for friend in friends_data:
+                friend_id = friend.get("id", "")
+                picture_data = friend.get("picture", {}).get("data", {})
+                
+                friends.append({
+                    "id": friend_id,
+                    "name": friend.get("name", ""),
+                    "picture_url": picture_data.get("url", ""),
+                    "is_app_user": friend_id in app_user_fb_ids,
+                    "already_invited": friend_id in invited_friend_ids,
+                })
+
+            # Sort: non-invited first, then alphabetically
+            friends.sort(key=lambda x: (x["already_invited"], x["name"].lower()))
+
+            return Response({
+                "friends": friends,
+                "total_count": len(friends),
+                "summary": fb_data.get("summary", {}),
+            })
+
+        except requests.RequestException as e:
+            return Response(
+                {"error": f"Failed to fetch Facebook friends: {str(e)}"},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+
+
+class InvitationsView(generics.ListCreateAPIView):  # type: ignore[type-arg]
+    """
+    List sent invitations or create a new invitation.
+    """
+
+    serializer_class = InvitationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):  # type: ignore[no-untyped-def]
+        user = cast(User, self.request.user)
+        return Invitation.objects.filter(sender=user)
+
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        user = cast(User, request.user)
+
+        serializer = SendInvitationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        facebook_friend_id: str = serializer.validated_data["facebook_friend_id"]
+        facebook_friend_name: str = serializer.validated_data.get(
+            "facebook_friend_name", ""
+        )
+
+        # Check if already invited
+        existing = Invitation.objects.filter(
+            sender=user, facebook_friend_id=facebook_friend_id
+        ).first()
+
+        if existing:
+            return Response(
+                InvitationSerializer(existing).data,
+                status=status.HTTP_200_OK,
+            )
+
+        # Create new invitation
+        invitation = Invitation.objects.create(
+            sender=user,
+            facebook_friend_id=facebook_friend_id,
+            facebook_friend_name=facebook_friend_name,
+            status="pending",
+        )
+
+        return Response(
+            InvitationSerializer(invitation).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class InvitationStatsView(APIView):
+    """
+    Get invitation statistics for the current user.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request) -> Response:
+        user = cast(User, request.user)
+
+        total_sent = Invitation.objects.filter(sender=user).count()
+        accepted = Invitation.objects.filter(sender=user, status="accepted").count()
+        pending = Invitation.objects.filter(sender=user, status="pending").count()
+
+        return Response({
+            "total_sent": total_sent,
+            "accepted": accepted,
+            "pending": pending,
+        })

@@ -221,4 +221,29 @@ export default {
     loginWithFacebook: 'Continuar con Facebook',
     loginWithInstagram: 'Continuar con Instagram',
   },
+  
+  // Invite Friends
+  inviteFriends: {
+    title: 'Invitar Amigos',
+    subtitle: '¡Comparte el amor!',
+    description: 'Invita a tus amigos de Facebook a unirse a Nomi y encontrar sus conexiones.',
+    inviteButton: 'Invitar Amigos',
+    loading: 'Cargando amigos...',
+    noFriends: 'No hay amigos para invitar',
+    noFriendsDescription: 'Conéctate con Facebook para ver amigos que puedes invitar.',
+    invite: 'Invitar',
+    invited: 'Invitado',
+    alreadyOnApp: 'Ya está en Nomi',
+    sendInvite: 'Enviar Invitación',
+    inviteSent: '¡Invitación enviada!',
+    inviteError: 'Error al enviar invitación',
+    shareMessage: '¡Hola! Estoy usando Nomi, una app de citas inclusiva. ¡Únete!',
+    close: 'Cerrar',
+    loginRequired: 'Inicia sesión con Facebook para invitar amigos',
+    stats: {
+      sent: 'Invitaciones enviadas',
+      accepted: 'Unieron',
+      pending: 'Pendiente',
+    },
+  },
 }

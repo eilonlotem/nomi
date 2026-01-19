@@ -163,7 +163,7 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD: bool = True
     X_FRAME_OPTIONS: str = "DENY"
     
-    # Trust Railway/Render proxy headers
+    # Trust proxy headers
     SECURE_PROXY_SSL_HEADER: tuple[str, str] = ("HTTP_X_FORWARDED_PROTO", "https")
 
 
@@ -189,7 +189,13 @@ REST_FRAMEWORK: dict[str, Any] = {
 
 # CORS Settings
 # Default includes localhost for development and production frontend URLs
-_default_origins = "http://localhost:5173,http://127.0.0.1:5173,https://frontend-ylalo.vercel.app,https://nomi-online.com,https://www.nomi-online.com"
+_default_origins = ",".join([
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://frontend-ylalo.vercel.app",
+    "https://nomi-online.com",
+    "https://www.nomi-online.com",
+])
 CORS_ALLOWED_ORIGINS: list[str] = os.getenv("CORS_ALLOWED_ORIGINS", _default_origins).split(",")
 
 CORS_ALLOW_CREDENTIALS: bool = True

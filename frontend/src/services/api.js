@@ -362,11 +362,63 @@ export const userApi = {
   }),
 }
 
+/**
+ * Invite Friends API
+ */
+export const inviteApi = {
+  /**
+   * Get Facebook friends who can be invited
+   * @param {string} facebookToken - Facebook access token
+   */
+  getFacebookFriends: async (facebookToken) => {
+    const token = getToken()
+    const response = await fetch(`${API_URL}/auth/facebook/friends/`, {
+      headers: {
+        'Authorization': `Token ${token}`,
+        'Content-Type': 'application/json',
+        'X-Facebook-Token': facebookToken,
+      },
+    })
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Request failed' }))
+      throw new Error(error.error || 'Failed to fetch friends')
+    }
+    
+    return response.json()
+  },
+  
+  /**
+   * Get list of sent invitations
+   */
+  getInvitations: () => apiRequest('/auth/invitations/'),
+  
+  /**
+   * Send an invitation to a Facebook friend
+   * @param {string} facebookFriendId - Facebook ID of the friend
+   * @param {string} facebookFriendName - Name of the friend
+   */
+  sendInvitation: (facebookFriendId, facebookFriendName = '') => 
+    apiRequest('/auth/invitations/', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        facebook_friend_id: facebookFriendId,
+        facebook_friend_name: facebookFriendName,
+      }),
+    }),
+  
+  /**
+   * Get invitation statistics
+   */
+  getInvitationStats: () => apiRequest('/auth/invitations/stats/'),
+}
+
 export default {
   profile: profileApi,
   matching: matchingApi,
   chat: chatApi,
   user: userApi,
+  invite: inviteApi,
   apiUrl: API_URL,
   clearCache,
 }

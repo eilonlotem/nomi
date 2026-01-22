@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17894583004"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-17894583004');
+    </script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <title>בטיחות ואמון | נומי - דייטינג מאובטח לאנשים עם מוגבלויות</title>
+    <meta name="description" content="בנומי הבטיחות והאמון הם תנאי בסיס. אימות מתקדם, ניטור חכם, הדרכה להיכרות בטוחה וצוות אנושי שדואג לכם. מרחב היכרויות מוגן באמת.">
+    <meta name="keywords" content="בטיחות דייטינג, היכרויות מאובטחות, הגנת פרטיות, נומי, דייטינג בטוח, אימות משתמשים">
+    <link rel="canonical" href="https://nomi-online.com/safety.html">
+    
+    <!-- Hreflang -->
+    <link rel="alternate" hreflang="he" href="https://nomi-online.com/safety.html">
+    <link rel="alternate" hreflang="en" href="https://nomi-online.com/safety.html?lang=en">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="בטיחות ואמון | נומי">
+    <meta property="og:description" content="בנומי הבטיחות והאמון הם תנאי בסיס – לא תוספת. למדו על מנגנוני ההגנה שלנו.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nomi-online.com/safety.html">
+    <meta property="og:image" content="https://nomi-online.com/og-image.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Organization Schema -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Safety & Trust - Nomi",
+        "description": "At Nomi, safety and trust are fundamental. Learn about our advanced verification, smart monitoring, and human support team.",
+        "publisher": {
+            "@type": "Organization",
+            "name": "Nomi",
+            "url": "https://nomi-online.com"
+        }
+    }
+    </script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #F97316;
+            --primary-dark: #EA580C;
+            --secondary: #E11D48;
+            --accent: #7C3AED;
+            --text: #0F172A;
+            --text-muted: #475569;
+            --text-light: #94A3B8;
+            --bg: #FFFBF7;
+            --card-bg: #FFFFFF;
+            --border: rgba(0, 0, 0, 0.06);
+            --success: #10B981;
+            --success-dark: #059669;
+        }
+        
+        body {
+            font-family: 'Rubik', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.7;
+            color: var(--text);
+            background: var(--bg);
+            overflow-x: hidden;
+        }
+
+        html[dir="ltr"] body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        [data-lang="en"] { display: none; }
+        [data-lang="he"] { display: block; }
+        html[dir="ltr"] [data-lang="en"] { display: block; }
+        html[dir="ltr"] [data-lang="he"] { display: none; }
+        span[data-lang="en"], a[data-lang="en"] { display: none; }
+        span[data-lang="he"], a[data-lang="he"] { display: inline; }
+        html[dir="ltr"] span[data-lang="en"], html[dir="ltr"] a[data-lang="en"] { display: inline; }
+        html[dir="ltr"] span[data-lang="he"], html[dir="ltr"] a[data-lang="he"] { display: none; }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 251, 247, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }
+
+        .nav-actions { display: flex; align-items: center; gap: 1rem; }
+
+        .lang-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: transparent;
+            border: 2px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text);
+        }
+
+        .lang-toggle:hover { border-color: var(--primary); color: var(--primary); }
+
+        .nav-cta {
+            background: var(--text);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 100px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-cta:hover { background: var(--primary); transform: translateY(-2px); }
+
+        /* Hero */
+        .hero {
+            min-height: 70vh;
+            padding: 10rem 2rem 5rem;
+            text-align: center;
+            background: linear-gradient(180deg, #ECFDF5 0%, #D1FAE5 40%, var(--bg) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 6s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -10%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(5, 150, 105, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 8s ease-in-out infinite reverse;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--success-dark);
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .hero-icon {
+            font-size: 4.5rem;
+            margin-bottom: 1.5rem;
+            animation: float 4s ease-in-out infinite;
+            filter: drop-shadow(0 8px 20px rgba(16, 185, 129, 0.3));
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+            animation: fadeInUp 0.6s ease-out 0.1s backwards;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-text {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 650px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.8;
+            animation: fadeInUp 0.6s ease-out 0.2s backwards;
+        }
+
+        .hero-highlight-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            max-width: 700px;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease-out 0.3s backwards;
+        }
+
+        .hero-highlight-box p {
+            font-size: 1.1rem;
+            color: var(--text);
+            line-height: 1.8;
+            font-weight: 500;
+        }
+
+        /* Core Pillars */
+        .pillars {
+            padding: 6rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-eyebrow {
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 2.75rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .pillars-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .pillar-card {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 28px;
+            border: 1px solid var(--border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pillar-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--success), #34D399);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .pillar-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 60px rgba(16, 185, 129, 0.15);
+        }
+
+        .pillar-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .pillar-icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .pillar-card:hover .pillar-icon {
+            transform: scale(1.1);
+        }
+
+        .pillar-card h3 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .pillar-card p {
+            color: var(--text-muted);
+            line-height: 1.8;
+            font-size: 1rem;
+        }
+
+        /* Promise Section */
+        .promise {
+            background: linear-gradient(135deg, var(--text) 0%, #1E293B 100%);
+            padding: 5rem 2rem;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .promise::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -25%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            border-radius: 50%;
+        }
+
+        .promise-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .promise h2 {
+            font-size: clamp(1.75rem, 4vw, 2.5rem);
+            margin-bottom: 2rem;
+        }
+
+        .promise-text {
+            font-size: 1.25rem;
+            line-height: 2;
+            opacity: 0.9;
+            max-width: 750px;
+            margin: 0 auto;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            display: flex;
+            gap: 1.25rem;
+            align-items: flex-start;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, var(--success), #34D399);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .feature-card h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Tips Section */
+        .tips {
+            background: linear-gradient(180deg, var(--bg) 0%, #FEF3C7 50%, #FCE7F3 100%);
+            padding: 6rem 2rem;
+        }
+
+        .tips-inner {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .tips-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .tips-header h2 {
+            font-size: clamp(1.75rem, 4vw, 2.25rem);
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        .tips-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .tips-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .tip-card {
+            display: flex;
+            gap: 1.25rem;
+            align-items: flex-start;
+            background: white;
+            padding: 1.75rem;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .tip-card:hover {
+            transform: translateX(-8px);
+            box-shadow: 8px 8px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        html[dir="ltr"] .tip-card:hover {
+            transform: translateX(8px);
+            box-shadow: -8px 8px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .tip-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .tip-card h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .tip-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* Help Section */
+        .help {
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+
+        .help-inner {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 3rem;
+            border-radius: 28px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+
+        .help-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .help h2 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .help p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .help-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            padding: 1.1rem 2.5rem;
+            border-radius: 100px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 30px rgba(225, 29, 72, 0.3);
+        }
+
+        .help-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 40px rgba(225, 29, 72, 0.4);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 3rem 2rem;
+        }
+
+        .footer-inner {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .footer-brand { font-size: 1.25rem; font-weight: 700; }
+        .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+        footer a { color: white; opacity: 0.7; text-decoration: none; font-size: 0.9rem; transition: opacity 0.2s; }
+        footer a:hover { opacity: 1; }
+        .copyright { width: 100%; text-align: center; padding-top: 2rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); opacity: 0.5; font-size: 0.85rem; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar { padding: 0.75rem 1rem; }
+            
+            .pillars-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pillar-card {
+                text-align: center;
+            }
+
+            .pillar-icon {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .feature-card {
+                flex-direction: column;
+                text-align: center;
+                align-items: center;
+            }
+
+            .tip-card {
+                flex-direction: column;
+                text-align: center;
+                align-items: center;
+            }
+
+            .tip-card:hover {
+                transform: translateY(-4px) !important;
+            }
+
+            .footer-inner { flex-direction: column; text-align: center; }
+            .footer-links { justify-content: center; }
+        }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-logo">
+            <span data-lang="he">נומי</span>
+            <span data-lang="en">Nomi</span>
+        </a>
+        <div class="nav-actions">
+            <button class="lang-toggle" onclick="toggleLanguage()">
+                <span data-lang="he">🇬🇧 English</span>
+                <span data-lang="en">🇮🇱 עברית</span>
+            </button>
+            <a href="/" class="nav-cta">
+                <span data-lang="he">התחברות</span>
+                <span data-lang="en">Login</span>
+            </a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span>🛡️</span>
+                <span data-lang="he">בטיחות ואמון</span>
+                <span data-lang="en">Safety & Trust</span>
+            </div>
+            <div class="hero-icon">🛡️</div>
+            <h1>
+                <span data-lang="he">המרחב <span class="highlight">הבטוח</span> שלכם</span>
+                <span data-lang="en">Your <span class="highlight">Safe</span> Space</span>
+            </h1>
+            <p class="hero-text">
+                <span data-lang="he">בנומי, הבטיחות והאמון הם תנאי בסיס – לא תוספת. אנחנו יוצרים מרחב היכרויות מוגן, מכבד ובטוח באמת.</span>
+                <span data-lang="en">At Nomi, safety and trust are fundamental – not an afterthought. We create a truly protected, respectful, and safe dating space.</span>
+            </p>
+            <div class="hero-highlight-box">
+                <p>
+                    <span data-lang="he">השילוב בין טכנולוגיה מתקדמת, צוות אנושי מסור והדרכה ברורה יוצר מרחב שבו אפשר להתמקד בדבר החשוב באמת – למצוא חיבור אמיתי.</span>
+                    <span data-lang="en">The combination of advanced technology, a dedicated human team, and clear guidance creates a space where you can focus on what truly matters – finding real connection.</span>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="pillars">
+        <div class="section-header">
+            <span class="section-eyebrow">
+                <span data-lang="he">ארבעת עמודי התווך</span>
+                <span data-lang="en">THE FOUR PILLARS</span>
+            </span>
+            <h2 class="section-title">
+                <span data-lang="he">איך אנחנו שומרים עליכם</span>
+                <span data-lang="en">How We Protect You</span>
+            </h2>
+            <p class="section-subtitle">
+                <span data-lang="he">כל שכבה של הגנה עובדת יחד כדי ליצור את הסביבה הבטוחה ביותר</span>
+                <span data-lang="en">Every layer of protection works together to create the safest environment</span>
+            </p>
+        </div>
+
+        <div class="pillars-grid">
+            <div class="pillar-card">
+                <div class="pillar-icon">🪪</div>
+                <h3>
+                    <span data-lang="he">אימות מתקדם</span>
+                    <span data-lang="en">Advanced Verification</span>
+                </h3>
+                <p>
+                    <span data-lang="he">כל משתמש ומשתמשת עוברים תהליך אימות הכולל העלאת תעודת זהות ובקרה אנושית, כדי לוודא שמדובר באדם אמיתי ולמנוע התחזות או ניצול.</span>
+                    <span data-lang="en">Every user undergoes a verification process including ID upload and human review, ensuring real people and preventing impersonation or exploitation.</span>
+                </p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">🔍</div>
+                <h3>
+                    <span data-lang="he">ניטור חכם</span>
+                    <span data-lang="en">Smart Monitoring</span>
+                </h3>
+                <p>
+                    <span data-lang="he">מנגנוני ניטור חכמים, זיהוי התנהגות חריגה ומערך דיווח מהיר ונגיש – כי הביטחון שלכם בראש סדר העדיפויות.</span>
+                    <span data-lang="en">Smart monitoring mechanisms, unusual behavior detection, and a fast, accessible reporting system – because your security is our top priority.</span>
+                </p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">📚</div>
+                <h3>
+                    <span data-lang="he">הדרכה להיכרות בטוחה</span>
+                    <span data-lang="en">Safe Dating Guidance</span>
+                </h3>
+                <p>
+                    <span data-lang="he">הדרכה ברורה ורגישה – מה חשוב לדעת לפני מפגש פיזי, איך לזהות סימני אזהרה, ואיך לפעול במקרה של חוסר נוחות.</span>
+                    <span data-lang="en">Clear and sensitive guidance – what to know before meeting, how to identify warning signs, and how to act if you feel uncomfortable.</span>
+                </p>
+            </div>
+            <div class="pillar-card">
+                <div class="pillar-icon">👥</div>
+                <h3>
+                    <span data-lang="he">צוות אנושי</span>
+                    <span data-lang="en">Human Team</span>
+                </h3>
+                <p>
+                    <span data-lang="he">מאחורי הטכנולוגיה יש צוות אנושי שבודק דיווחים, מגיב לפניות ודואג שהקהילה תישאר מרחב בטוח ומכבד.</span>
+                    <span data-lang="en">Behind the technology is a human team that reviews reports, responds to inquiries, and ensures the community remains a safe and respectful space.</span>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <section class="promise">
+        <div class="promise-inner">
+            <h2>
+                <span data-lang="he">💚 ההתחייבות שלנו אליכם</span>
+                <span data-lang="en">💚 Our Commitment to You</span>
+            </h2>
+            <p class="promise-text">
+                <span data-lang="he">בנומי הבטיחות והאמון הם תנאי בסיס. כל משתמש ומשתמשת עוברים תהליך אימות מתקדם הכולל העלאת תעודת זהות ובקרה אנושית, כדי לוודא שמדובר באדם אמיתי ולמנוע התחזות או ניצול. לצד זאת, פועלים מנגנוני ניטור חכמים, זיהוי התנהגות חריגה ומערך דיווח מהיר ונגיש.</span>
+                <span data-lang="en">At Nomi, safety and trust are fundamental. Every user undergoes an advanced verification process including ID upload and human review, ensuring real people and preventing impersonation or exploitation. Additionally, smart monitoring mechanisms, unusual behavior detection, and a fast, accessible reporting system are in place.</span>
+            </p>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="section-header">
+            <span class="section-eyebrow">
+                <span data-lang="he">תכונות בטיחות</span>
+                <span data-lang="en">SAFETY FEATURES</span>
+            </span>
+            <h2 class="section-title">
+                <span data-lang="he">הגנה מובנית בכל שלב</span>
+                <span data-lang="en">Built-in Protection at Every Step</span>
+            </h2>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <div>
+                    <h4>
+                        <span data-lang="he">הצפנת מסרים</span>
+                        <span data-lang="en">Message Encryption</span>
+                    </h4>
+                    <p>
+                        <span data-lang="he">כל השיחות שלכם מוצפנות ונשארות פרטיות בינכם לבין ההתאמה שלכם</span>
+                        <span data-lang="en">All your conversations are encrypted and remain private between you and your match</span>
+                    </p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📸</div>
+                <div>
+                    <h4>
+                        <span data-lang="he">הגנה על תמונות</span>
+                        <span data-lang="en">Photo Protection</span>
+                    </h4>
+                    <p>
+                        <span data-lang="he">התמונות שלכם מוגנות ולא ניתנות להורדה. אתם שולטים מי רואה מה</span>
+                        <span data-lang="en">Your photos are protected and cannot be downloaded. You control who sees what</span>
+                    </p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🚷</div>
+                <div>
+                    <h4>
+                        <span data-lang="he">חסימה מיידית</span>
+                        <span data-lang="en">Instant Blocking</span>
+                    </h4>
+                    <p>
+                        <span data-lang="he">חסמו כל משתמש בלחיצה אחת. הם לא יידעו ולא יוכלו ליצור איתכם קשר שוב</span>
+                        <span data-lang="en">Block any user with one click. They won't know and won't be able to contact you again</span>
+                    </p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚠️</div>
+                <div>
+                    <h4>
+                        <span data-lang="he">מערכת דיווח</span>
+                        <span data-lang="en">Reporting System</span>
+                    </h4>
+                    <p>
+                        <span data-lang="he">דווחו על ספאם, תוכן פוגעני, הטרדה או פרופילים מזויפים. אנחנו בודקים כל דיווח</span>
+                        <span data-lang="en">Report spam, offensive content, harassment, or fake profiles. We review every report</span>
+                    </p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <div>
+                    <h4>
+                        <span data-lang="he">הגנת פרטיות</span>
+                        <span data-lang="en">Privacy Protection</span>
+                    </h4>
+                    <p>
+                        <span data-lang="he">שליטה מלאה על המידע שלכם. לעולם לא משתפים עם צדדים שלישיים</span>
+                        <span data-lang="en">Full control over your data. Never shared with third parties</span>
+                    </p>
+                </div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">👁️</div>
+                <div>
+                    <h4>
+                        <span data-lang="he">ניטור 24/7</span>
+                        <span data-lang="en">24/7 Monitoring</span>
+                    </h4>
+                    <p>
+                        <span data-lang="he">צוות שבודק דיווחים ומסיר תוכן פוגעני בזמן אמת, סביב השעון</span>
+                        <span data-lang="en">A team that reviews reports and removes harmful content in real-time, around the clock</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="tips">
+        <div class="tips-inner">
+            <div class="tips-header">
+                <h2>
+                    <span data-lang="he">🧠 טיפים לדייטינג בטוח</span>
+                    <span data-lang="en">🧠 Safe Dating Tips</span>
+                </h2>
+                <p>
+                    <span data-lang="he">מה חשוב לדעת לפני מפגש פיזי ובכל שלב בהיכרות</span>
+                    <span data-lang="en">What you need to know before meeting and at every stage of dating</span>
+                </p>
+            </div>
+            <div class="tips-grid">
+                <div class="tip-card">
+                    <div class="tip-icon">🔐</div>
+                    <div>
+                        <h4>
+                            <span data-lang="he">שמרו על פרטיות</span>
+                            <span data-lang="en">Protect Your Privacy</span>
+                        </h4>
+                        <p>
+                            <span data-lang="he">אל תשתפו מידע אישי רגיש כמו כתובת, מספר טלפון או מידע פיננסי לפני שאתם מכירים מישהו טוב</span>
+                            <span data-lang="en">Don't share sensitive personal information like address, phone number, or financial info before you know someone well</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="tip-card">
+                    <div class="tip-icon">📍</div>
+                    <div>
+                        <h4>
+                            <span data-lang="he">היפגשו במקום ציבורי</span>
+                            <span data-lang="en">Meet in Public</span>
+                        </h4>
+                        <p>
+                            <span data-lang="he">בפגישה ראשונה, תמיד בחרו מקום ציבורי ונגיש. ספרו לחבר או בן משפחה לאן אתם הולכים</span>
+                            <span data-lang="en">For first meetings, always choose a public, accessible place. Tell a friend or family member where you're going</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="tip-card">
+                    <div class="tip-icon">⚡</div>
+                    <div>
+                        <h4>
+                            <span data-lang="he">סמכו על האינסטינקט</span>
+                            <span data-lang="en">Trust Your Instincts</span>
+                        </h4>
+                        <p>
+                            <span data-lang="he">אם משהו מרגיש לא בסדר, כנראה שהוא לא. אל תהססו לחסום, לדווח או פשוט להפסיק תקשורת</span>
+                            <span data-lang="en">If something feels wrong, it probably is. Don't hesitate to block, report, or simply stop communicating</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="tip-card">
+                    <div class="tip-icon">🚨</div>
+                    <div>
+                        <h4>
+                            <span data-lang="he">זהו סימני אזהרה</span>
+                            <span data-lang="en">Recognize Warning Signs</span>
+                        </h4>
+                        <p>
+                            <span data-lang="he">בקשות לכסף, לחץ לפגוש מהר מדי, סירוב לשיחות וידאו, או סיפורים שלא מסתדרים – כולם סימני אזהרה</span>
+                            <span data-lang="en">Requests for money, pressure to meet too quickly, refusal to video chat, or stories that don't add up – all warning signs</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="tip-card">
+                    <div class="tip-icon">🆘</div>
+                    <div>
+                        <h4>
+                            <span data-lang="he">דעו מתי לדווח</span>
+                            <span data-lang="en">Know When to Report</span>
+                        </h4>
+                        <p>
+                            <span data-lang="he">עזרו לנו לשמור על הקהילה בטוחה. אם ראיתם התנהגות חשודה או פוגענית, דווחו מיד – אנחנו בודקים כל דיווח</span>
+                            <span data-lang="en">Help us keep the community safe. If you see suspicious or offensive behavior, report immediately – we review every report</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="help">
+        <div class="help-inner">
+            <div class="help-icon">💬</div>
+            <h2>
+                <span data-lang="he">צריכים עזרה?</span>
+                <span data-lang="en">Need Help?</span>
+            </h2>
+            <p>
+                <span data-lang="he">אם אתם חווים הטרדה, מרגישים בסכנה או סתם צריכים מישהו לדבר איתו – אנחנו כאן בשבילכם 24/7</span>
+                <span data-lang="en">If you're experiencing harassment, feel unsafe, or just need someone to talk to – we're here for you 24/7</span>
+            </p>
+            <a href="mailto:safety@nomi-online.com" class="help-button">
+                <span data-lang="he">📧 צרו קשר</span>
+                <span data-lang="en">📧 Contact Us</span>
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <span data-lang="he">נומי 🧡</span>
+                <span data-lang="en">Nomi 🧡</span>
+            </div>
+            <div class="footer-links">
+                <a href="/"><span data-lang="he">בית</span><span data-lang="en">Home</span></a>
+                <a href="/about.html"><span data-lang="he">עלינו</span><span data-lang="en">About</span></a>
+                <a href="/faq.html"><span data-lang="he">שאלות נפוצות</span><span data-lang="en">FAQ</span></a>
+                <a href="/accessibility.html"><span data-lang="he">נגישות</span><span data-lang="en">Accessibility</span></a>
+                <a href="/terms.html"><span data-lang="he">תנאי שימוש</span><span data-lang="en">Terms</span></a>
+                <a href="/privacy.html"><span data-lang="he">פרטיות</span><span data-lang="en">Privacy</span></a>
+            </div>
+            <p class="copyright">
+                <span data-lang="he">© 2026 נומי. כל הזכויות שמורות.</span>
+                <span data-lang="en">© 2026 Nomi. All rights reserved.</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleLanguage() {
+            const html = document.documentElement;
+            if (html.getAttribute('lang') === 'he') {
+                html.setAttribute('lang', 'en');
+                html.setAttribute('dir', 'ltr');
+                localStorage.setItem('nomi-lang', 'en');
+            } else {
+                html.setAttribute('lang', 'he');
+                html.setAttribute('dir', 'rtl');
+                localStorage.setItem('nomi-lang', 'he');
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('nomi-lang');
+            if (savedLang === 'en') {
+                document.documentElement.setAttribute('lang', 'en');
+                document.documentElement.setAttribute('dir', 'ltr');
+            }
+        });
+    </script>
+</body>
+</html>

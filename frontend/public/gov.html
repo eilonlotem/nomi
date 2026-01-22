@@ -20,16 +20,16 @@
     <meta name="description" content="הכירו את נומי - אפליקציית ההיכרויות המכילה הראשונה בישראל. הסיפור שלנו, החזון, ואיך אנחנו יוצרים מרחב בטוח לאהבה בלי התנצלות.">
     <meta name="keywords" content="נומי, אפליקציית היכרויות, מוגבלות, דייטינג נגיש, היכרויות מכילות, אהבה, about nomi, disability dating">
     <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://nomi-online.com/about.html">
+    <link rel="canonical" href="https://nomi-online.com/gov.html">
     
     <!-- Hreflang -->
-    <link rel="alternate" hreflang="he" href="https://nomi-online.com/about.html">
-    <link rel="alternate" hreflang="en" href="https://nomi-online.com/about.html?lang=en">
-    <link rel="alternate" hreflang="x-default" href="https://nomi-online.com/about.html">
+    <link rel="alternate" hreflang="he" href="https://nomi-online.com/gov.html">
+    <link rel="alternate" hreflang="en" href="https://nomi-online.com/gov.html?lang=en">
+    <link rel="alternate" hreflang="x-default" href="https://nomi-online.com/gov.html">
     
     <!-- Open Graph -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://nomi-online.com/about.html">
+    <meta property="og:url" content="https://nomi-online.com/gov.html">
     <meta property="og:title" content="עלינו | נומי - דייטינג שמבין אותך">
     <meta property="og:description" content="הכירו את נומי - מרחב בטוח להיכרויות לאנשים עם מוגבלויות. החזון, הסיפור, והערכים שלנו.">
     <meta property="og:image" content="https://nomi-online.com/og-image.png">
@@ -50,7 +50,7 @@
         "@type": "AboutPage",
         "name": "About Nomi",
         "description": "Learn about Nomi - the inclusive dating app for people with disabilities",
-        "url": "https://nomi-online.com/about.html",
+        "url": "https://nomi-online.com/gov.html",
         "mainEntity": {
             "@type": "Organization",
             "name": "Nomi",
@@ -848,72 +848,6 @@
             line-height: 1.6;
         }
         
-        /* Stats Section */
-        .stats {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
-            padding: 5rem 2rem;
-            color: white;
-            max-width: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .stats::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
-            animation: rotate 20s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .stats-header {
-            text-align: center;
-            margin-bottom: 3rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .stats-header h2 {
-            font-size: clamp(1.5rem, 3vw, 2rem);
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .stats-header p {
-            opacity: 0.9;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 2rem;
-            max-width: 1000px;
-            margin: 0 auto;
-            text-align: center;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .stat-number {
-            font-size: clamp(2rem, 5vw, 3rem);
-            font-weight: 800;
-            margin-bottom: 0.25rem;
-        }
-        
-        .stat-label {
-            font-size: 0.95rem;
-            opacity: 0.9;
-            font-weight: 500;
-        }
-        
         /* How it Works */
         .steps {
             display: flex;
@@ -1096,11 +1030,6 @@
             .nav-cta {
                 padding: 0.5rem 1rem;
                 font-size: 0.8rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 1.5rem;
             }
             
             .step {
@@ -1535,50 +1464,6 @@
                     <span data-lang="he">מנגנוני הגנה מובנים, דיווח, וקהילה תומכת שמבינה את המציאות שלכם.</span>
                     <span data-lang="en">Built-in protection mechanisms, reporting, and a supportive community that understands your reality.</span>
                 </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats -->
-    <section class="stats">
-        <div class="stats-header">
-            <h2>
-                <span data-lang="he">Blue Ocean – שוק לא מנוצל</span>
-                <span data-lang="en">Blue Ocean – Untapped Market</span>
-            </h2>
-            <p>
-                <span data-lang="he">אין כיום שחקן גלובלי עם מוצר מתקדם וחזון ברור</span>
-                <span data-lang="en">No global player today with an advanced product and clear vision</span>
-            </p>
-        </div>
-        <div class="stats-grid">
-            <div>
-                <div class="stat-number">18%</div>
-                <div class="stat-label">
-                    <span data-lang="he">מאוכלוסיית ישראל עם מוגבלות</span>
-                    <span data-lang="en">of Israel's population with disability</span>
-                </div>
-            </div>
-            <div>
-                <div class="stat-number">61M</div>
-                <div class="stat-label">
-                    <span data-lang="he">אנשים עם מוגבלות בארה"ב</span>
-                    <span data-lang="en">people with disabilities in the USA</span>
-                </div>
-            </div>
-            <div>
-                <div class="stat-number">87M</div>
-                <div class="stat-label">
-                    <span data-lang="he">אנשים עם מוגבלות באירופה</span>
-                    <span data-lang="en">people with disabilities in Europe</span>
-                </div>
-            </div>
-            <div>
-                <div class="stat-number">$13B</div>
-                <div class="stat-label">
-                    <span data-lang="he">שוק דייטינג דיגיטלי גלובלי</span>
-                    <span data-lang="en">global digital dating market</span>
-                </div>
             </div>
         </div>
     </section>

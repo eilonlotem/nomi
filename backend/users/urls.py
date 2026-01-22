@@ -12,6 +12,8 @@ urlpatterns: list[URLPattern] = [
     # Social authentication
     path("social/", views.SocialAuthView.as_view(), name="social-auth"),
     path("facebook/", views.FacebookAuthView.as_view(), name="facebook-auth"),
+    # Guest login (for demos/testing)
+    path("guest/", views.GuestLoginView.as_view(), name="guest-login"),
     # Facebook data deletion callback
     path("facebook/data-deletion/", views.FacebookDataDeletionView.as_view(), name="facebook-data-deletion"),
     # Facebook friends and invitations

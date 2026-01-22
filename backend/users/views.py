@@ -625,3 +625,46 @@ class InvitationStatsView(APIView):
             "accepted": accepted,
             "pending": pending,
         })
+
+
+class GuestLoginView(APIView):
+    """
+    Login as a guest using a pre-seeded mock user.
+    This is useful for demos and testing without Facebook authentication.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request: Request) -> Response:
+        # Use mock_maya as the default guest user
+        guest_username = "mock_maya"
+        
+        try:
+            user = User.objects.get(username=guest_username)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Guest user not available. Please run seed_mock_users command."},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        
+        # Get or create auth token
+        token, _ = Token.objects.get_or_create(user=user)
+        
+        # Get user's profile data
+        profile_data = None
+        try:
+            profile = user.profile
+            profile_data = {
+                "display_name": profile.display_name,
+                "picture_url": profile.picture_url,
+            }
+        except Exception:
+            pass
+        
+        return Response({
+            "user": UserSerializer(user).data,
+            "token": token.key,
+            "is_new_user": False,
+            "is_guest": True,
+            "profile_data": profile_data,
+        })

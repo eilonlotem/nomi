@@ -1435,7 +1435,26 @@
             document.getElementById('nextBtn').disabled = currentSlide === totalSlides - 1;
         }
 
-        function goToSlide(index) {
+        // Slide names for URLs
+        const slideNames = [
+            'title',
+            'problem', 
+            'story',
+            'why-apps-fail',
+            'introducing-nomi',
+            'product',
+            'differentiation',
+            'market-opportunity',
+            'business-model',
+            'b2c-revenue',
+            'b2b-b2g-revenue',
+            'partnerships',
+            'vision-impact',
+            'why-now',
+            'closing'
+        ];
+
+        function goToSlide(index, updateHash = true) {
             if (index < 0 || index >= totalSlides) return;
             
             // Remove all classes first
@@ -1454,6 +1473,31 @@
             
             currentSlide = index;
             updateUI();
+            
+            // Update URL hash
+            if (updateHash) {
+                const slideName = slideNames[index] || `slide-${index + 1}`;
+                history.pushState(null, '', `#${slideName}`);
+            }
+        }
+
+        // Get slide index from hash
+        function getSlideFromHash() {
+            const hash = window.location.hash.slice(1);
+            if (!hash) return 0;
+            
+            // Check if it's a named slide
+            const namedIndex = slideNames.indexOf(hash);
+            if (namedIndex !== -1) return namedIndex;
+            
+            // Check if it's a numbered slide (e.g., "slide-3" or just "3")
+            const match = hash.match(/^(?:slide-)?(\d+)$/);
+            if (match) {
+                const num = parseInt(match[1], 10);
+                return Math.min(Math.max(num - 1, 0), totalSlides - 1);
+            }
+            
+            return 0;
         }
 
         // Navigation
@@ -1464,6 +1508,12 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === ' ') goToSlide(currentSlide + 1);
             if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+        });
+
+        // Handle browser back/forward
+        window.addEventListener('popstate', () => {
+            const slideIndex = getSlideFromHash();
+            goToSlide(slideIndex, false);
         });
 
         // Touch/Swipe navigation for mobile
@@ -1495,8 +1545,13 @@
             }
         }
 
-        // Initialize
-        updateUI();
+        // Initialize - go to slide from URL hash
+        const initialSlide = getSlideFromHash();
+        if (initialSlide > 0) {
+            goToSlide(initialSlide, false);
+        } else {
+            updateUI();
+        }
     </script>
 </body>
 </html>

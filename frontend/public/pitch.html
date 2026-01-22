@@ -43,6 +43,8 @@
             visibility: hidden;
             transform: translateX(50px);
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .slide.active {
@@ -98,6 +100,207 @@
                 0 35px 60px -15px rgba(0, 0, 0, 0.5),
                 0 0 0 1px rgba(255, 255, 255, 0.15) inset,
                 0 0 40px rgba(255, 107, 53, 0.15);
+        }
+        
+        /* ========== MOBILE RESPONSIVE STYLES ========== */
+        @media (max-width: 768px) {
+            /* Base slide adjustments */
+            .slide {
+                padding: 16px !important;
+                padding-top: 60px !important;
+                padding-bottom: 100px !important;
+                align-items: flex-start !important;
+            }
+            
+            /* Typography scaling */
+            h1 { font-size: 2.5rem !important; }
+            h2 { font-size: 1.75rem !important; }
+            h3 { font-size: 1.25rem !important; }
+            h4 { font-size: 1rem !important; }
+            
+            /* Grid layouts become single column */
+            .grid-cols-2, .grid-cols-3, .grid-cols-4 {
+                grid-template-columns: 1fr !important;
+            }
+            
+            /* Flex wrapping */
+            .flex.justify-center.items-start.gap-10,
+            .flex.justify-center.gap-8 {
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 1.5rem !important;
+            }
+            
+            /* Phone mockups on mobile */
+            .phone-frame {
+                width: 180px !important;
+                height: auto !important;
+                min-height: 280px;
+            }
+            
+            .phone-wrapper {
+                margin-top: 0 !important;
+            }
+            
+            /* Title slide */
+            .title-slide h1 {
+                font-size: 3rem !important;
+            }
+            
+            .title-slide::before {
+                width: 300px;
+                height: 300px;
+            }
+            
+            /* Story card */
+            .bg-gradient-to-br.rounded-3xl.flex.items-start {
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center;
+            }
+            
+            .bg-gradient-to-br.rounded-3xl .story-quote {
+                text-align: left;
+            }
+            
+            /* Timeline */
+            .timeline {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 1rem !important;
+            }
+            
+            .timeline::before {
+                display: none;
+            }
+            
+            .timeline-item::before {
+                display: none;
+            }
+            
+            /* Navigation */
+            nav.fixed {
+                padding: 0.75rem !important;
+            }
+            
+            nav button {
+                width: 40px !important;
+                height: 40px !important;
+            }
+            
+            /* Reduce max-width constraints */
+            .max-w-4xl, .max-w-5xl, .max-w-6xl {
+                max-width: 100% !important;
+            }
+            
+            /* Smaller stat boxes */
+            .text-5xl, .text-6xl {
+                font-size: 2rem !important;
+            }
+            
+            .text-4xl {
+                font-size: 1.5rem !important;
+            }
+            
+            /* Testimonial cards */
+            .bg-purple-50.rounded-2xl,
+            .bg-blue-50.rounded-2xl,
+            .bg-green-50.rounded-2xl,
+            .bg-amber-50.rounded-2xl {
+                padding: 1rem !important;
+            }
+            
+            /* Partnership tags */
+            .flex.flex-wrap.gap-2 {
+                gap: 0.25rem !important;
+            }
+            
+            .flex.flex-wrap.gap-2 span {
+                font-size: 0.65rem !important;
+                padding: 0.25rem 0.5rem !important;
+            }
+            
+            /* Logo and slide number */
+            .fixed.top-6.left-8 {
+                top: 1rem !important;
+                left: 1rem !important;
+                font-size: 1rem !important;
+            }
+            
+            .fixed.top-6.right-8,
+            #slideNumber {
+                top: 1rem !important;
+                right: 1rem !important;
+                font-size: 0.75rem !important;
+            }
+            
+            /* Floating shapes - hide on mobile */
+            .floating-shapes {
+                display: none;
+            }
+            
+            /* Blockquote */
+            blockquote {
+                font-size: 1rem !important;
+            }
+            
+            /* Closing slide */
+            .bg-gradient-to-br.from-orange-50 h1 {
+                font-size: 3rem !important;
+            }
+            
+            .bg-gradient-to-br.from-orange-50 .inline-flex {
+                flex-direction: column !important;
+                gap: 1rem !important;
+            }
+        }
+        
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            .slide {
+                padding: 12px !important;
+                padding-top: 50px !important;
+                padding-bottom: 90px !important;
+            }
+            
+            h1 { font-size: 2rem !important; }
+            h2 { font-size: 1.5rem !important; }
+            
+            .title-slide h1 {
+                font-size: 2.5rem !important;
+            }
+            
+            .phone-frame {
+                width: 150px !important;
+                min-height: 240px;
+            }
+            
+            .text-5xl, .text-6xl {
+                font-size: 1.75rem !important;
+            }
+            
+            .text-4xl {
+                font-size: 1.25rem !important;
+            }
+            
+            /* Two column timeline on very small */
+            .timeline {
+                grid-template-columns: 1fr 1fr !important;
+            }
+        }
+        
+        /* Touch-friendly navigation */
+        @media (hover: none) and (pointer: coarse) {
+            nav button {
+                min-width: 44px;
+                min-height: 44px;
+            }
+            
+            .phone-wrapper:hover .phone-frame {
+                transform: none;
+                box-shadow: 
+                    0 25px 50px -12px rgba(0, 0, 0, 0.4),
+                    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            }
         }
         
         .phone-screen {
@@ -1043,16 +1246,16 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="fixed bottom-8 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-lg rounded-full px-6 py-3 shadow-xl flex items-center gap-4 z-50">
-        <button id="prevBtn" class="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition hover:bg-gray-700" disabled>
+    <nav class="fixed bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-lg rounded-full px-4 md:px-6 py-2 md:py-3 shadow-xl flex items-center gap-2 md:gap-4 z-50">
+        <button id="prevBtn" class="w-11 h-11 md:w-10 md:h-10 rounded-full bg-gray-900 text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition hover:bg-gray-700 touch-manipulation" disabled aria-label="Previous slide">
             ←
         </button>
         
-        <div class="flex gap-1.5" id="dots"></div>
+        <div class="hidden md:flex gap-1.5" id="dots"></div>
         
-        <span class="text-sm text-gray-400 font-medium px-2" id="navNumber">1 / 15</span>
+        <span class="text-sm text-gray-500 font-medium px-2 min-w-[50px] text-center" id="navNumber">1 / 15</span>
         
-        <button id="nextBtn" class="w-10 h-10 rounded-full bg-gray-900 text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition hover:bg-gray-700">
+        <button id="nextBtn" class="w-11 h-11 md:w-10 md:h-10 rounded-full bg-gray-900 text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition hover:bg-gray-700 touch-manipulation" aria-label="Next slide">
             →
         </button>
     </nav>
@@ -1124,6 +1327,35 @@
             if (e.key === 'ArrowRight' || e.key === ' ') goToSlide(currentSlide + 1);
             if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
         });
+
+        // Touch/Swipe navigation for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const minSwipeDistance = 50;
+
+        const deck = document.getElementById('deck');
+        
+        deck.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        deck.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+
+        function handleSwipe() {
+            const swipeDistance = touchEndX - touchStartX;
+            if (Math.abs(swipeDistance) < minSwipeDistance) return;
+            
+            if (swipeDistance > 0) {
+                // Swipe right - go to previous
+                goToSlide(currentSlide - 1);
+            } else {
+                // Swipe left - go to next
+                goToSlide(currentSlide + 1);
+            }
+        }
 
         // Initialize
         updateUI();

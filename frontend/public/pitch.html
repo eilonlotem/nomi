@@ -83,10 +83,21 @@
         
         /* Phone mockup styling */
         .phone-frame {
-            background: #1D1D1F;
+            background: linear-gradient(145deg, #2D2D2F, #1D1D1F);
             border-radius: 32px;
             padding: 8px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .phone-wrapper:hover .phone-frame {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 35px 60px -15px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.15) inset,
+                0 0 40px rgba(255, 107, 53, 0.15);
         }
         
         .phone-screen {
@@ -101,6 +112,104 @@
             background: #1D1D1F;
             border-radius: 0 0 12px 12px;
             margin: 0 auto;
+        }
+        
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 107, 53, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.8), 0 0 30px rgba(255, 107, 53, 0.4); }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .animate-float { animation: float 4s ease-in-out infinite; }
+        .animate-pulse-slow { animation: pulse 2s ease-in-out infinite; }
+        .animate-glow { animation: glow 2s ease-in-out infinite; }
+        .animate-bounce-slow { animation: bounce 2s ease-in-out infinite; }
+        
+        .slide.active .phone-enter-1 { animation: slideUp 0.6s ease-out 0.2s both; }
+        .slide.active .phone-enter-2 { animation: slideUp 0.6s ease-out 0.4s both; }
+        .slide.active .phone-enter-3 { animation: slideUp 0.6s ease-out 0.6s both; }
+        
+        /* Notification badge pulse */
+        .notification-badge {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        /* Like button glow */
+        .like-button {
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        /* Product slide background */
+        .product-slide {
+            background: linear-gradient(180deg, #FAFAFA 0%, #FFFFFF 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .product-slide::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(225, 29, 72, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(255, 107, 53, 0.02) 0%, transparent 70%);
+            pointer-events: none;
+            animation: float 20s ease-in-out infinite;
+        }
+        
+        /* Floating decorative elements */
+        .floating-shapes {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+        
+        /* Shimmer effect */
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
         }
         
         /* Timeline styling */
@@ -297,14 +406,21 @@
         </div>
 
         <!-- Slide 6: The Product (Mockups) -->
-        <div class="slide absolute inset-0 flex items-center justify-center p-16 bg-white">
-            <div class="text-center max-w-6xl w-full">
+        <div class="slide product-slide absolute inset-0 flex items-center justify-center p-16">
+            <!-- Floating decorative shapes -->
+            <div class="floating-shapes">
+                <div class="floating-shape w-64 h-64 bg-gradient-to-br from-orange-200/20 to-transparent top-20 -left-20 animate-float" style="animation-delay: 0s;"></div>
+                <div class="floating-shape w-48 h-48 bg-gradient-to-br from-pink-200/20 to-transparent bottom-40 -right-10 animate-float" style="animation-delay: 2s;"></div>
+                <div class="floating-shape w-32 h-32 bg-gradient-to-br from-purple-200/20 to-transparent top-1/3 right-20 animate-float" style="animation-delay: 4s;"></div>
+            </div>
+            
+            <div class="text-center max-w-6xl w-full relative z-10">
                 <h2 class="text-5xl md:text-6xl font-semibold tracking-tight mb-4">The <span class="gradient-text">Product</span></h2>
                 <p class="text-2xl text-gray-500 mb-10">Beautiful, accessible, and intuitive</p>
                 
-                <div class="flex justify-center items-start gap-8">
+                <div class="flex justify-center items-start gap-10">
                     <!-- Phone 1: Discovery -->
-                    <div class="flex flex-col items-center">
+                    <div class="flex flex-col items-center phone-wrapper phone-enter-1">
                         <div class="phone-frame w-56 h-96">
                             <div class="phone-screen p-4 h-full flex flex-col">
                                 <div class="phone-notch mb-3"></div>
@@ -313,29 +429,29 @@
                                     <p class="text-xs text-gray-400">Find your match</p>
                                 </div>
                                 <div class="flex-1 flex flex-col justify-center">
-                                    <div class="bg-gray-50 rounded-xl p-3 mb-3">
-                                        <div class="text-4xl mb-2">👩‍🦰</div>
+                                    <div class="bg-gradient-to-br from-gray-50 to-orange-50/50 rounded-xl p-3 mb-3 shadow-sm">
+                                        <div class="text-4xl mb-2 animate-bounce-slow">👩‍🦰</div>
                                         <h6 class="font-semibold text-sm">Maya, 28</h6>
                                         <p class="text-xs text-gray-400">Tel Aviv · Open to chat</p>
                                         <div class="flex flex-wrap gap-1 mt-2">
-                                            <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">🎨 Creative</span>
-                                            <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">♿ Wheelchair</span>
+                                            <span class="text-xs bg-white/80 px-2 py-0.5 rounded-full shadow-sm">🎨 Creative</span>
+                                            <span class="text-xs bg-white/80 px-2 py-0.5 rounded-full shadow-sm">♿ Wheelchair</span>
                                         </div>
                                     </div>
                                     <div class="flex justify-center gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">✕</div>
-                                        <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">🧡</div>
+                                        <div class="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center shadow-md hover:scale-110 transition-transform cursor-pointer">✕</div>
+                                        <div class="like-button w-11 h-11 rounded-full bg-gradient-to-br from-primary to-accent text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer">🧡</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <p class="mt-4 font-medium text-gray-700">Discovery</p>
+                        <p class="mt-4 font-semibold text-gray-800">Discovery</p>
                         <p class="text-sm text-gray-400">Swipe & match</p>
                     </div>
                     
-                    <!-- Phone 2: Profile -->
-                    <div class="flex flex-col items-center">
-                        <div class="phone-frame w-56 h-96">
+                    <!-- Phone 2: Profile (elevated) -->
+                    <div class="flex flex-col items-center phone-wrapper phone-enter-2 -mt-4">
+                        <div class="phone-frame w-60 h-[420px]">
                             <div class="phone-screen p-4 h-full flex flex-col">
                                 <div class="phone-notch mb-3"></div>
                                 <div class="text-center mb-3">
@@ -343,30 +459,32 @@
                                     <p class="text-xs text-gray-400">Express yourself</p>
                                 </div>
                                 <div class="flex-1 flex flex-col justify-center text-center">
-                                    <div class="text-4xl mb-2">👨‍🦽</div>
-                                    <h6 class="font-semibold text-sm">Shon, 32</h6>
-                                    <p class="text-xs text-gray-400 mb-2">Tech enthusiast, dreamer ✨</p>
-                                    <div class="bg-amber-50 rounded-lg px-2 py-1 inline-flex items-center gap-1 text-xs mb-2 mx-auto">
-                                        <span>⚡</span> Feeling chatty today
+                                    <div class="text-5xl mb-2">👨‍🦽</div>
+                                    <h6 class="font-semibold text-base">Shon, 32</h6>
+                                    <p class="text-xs text-gray-400 mb-3">Tech enthusiast, dreamer ✨</p>
+                                    <div class="bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg px-3 py-1.5 inline-flex items-center gap-1 text-xs mb-3 mx-auto shadow-sm border border-amber-100">
+                                        <span class="animate-pulse-slow">⚡</span> Feeling chatty today
                                     </div>
-                                    <div class="flex flex-wrap gap-1 justify-center mb-3">
-                                        <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">🧠 CP</span>
-                                        <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">💻 Dev</span>
+                                    <div class="flex flex-wrap gap-1.5 justify-center mb-4">
+                                        <span class="text-xs bg-gradient-to-r from-purple-50 to-pink-50 px-2.5 py-1 rounded-full shadow-sm">🧠 Cerebral Palsy</span>
+                                        <span class="text-xs bg-gradient-to-r from-blue-50 to-cyan-50 px-2.5 py-1 rounded-full shadow-sm">💻 Developer</span>
                                     </div>
-                                    <div class="flex justify-center gap-4 text-center">
-                                        <div><div class="font-bold text-primary">12</div><div class="text-xs text-gray-400">Matches</div></div>
-                                        <div><div class="font-bold text-green-500">89%</div><div class="text-xs text-gray-400">Profile</div></div>
-                                        <div><div class="font-bold text-primary">5</div><div class="text-xs text-gray-400">Chats</div></div>
+                                    <div class="flex justify-center gap-5 text-center bg-gray-50 rounded-xl py-3 px-2">
+                                        <div><div class="font-bold text-lg text-primary">12</div><div class="text-xs text-gray-400">Matches</div></div>
+                                        <div class="w-px bg-gray-200"></div>
+                                        <div><div class="font-bold text-lg text-green-500">89%</div><div class="text-xs text-gray-400">Profile</div></div>
+                                        <div class="w-px bg-gray-200"></div>
+                                        <div><div class="font-bold text-lg text-primary">5</div><div class="text-xs text-gray-400">Chats</div></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <p class="mt-4 font-medium text-gray-700">Profile</p>
+                        <p class="mt-4 font-semibold text-gray-800">Profile</p>
                         <p class="text-sm text-gray-400">Identity celebration</p>
                     </div>
                     
                     <!-- Phone 3: Messages -->
-                    <div class="flex flex-col items-center">
+                    <div class="flex flex-col items-center phone-wrapper phone-enter-3">
                         <div class="phone-frame w-56 h-96">
                             <div class="phone-screen p-4 h-full flex flex-col">
                                 <div class="phone-notch mb-3"></div>
@@ -375,39 +493,39 @@
                                     <p class="text-xs text-gray-400">Connect safely</p>
                                 </div>
                                 <div class="flex-1 flex flex-col justify-center space-y-2">
-                                    <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
+                                    <div class="flex items-center gap-2 bg-gradient-to-r from-orange-50 to-pink-50 rounded-lg p-2.5 shadow-sm border border-orange-100">
                                         <span class="text-xl">👩‍🦰</span>
                                         <div class="flex-1 text-left">
-                                            <div class="text-sm font-medium">Maya</div>
-                                            <div class="text-xs text-gray-400">Hey! Love your profile 💜</div>
+                                            <div class="text-sm font-semibold">Maya</div>
+                                            <div class="text-xs text-gray-500">Hey! Love your profile 💜</div>
                                         </div>
-                                        <span class="bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">2</span>
+                                        <span class="notification-badge bg-gradient-to-r from-primary to-accent text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-md">2</span>
                                     </div>
-                                    <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
+                                    <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-2.5 hover:bg-gray-100 transition-colors">
                                         <span class="text-xl">👨‍🦯</span>
                                         <div class="flex-1 text-left">
                                             <div class="text-sm font-medium">David</div>
-                                            <div class="text-xs text-gray-400">Coffee sometime?</div>
+                                            <div class="text-xs text-gray-400">Coffee sometime? ☕</div>
                                         </div>
                                     </div>
-                                    <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
+                                    <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-2.5 hover:bg-gray-100 transition-colors">
                                         <span class="text-xl">👩‍🦼</span>
                                         <div class="flex-1 text-left">
                                             <div class="text-sm font-medium">Sarah</div>
                                             <div class="text-xs text-gray-400">That's so cool! 🎉</div>
                                         </div>
                                     </div>
-                                    <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-2">
+                                    <div class="flex items-center gap-2 bg-gray-50 rounded-lg p-2.5 hover:bg-gray-100 transition-colors">
                                         <span class="text-xl">🧏‍♂️</span>
                                         <div class="flex-1 text-left">
                                             <div class="text-sm font-medium">Alex</div>
-                                            <div class="text-xs text-gray-400">🎵 Voice note</div>
+                                            <div class="text-xs text-gray-400">🎵 Sent a voice note</div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <p class="mt-4 font-medium text-gray-700">Chat</p>
+                        <p class="mt-4 font-semibold text-gray-800">Chat</p>
                         <p class="text-sm text-gray-400">Voice notes & more</p>
                     </div>
                 </div>

@@ -220,6 +220,16 @@ export default {
     orContinueWith: 'أو تابع مع',
     loginWithFacebook: 'تابع مع فيسبوك',
     loginWithInstagram: 'تابع مع إنستغرام',
+    loginAsGuest: 'جرب كضيف',
+    connecting: 'جاري الاتصال...',
+    readyToFind: 'مستعد للعثور على شخصك؟',
+    inclusive: 'شامل 100%',
+    termsText: 'بالمتابعة، أنت توافق على',
+    terms: 'الشروط',
+    and: 'و',
+    privacyPolicy: 'سياسة الخصوصية',
+    devMode: 'وضع التطوير',
+    aboutUs: 'معلومات عنا',
   },
   
   // Invite Friends

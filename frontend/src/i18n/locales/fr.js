@@ -220,6 +220,16 @@ export default {
     orContinueWith: 'ou continuer avec',
     loginWithFacebook: 'Continuer avec Facebook',
     loginWithInstagram: 'Continuer avec Instagram',
+    loginAsGuest: 'Essayer en tant qu\'invité',
+    connecting: 'Connexion...',
+    readyToFind: 'Prêt à trouver votre personne?',
+    inclusive: '100% Inclusif',
+    termsText: 'En continuant, vous acceptez nos',
+    terms: 'Conditions',
+    and: 'et',
+    privacyPolicy: 'Politique de Confidentialité',
+    devMode: 'Mode Développement',
+    aboutUs: 'À Propos',
   },
   
   // Invite Friends

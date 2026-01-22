@@ -268,6 +268,7 @@ export default {
     orContinueWith: 'או המשך עם',
     loginWithFacebook: 'המשך עם פייסבוק',
     loginWithInstagram: 'המשך עם אינסטגרם',
+    loginAsGuest: 'נסו כאורח',
     connecting: 'מתחבר...',
     readyToFind: 'מוכנים למצוא את האדם שלכם?',
     inclusive: '100% הכלה',

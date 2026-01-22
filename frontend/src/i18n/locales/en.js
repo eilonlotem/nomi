@@ -269,6 +269,7 @@ export default {
     orContinueWith: 'or continue with',
     loginWithFacebook: 'Continue with Facebook',
     loginWithInstagram: 'Continue with Instagram',
+    loginAsGuest: 'Try as Guest',
     connecting: 'Connecting...',
     readyToFind: 'Ready to find your person?',
     inclusive: '100% Inclusive',

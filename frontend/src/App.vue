@@ -15,6 +15,7 @@ const {
   isAuthenticated,
   facebookAccessToken,
   login, 
+  loginAsGuest,
   logout, 
   validateToken,
   updateLanguage,
@@ -1582,6 +1583,24 @@ const handleSocialLogin = async (provider) => {
   }
 }
 
+const handleGuestLogin = async () => {
+  loginError.value = null
+  
+  const result = await loginAsGuest()
+  
+  if (result.success) {
+    loggedInWith.value = 'guest'
+    
+    // Guest user (mock_maya) is already onboarded with a complete profile
+    // Go directly to discovery
+    navigateTo('discovery')
+    await fetchDiscoveryProfiles()
+    await fetchMatches()
+  } else {
+    loginError.value = result.error || 'Guest login failed. Please try again.'
+  }
+}
+
 // Backend data state
 const backendTags = ref([])
 const backendProfiles = ref([])
@@ -1954,6 +1973,26 @@ const constellationPoints = computed(() => {
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
             </svg>
             <span>{{ authLoading ? t('auth.connecting') : t('auth.loginWithFacebook') }}</span>
+          </button>
+          
+          <!-- Guest Login -->
+          <button
+            @click="handleGuestLogin"
+            :disabled="authLoading"
+            class="group relative flex items-center justify-center gap-3 w-full py-5 bg-gradient-to-r from-primary to-secondary text-white rounded-[20px] font-semibold shadow-soft overflow-hidden touch-manipulation active:scale-[0.98] transition-all duration-300 text-base xs:text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+            :aria-label="t('auth.loginAsGuest')"
+          >
+            <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+            <!-- Loading spinner -->
+            <svg v-if="authLoading && loggedInWith === 'guest'" class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <!-- Guest icon -->
+            <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <span>{{ authLoading && loggedInWith === 'guest' ? t('auth.connecting') : t('auth.loginAsGuest') }}</span>
           </button>
         </div>
 

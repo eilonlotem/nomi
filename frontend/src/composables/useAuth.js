@@ -288,6 +288,60 @@ const login = async (provider) => {
 }
 
 /**
+ * Login as a guest using a pre-seeded mock user
+ * Calls the backend guest login endpoint
+ */
+const loginAsGuest = async () => {
+  isLoading.value = true
+  error.value = null
+
+  try {
+    const response = await fetch(`${API_URL}/auth/guest/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      let errorMessage = 'Guest login failed'
+      try {
+        const errorData = await response.json()
+        errorMessage = errorData.error || errorData.detail || errorMessage
+      } catch (e) {
+        errorMessage = `Server error (${response.status})`
+      }
+      throw new Error(errorMessage)
+    }
+
+    const data = await response.json()
+
+    // Store token and user
+    token.value = data.token
+    user.value = data.user
+    localStorage.setItem('auth_token', data.token)
+    localStorage.setItem('user_data', JSON.stringify(data.user))
+
+    return {
+      success: true,
+      user: data.user,
+      isNewUser: data.is_new_user,
+      isGuest: true,
+    }
+
+  } catch (err) {
+    console.error('Guest login error:', err)
+    error.value = err.message
+    return {
+      success: false,
+      error: err.message,
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
+
+/**
  * Logout - clear auth state
  */
 const logout = async () => {
@@ -398,6 +452,7 @@ export function useAuth() {
     // Actions
     login,
     loginWithFacebook,
+    loginAsGuest,
     handleFacebookCallback,
     isFacebookCallback,
     mockLogin,

@@ -75,3 +75,33 @@ When modifying the matching algorithm (`matching/algorithm.py`):
 - Don't skip RTL testing
 - Don't modify matching algorithm weights without discussion
 - Don't expose user disability information without consent
+
+## Deployment
+
+### Frontend (Vercel)
+Deploy directly using Vercel CLI:
+```bash
+cd frontend && vercel --prod
+```
+- Production URL: https://nomi-online.com
+- Vercel project: ylalo/frontend
+
+### Backend (Railway)
+Deploy using Railway CLI:
+```bash
+cd backend && railway up
+```
+- The backend is connected to Railway project
+- Environment variables are configured in Railway dashboard
+- Database: PostgreSQL on Railway
+
+### Deployment Checklist
+1. Commit all changes to git
+2. Push to GitHub: `git push origin main`
+3. Deploy frontend: `cd frontend && vercel --prod`
+4. Deploy backend: `cd backend && railway up`
+
+### Error Tracking (Sentry)
+- Frontend DSN: configured in `VITE_SENTRY_DSN` env var
+- Backend DSN: configured in `SENTRY_DSN` env var
+- Errors are reported to Sentry for monitoring

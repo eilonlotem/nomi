@@ -800,8 +800,13 @@ const cancelRecording = () => {
 }
 
 const uploadVoiceMessage = async (audioBlob, duration) => {
-  if (!currentConversation.value) return
+  if (!currentConversation.value) {
+    console.error('No current conversation - cannot upload voice message')
+    voiceRecordingError.value = 'No active conversation'
+    return
+  }
   
+  console.log('Uploading voice message to conversation:', currentConversation.value)
   isUploadingVoice.value = true
   voiceRecordingError.value = null
   

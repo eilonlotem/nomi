@@ -566,10 +566,180 @@ const mockChat = computed(() => ({
     time: new Date(msg.sent_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
     reaction: null,
     isRead: msg.is_read,
+    // Voice message fields
+    messageType: msg.message_type || 'text',
+    audioUrl: msg.audio_url,
+    audioDuration: msg.audio_duration || 0,
+    isUploading: msg._uploading || false,
   })),
 }))
 
+// Voice playback state
+const playingAudioId = ref(null)
+const audioPlayer = ref(null)
+
+const playVoiceMessage = (messageId, audioUrl) => {
+  // Stop current audio if playing
+  if (audioPlayer.value) {
+    audioPlayer.value.pause()
+    audioPlayer.value = null
+  }
+  
+  if (playingAudioId.value === messageId) {
+    // Was playing this message, now stopped
+    playingAudioId.value = null
+    return
+  }
+  
+  // Play new audio
+  audioPlayer.value = new Audio(audioUrl)
+  playingAudioId.value = messageId
+  
+  audioPlayer.value.onended = () => {
+    playingAudioId.value = null
+    audioPlayer.value = null
+  }
+  
+  audioPlayer.value.onerror = () => {
+    playingAudioId.value = null
+    audioPlayer.value = null
+  }
+  
+  audioPlayer.value.play()
+}
+
+const formatVoiceDuration = (seconds) => {
+  if (!seconds) return '0:00'
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
 const newMessage = ref('')
+
+// Voice recording state
+const isRecording = ref(false)
+const recordingDuration = ref(0)
+const recordingTimer = ref(null)
+const mediaRecorder = ref(null)
+const audioChunks = ref([])
+const isUploadingVoice = ref(false)
+
+// Voice recording functions
+const startRecording = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    mediaRecorder.value = new MediaRecorder(stream, { mimeType: 'audio/webm' })
+    audioChunks.value = []
+    
+    mediaRecorder.value.ondataavailable = (event) => {
+      if (event.data.size > 0) {
+        audioChunks.value.push(event.data)
+      }
+    }
+    
+    mediaRecorder.value.onstop = async () => {
+      const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' })
+      
+      // Stop all tracks
+      stream.getTracks().forEach(track => track.stop())
+      
+      // Upload the voice message
+      await uploadVoiceMessage(audioBlob, recordingDuration.value)
+    }
+    
+    mediaRecorder.value.start()
+    isRecording.value = true
+    recordingDuration.value = 0
+    
+    // Start timer
+    recordingTimer.value = setInterval(() => {
+      recordingDuration.value++
+      // Max recording time: 2 minutes
+      if (recordingDuration.value >= 120) {
+        stopRecording()
+      }
+    }, 1000)
+    
+  } catch (error) {
+    console.error('Failed to start recording:', error)
+    // Could show a toast/alert here
+  }
+}
+
+const stopRecording = () => {
+  if (mediaRecorder.value && isRecording.value) {
+    clearInterval(recordingTimer.value)
+    recordingTimer.value = null
+    mediaRecorder.value.stop()
+    isRecording.value = false
+  }
+}
+
+const cancelRecording = () => {
+  if (mediaRecorder.value && isRecording.value) {
+    clearInterval(recordingTimer.value)
+    recordingTimer.value = null
+    
+    // Stop the recorder but don't upload
+    mediaRecorder.value.onstop = () => {
+      const stream = mediaRecorder.value.stream
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop())
+      }
+    }
+    mediaRecorder.value.stop()
+    isRecording.value = false
+    audioChunks.value = []
+    recordingDuration.value = 0
+  }
+}
+
+const uploadVoiceMessage = async (audioBlob, duration) => {
+  if (!currentConversation.value) return
+  
+  isUploadingVoice.value = true
+  
+  // Add optimistic message
+  const tempId = -Date.now()
+  const optimisticMsg = {
+    id: tempId,
+    is_mine: true,
+    message_type: 'voice',
+    content: '🎤 Voice message',
+    audio_url: null,
+    audio_duration: duration,
+    sent_at: new Date().toISOString(),
+    is_read: false,
+    _uploading: true,
+  }
+  chatMessages.value = [...chatMessages.value, optimisticMsg]
+  
+  try {
+    const serverMsg = await chatApi.sendVoiceMessage(currentConversation.value, audioBlob, duration)
+    
+    // Replace optimistic message with server response
+    chatMessages.value = chatMessages.value.map(m => 
+      m.id === tempId ? serverMsg : m
+    )
+    
+    if (serverMsg.id > lastSeenMessageId.value) {
+      lastSeenMessageId.value = serverMsg.id
+    }
+  } catch (error) {
+    console.error('Failed to upload voice message:', error)
+    // Remove failed message
+    chatMessages.value = chatMessages.value.filter(m => m.id !== tempId)
+  } finally {
+    isUploadingVoice.value = false
+  }
+}
+
+const formatRecordingTime = (seconds) => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins}:${secs.toString().padStart(2, '0')}`
+}
 
 // Message reactions
 const reactions = [
@@ -1924,22 +2094,6 @@ const constellationPoints = computed(() => {
           <span class="italic">{{ t('motto') }}</span>
           <span class="inline-block animate-wiggle" style="animation-delay: 0.2s;">✿</span>
         </p>
-
-        <!-- Organic Stats Cards -->
-        <div class="mb-10 xs:mb-12 grid grid-cols-3 gap-3 animate-slide-up stagger-1">
-          <div class="bg-surface-warm p-4 rounded-[20px] shadow-soft">
-            <p class="text-2xl xs:text-3xl font-display font-bold text-primary">12K+</p>
-            <p class="text-[11px] xs:text-xs text-text-muted mt-1">{{ t('stats.members') }}</p>
-          </div>
-          <div class="bg-surface-warm p-4 rounded-[20px] shadow-soft">
-            <p class="text-2xl xs:text-3xl font-display font-bold text-secondary">3.2K</p>
-            <p class="text-[11px] xs:text-xs text-text-muted mt-1">{{ t('stats.connections') }}</p>
-          </div>
-          <div class="bg-surface-warm p-4 rounded-[20px] shadow-soft">
-            <p class="text-2xl xs:text-3xl font-display font-bold text-accent-dark">89%</p>
-            <p class="text-[11px] xs:text-xs text-text-muted mt-1">{{ t('stats.happy') }}</p>
-          </div>
-        </div>
         
         <!-- Login prompt -->
         <p class="text-sm xs:text-base text-text-muted mb-6 animate-slide-up stagger-2 font-medium">
@@ -3038,7 +3192,7 @@ const constellationPoints = computed(() => {
                   : 'bg-surface text-text-deep rounded-es-md shadow-soft',
                 message.isIcebreaker ? 'ring-2 ring-accent/50' : ''
               ]"
-              @click="message.sender === 'them' && toggleReactionMenu(message.id)"
+              @click="message.sender === 'them' && message.messageType !== 'voice' && toggleReactionMenu(message.id)"
             >
               <!-- Icebreaker Label -->
               <span 
@@ -3048,7 +3202,65 @@ const constellationPoints = computed(() => {
                 {{ t('chat.icebreaker') }}
               </span>
 
-              <p class="text-sm xs:text-base leading-relaxed">{{ getLocalized(message.text) }}</p>
+              <!-- Voice Message -->
+              <div v-if="message.messageType === 'voice'" class="flex items-center gap-3">
+                <!-- Play/Pause Button -->
+                <button
+                  v-if="message.audioUrl && !message.isUploading"
+                  @click.stop="playVoiceMessage(message.id, message.audioUrl)"
+                  :class="[
+                    'w-10 h-10 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors',
+                    message.sender === 'me' ? 'bg-white/20 text-white' : 'bg-primary-light text-primary'
+                  ]"
+                  :aria-label="playingAudioId === message.id ? t('chat.pauseVoice') : t('chat.playVoice')"
+                >
+                  <!-- Playing indicator -->
+                  <svg v-if="playingAudioId === message.id" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="5" width="4" height="14" rx="1"/>
+                    <rect x="14" y="5" width="4" height="14" rx="1"/>
+                  </svg>
+                  <!-- Play icon -->
+                  <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </button>
+                
+                <!-- Uploading indicator -->
+                <div v-else-if="message.isUploading" class="w-10 h-10 flex items-center justify-center">
+                  <svg class="w-5 h-5 animate-spin" :class="message.sender === 'me' ? 'text-white/70' : 'text-primary'" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </div>
+                
+                <!-- Waveform visualization (decorative) -->
+                <div class="flex items-center gap-0.5 flex-1">
+                  <div 
+                    v-for="i in 20" 
+                    :key="i"
+                    :class="[
+                      'w-1 rounded-full transition-all duration-100',
+                      message.sender === 'me' ? 'bg-white/50' : 'bg-primary/30',
+                      playingAudioId === message.id ? 'animate-pulse' : ''
+                    ]"
+                    :style="{ height: `${Math.random() * 16 + 8}px` }"
+                  ></div>
+                </div>
+                
+                <!-- Duration -->
+                <span 
+                  :class="[
+                    'text-xs font-mono shrink-0',
+                    message.sender === 'me' ? 'text-white/70' : 'text-text-muted'
+                  ]"
+                >
+                  {{ formatVoiceDuration(message.audioDuration) }}
+                </span>
+              </div>
+
+              <!-- Text Message -->
+              <p v-else class="text-sm xs:text-base leading-relaxed">{{ getLocalized(message.text) }}</p>
+              
               <div class="flex items-center justify-between gap-2 mt-1">
                 <p 
                   :class="[
@@ -3112,8 +3324,46 @@ const constellationPoints = computed(() => {
         </div>
       </Transition>
       
-      <!-- Input Area -->
+      <!-- Input Area - Recording Mode -->
       <div 
+        v-if="isRecording"
+        class="sticky bottom-0 bg-red-50 border-t border-red-200 p-3 xs:p-4 bottom-bar-safe"
+      >
+        <div class="max-w-lg mx-auto flex items-center gap-3">
+          <!-- Cancel Button -->
+          <button
+            @click="cancelRecording"
+            class="w-10 h-10 xs:w-11 xs:h-11 rounded-full bg-white text-red-500 shadow-soft flex items-center justify-center shrink-0 touch-manipulation active:scale-90"
+            :aria-label="t('chat.cancelRecording')"
+          >
+            <svg class="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+          
+          <!-- Recording Indicator -->
+          <div class="flex-1 flex items-center gap-3">
+            <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+            <span class="text-red-600 font-medium text-sm xs:text-base">{{ t('chat.recording') }}</span>
+            <span class="text-red-500 font-mono text-sm xs:text-base">{{ formatRecordingTime(recordingDuration) }}</span>
+          </div>
+          
+          <!-- Stop/Send Button -->
+          <button
+            @click="stopRecording"
+            class="w-12 h-12 xs:w-14 xs:h-14 rounded-full bg-red-500 text-white shadow-button flex items-center justify-center shrink-0 touch-manipulation active:scale-90 animate-pulse"
+            :aria-label="t('chat.stopRecording')"
+          >
+            <svg class="w-6 h-6 xs:w-7 xs:h-7" fill="currentColor" viewBox="0 0 24 24">
+              <rect x="6" y="6" width="12" height="12" rx="2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Input Area - Normal Mode -->
+      <div 
+        v-else
         class="sticky bottom-0 bg-surface border-t border-border p-3 xs:p-4 bottom-bar-safe"
         :class="{ 'pb-1': isKeyboardOpen }"
       >
@@ -3131,11 +3381,20 @@ const constellationPoints = computed(() => {
 
           <!-- Voice Note Button -->
           <button
-            class="w-10 h-10 xs:w-11 xs:h-11 rounded-full bg-primary-light text-primary flex items-center justify-center shrink-0 touch-manipulation active:scale-90"
+            @click="startRecording"
+            :disabled="isUploadingVoice"
+            :class="[
+              'w-10 h-10 xs:w-11 xs:h-11 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors',
+              isUploadingVoice ? 'bg-gray-200 text-gray-400' : 'bg-primary-light text-primary'
+            ]"
             :aria-label="t('a11y.recordVoice')"
           >
-            <svg class="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg v-if="!isUploadingVoice" class="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+            </svg>
+            <svg v-else class="w-5 h-5 xs:w-6 xs:h-6 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           </button>
           

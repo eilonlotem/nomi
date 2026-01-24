@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17894583004"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-17894583004');
+    </script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מפת אתר | נומי</title>
+    <meta name="description" content="מפת האתר של נומי - כל העמודים במקום אחד לניווט קל">
+    <link rel="canonical" href="https://nomi-online.com/sitemap.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --primary: #F97316; --secondary: #E11D48; --text: #0F172A; --text-muted: #475569; --bg: #FFFBF7; --border: rgba(0, 0, 0, 0.06); }
+        body { font-family: 'Rubik', sans-serif; line-height: 1.7; color: var(--text); background: var(--bg); }
+        html[dir="ltr"] body { font-family: 'Inter', sans-serif; }
+        [data-lang="en"] { display: none; } [data-lang="he"] { display: block; }
+        html[dir="ltr"] [data-lang="en"] { display: block; } html[dir="ltr"] [data-lang="he"] { display: none; }
+        span[data-lang="en"] { display: none; } span[data-lang="he"] { display: inline; }
+        html[dir="ltr"] span[data-lang="en"] { display: inline; } html[dir="ltr"] span[data-lang="he"] { display: none; }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 251, 247, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+        .nav-logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .nav-actions { display: flex; gap: 1rem; }
+        .lang-toggle { background: transparent; border: 2px solid var(--border); padding: 0.5rem 1rem; border-radius: 100px; font-weight: 600; cursor: pointer; color: var(--text); }
+        .nav-cta { background: var(--text); color: white; padding: 0.75rem 1.5rem; border-radius: 100px; text-decoration: none; font-weight: 600; }
+        .page-header { padding: 8rem 2rem 3rem; text-align: center; }
+        .page-header h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .page-header p { color: var(--text-muted); font-size: 1.1rem; }
+        .sitemap-content { max-width: 900px; margin: 0 auto; padding: 2rem; }
+        .sitemap-section { margin-bottom: 3rem; }
+        .sitemap-section h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .sitemap-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+        .sitemap-link { background: white; padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--text); transition: all 0.3s; }
+        .sitemap-link:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); border-color: var(--primary); }
+        .sitemap-link .icon { font-size: 1.5rem; }
+        .sitemap-link .text h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.15rem; }
+        .sitemap-link .text p { font-size: 0.85rem; color: var(--text-muted); }
+        footer { background: var(--text); color: white; padding: 3rem 2rem; margin-top: 4rem; }
+        .footer-inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
+        .footer-brand { font-size: 1.25rem; font-weight: 700; }
+        .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+        footer a { color: white; opacity: 0.7; text-decoration: none; }
+        .copyright { width: 100%; text-align: center; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); opacity: 0.5; }
+        @media (max-width: 768px) { .footer-inner { flex-direction: column; text-align: center; } .footer-links { justify-content: center; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-logo"><span data-lang="he">נומי</span><span data-lang="en">Nomi</span></a>
+        <div class="nav-actions">
+            <button class="lang-toggle" onclick="toggleLanguage()"><span data-lang="he">🇬🇧 English</span><span data-lang="en">🇮🇱 עברית</span></button>
+            <a href="/" class="nav-cta"><span data-lang="he">התחברות</span><span data-lang="en">Login</span></a>
+        </div>
+    </nav>
+
+    <header class="page-header">
+        <h1><span data-lang="he">מפת אתר 🗺️</span><span data-lang="en">Sitemap 🗺️</span></h1>
+        <p><span data-lang="he">כל העמודים של נומי במקום אחד</span><span data-lang="en">All Nomi pages in one place</span></p>
+    </header>
+
+    <main class="sitemap-content">
+        <section class="sitemap-section">
+            <h2>🏠 <span data-lang="he">עמודים ראשיים</span><span data-lang="en">Main Pages</span></h2>
+            <div class="sitemap-links">
+                <a href="/" class="sitemap-link">
+                    <span class="icon">🏠</span>
+                    <div class="text">
+                        <h3><span data-lang="he">דף הבית</span><span data-lang="en">Home</span></h3>
+                        <p><span data-lang="he">התחברות והרשמה</span><span data-lang="en">Login and sign up</span></p>
+                    </div>
+                </a>
+                <a href="/about.html" class="sitemap-link">
+                    <span class="icon">💜</span>
+                    <div class="text">
+                        <h3><span data-lang="he">עלינו</span><span data-lang="en">About Us</span></h3>
+                        <p><span data-lang="he">הסיפור והמשימה שלנו</span><span data-lang="en">Our story and mission</span></p>
+                    </div>
+                </a>
+                <a href="/faq.html" class="sitemap-link">
+                    <span class="icon">❓</span>
+                    <div class="text">
+                        <h3><span data-lang="he">שאלות נפוצות</span><span data-lang="en">FAQ</span></h3>
+                        <p><span data-lang="he">תשובות לשאלות נפוצות</span><span data-lang="en">Answers to common questions</span></p>
+                    </div>
+                </a>
+                <a href="/contact.html" class="sitemap-link">
+                    <span class="icon">💬</span>
+                    <div class="text">
+                        <h3><span data-lang="he">צור קשר</span><span data-lang="en">Contact</span></h3>
+                        <p><span data-lang="he">דברו איתנו</span><span data-lang="en">Get in touch</span></p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section class="sitemap-section">
+            <h2>🛡️ <span data-lang="he">בטיחות ונגישות</span><span data-lang="en">Safety & Accessibility</span></h2>
+            <div class="sitemap-links">
+                <a href="/safety.html" class="sitemap-link">
+                    <span class="icon">🛡️</span>
+                    <div class="text">
+                        <h3><span data-lang="he">בטיחות</span><span data-lang="en">Safety</span></h3>
+                        <p><span data-lang="he">תכונות הגנה וטיפים</span><span data-lang="en">Protection features and tips</span></p>
+                    </div>
+                </a>
+                <a href="/accessibility.html" class="sitemap-link">
+                    <span class="icon">♿</span>
+                    <div class="text">
+                        <h3><span data-lang="he">נגישות</span><span data-lang="en">Accessibility</span></h3>
+                        <p><span data-lang="he">הצהרת נגישות</span><span data-lang="en">Accessibility statement</span></p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <section class="sitemap-section">
+            <h2>📜 <span data-lang="he">משפטי</span><span data-lang="en">Legal</span></h2>
+            <div class="sitemap-links">
+                <a href="/terms.html" class="sitemap-link">
+                    <span class="icon">📋</span>
+                    <div class="text">
+                        <h3><span data-lang="he">תנאי שימוש</span><span data-lang="en">Terms of Service</span></h3>
+                        <p><span data-lang="he">כללי השימוש באפליקציה</span><span data-lang="en">App usage rules</span></p>
+                    </div>
+                </a>
+                <a href="/privacy.html" class="sitemap-link">
+                    <span class="icon">🔒</span>
+                    <div class="text">
+                        <h3><span data-lang="he">מדיניות פרטיות</span><span data-lang="en">Privacy Policy</span></h3>
+                        <p><span data-lang="he">איך אנחנו מגנים על המידע שלכם</span><span data-lang="en">How we protect your data</span></p>
+                    </div>
+                </a>
+                <a href="/data-deletion.html" class="sitemap-link">
+                    <span class="icon">🗑️</span>
+                    <div class="text">
+                        <h3><span data-lang="he">מחיקת מידע</span><span data-lang="en">Data Deletion</span></h3>
+                        <p><span data-lang="he">איך למחוק את המידע שלכם</span><span data-lang="en">How to delete your data</span></p>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand"><span data-lang="he">נומי 🧡</span><span data-lang="en">Nomi 🧡</span></div>
+            <div class="footer-links">
+                <a href="/about.html"><span data-lang="he">עלינו</span><span data-lang="en">About</span></a>
+                <a href="/faq.html"><span data-lang="he">שאלות נפוצות</span><span data-lang="en">FAQ</span></a>
+                <a href="/safety.html"><span data-lang="he">בטיחות</span><span data-lang="en">Safety</span></a>
+                <a href="/terms.html"><span data-lang="he">תנאים</span><span data-lang="en">Terms</span></a>
+                <a href="/privacy.html"><span data-lang="he">פרטיות</span><span data-lang="en">Privacy</span></a>
+            </div>
+            <p class="copyright">© 2026 Nomi. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleLanguage() {
+            const html = document.documentElement;
+            html.setAttribute('lang', html.getAttribute('lang') === 'he' ? 'en' : 'he');
+            html.setAttribute('dir', html.getAttribute('lang') === 'he' ? 'rtl' : 'ltr');
+            localStorage.setItem('nomi-lang', html.getAttribute('lang'));
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('nomi-lang') === 'en') {
+                document.documentElement.setAttribute('lang', 'en');
+                document.documentElement.setAttribute('dir', 'ltr');
+            }
+        });
+    </script>
+</body>
+</html>

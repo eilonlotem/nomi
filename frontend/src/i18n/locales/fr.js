@@ -101,6 +101,13 @@ export default {
     disconnectTitle: 'Se déconnecter du match ?',
     disconnectMessage: 'Cela supprimera cette personne de vos matchs et effacera tous les messages. Cette action est irréversible.',
     disconnectConfirm: 'Déconnecter',
+    // Voice recording
+    recording: 'Enregistrement...',
+    cancelRecording: "Annuler l'enregistrement",
+    stopRecording: 'Arrêter et envoyer',
+    playVoice: 'Lire le message vocal',
+    pauseVoice: 'Mettre en pause le message vocal',
+    voiceMessage: 'Message vocal',
   },
   
   // Icebreaker prompts

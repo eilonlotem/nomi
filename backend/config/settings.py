@@ -188,15 +188,17 @@ REST_FRAMEWORK: dict[str, Any] = {
 
 
 # CORS Settings
-# Default includes localhost for development and production frontend URLs
-_default_origins = ",".join([
+# Always include production domains + any additional from env var
+_required_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "https://frontend-ylalo.vercel.app",
     "https://nomi-online.com",
     "https://www.nomi-online.com",
-])
-CORS_ALLOWED_ORIGINS: list[str] = os.getenv("CORS_ALLOWED_ORIGINS", _default_origins).split(",")
+]
+_extra_origins = os.getenv("CORS_ALLOWED_ORIGINS", "")
+_extra_list = [o.strip() for o in _extra_origins.split(",") if o.strip()]
+CORS_ALLOWED_ORIGINS: list[str] = list(set(_required_origins + _extra_list))
 
 CORS_ALLOW_CREDENTIALS: bool = True
 

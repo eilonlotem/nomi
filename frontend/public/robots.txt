@@ -1,0 +1,23 @@
+# Robots.txt for Nomi Dating App
+# https://nomi-online.com
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://nomi-online.com/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Disallow any admin or internal paths (if any exist)
+Disallow: /api/
+Disallow: /admin/
+
+# Allow all static assets
+Allow: /assets/
+Allow: /*.css
+Allow: /*.js
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.svg

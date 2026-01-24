@@ -2,7 +2,48 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "headers": [
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        { "key": "Content-Type", "value": "application/xml" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        { "key": "Content-Type", "value": "text/plain" },
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
+      ]
+    },
+    {
+      "source": "/og-image.svg",
+      "headers": [
+        { "key": "Content-Type", "value": "image/svg+xml" },
+        { "key": "Cache-Control", "value": "public, max-age=604800" }
+      ]
+    },
+    {
+      "source": "/(.*).html",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    }
+  ],
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "/sitemap.xml" },
+    { "source": "/robots.txt", "destination": "/robots.txt" },
+    { "source": "/og-image.svg", "destination": "/og-image.svg" },
+    { "source": "/about.html", "destination": "/about.html" },
+    { "source": "/faq.html", "destination": "/faq.html" },
+    { "source": "/safety.html", "destination": "/safety.html" },
+    { "source": "/accessibility.html", "destination": "/accessibility.html" },
+    { "source": "/contact.html", "destination": "/contact.html" },
+    { "source": "/sitemap.html", "destination": "/sitemap.html" },
+    { "source": "/privacy.html", "destination": "/privacy.html" },
+    { "source": "/terms.html", "destination": "/terms.html" },
+    { "source": "/data-deletion.html", "destination": "/data-deletion.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

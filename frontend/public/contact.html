@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17894583004"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-17894583004');
+    </script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>צור קשר | נומי - אפליקציית היכרויות לאנשים עם מוגבלויות</title>
+    <meta name="description" content="צרו קשר עם צוות נומי. אנחנו כאן לעזור בכל שאלה, הצעה או בעיה. שלחו מייל או מלאו את הטופס.">
+    <link rel="canonical" href="https://nomi-online.com/contact.html">
+    <link rel="alternate" hreflang="he" href="https://nomi-online.com/contact.html">
+    <link rel="alternate" hreflang="en" href="https://nomi-online.com/contact.html?lang=en">
+    <meta property="og:title" content="צור קשר | נומי">
+    <meta property="og:description" content="צרו קשר עם צוות נומי">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Nomi",
+        "url": "https://nomi-online.com",
+        "logo": "https://nomi-online.com/logo.png",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "email": "hello@nomi.app",
+            "contactType": "customer service",
+            "availableLanguage": ["Hebrew", "English", "Arabic", "French", "Spanish"]
+        },
+        "sameAs": ["https://facebook.com/nomiapp", "https://instagram.com/nomiapp"]
+    }
+    </script>
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --primary: #F97316; --secondary: #E11D48; --accent: #7C3AED; --text: #0F172A; --text-muted: #475569; --bg: #FFFBF7; --border: rgba(0, 0, 0, 0.06); }
+        body { font-family: 'Rubik', sans-serif; line-height: 1.7; color: var(--text); background: var(--bg); }
+        html[dir="ltr"] body { font-family: 'Inter', sans-serif; }
+        [data-lang="en"] { display: none; } [data-lang="he"] { display: block; }
+        html[dir="ltr"] [data-lang="en"] { display: block; } html[dir="ltr"] [data-lang="he"] { display: none; }
+        span[data-lang="en"] { display: none; } span[data-lang="he"] { display: inline; }
+        html[dir="ltr"] span[data-lang="en"] { display: inline; } html[dir="ltr"] span[data-lang="he"] { display: none; }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 251, 247, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+        .nav-logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .nav-actions { display: flex; gap: 1rem; }
+        .lang-toggle { background: transparent; border: 2px solid var(--border); padding: 0.5rem 1rem; border-radius: 100px; font-weight: 600; cursor: pointer; color: var(--text); }
+        .nav-cta { background: var(--text); color: white; padding: 0.75rem 1.5rem; border-radius: 100px; text-decoration: none; font-weight: 600; }
+        .hero { padding: 10rem 2rem 4rem; text-align: center; background: linear-gradient(180deg, #FEF3C7 0%, var(--bg) 100%); }
+        .hero h1 { font-size: clamp(2.5rem, 6vw, 3.5rem); font-weight: 800; margin-bottom: 1rem; }
+        .hero p { font-size: 1.2rem; color: var(--text-muted); max-width: 500px; margin: 0 auto; }
+        .contact-section { max-width: 1000px; margin: 0 auto; padding: 4rem 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+        .contact-info h2 { font-size: 1.5rem; margin-bottom: 2rem; }
+        .contact-item { display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 2rem; }
+        .contact-item .icon { width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+        .contact-item h3 { font-size: 1.1rem; margin-bottom: 0.25rem; }
+        .contact-item p { color: var(--text-muted); font-size: 0.95rem; }
+        .contact-item a { color: var(--primary); text-decoration: none; }
+        .contact-form { background: white; padding: 2.5rem; border-radius: 24px; border: 1px solid var(--border); }
+        .contact-form h2 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 1rem; border: 2px solid var(--border); border-radius: 12px; font-size: 1rem; font-family: inherit; transition: border-color 0.3s; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: var(--primary); }
+        .form-group textarea { min-height: 150px; resize: vertical; }
+        .submit-btn { width: 100%; padding: 1rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; border: none; border-radius: 100px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; }
+        .submit-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(249, 115, 22, 0.3); }
+        footer { background: var(--text); color: white; padding: 3rem 2rem; margin-top: 4rem; }
+        .footer-inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
+        .footer-brand { font-size: 1.25rem; font-weight: 700; }
+        .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+        footer a { color: white; opacity: 0.7; text-decoration: none; }
+        .copyright { width: 100%; text-align: center; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); opacity: 0.5; }
+        @media (max-width: 768px) { .contact-section { grid-template-columns: 1fr; gap: 2rem; } .footer-inner { flex-direction: column; text-align: center; } .footer-links { justify-content: center; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-logo"><span data-lang="he">נומי</span><span data-lang="en">Nomi</span></a>
+        <div class="nav-actions">
+            <button class="lang-toggle" onclick="toggleLanguage()"><span data-lang="he">🇬🇧 English</span><span data-lang="en">🇮🇱 עברית</span></button>
+            <a href="/" class="nav-cta"><span data-lang="he">התחברות</span><span data-lang="en">Login</span></a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1><span data-lang="he">צרו קשר 💬</span><span data-lang="en">Contact Us 💬</span></h1>
+        <p><span data-lang="he">יש לכם שאלה, הצעה או בעיה? אנחנו כאן בשבילכם</span><span data-lang="en">Have a question, suggestion, or issue? We're here for you</span></p>
+    </section>
+
+    <section class="contact-section">
+        <div class="contact-info">
+            <h2><span data-lang="he">דרכי התקשרות</span><span data-lang="en">Get in Touch</span></h2>
+            
+            <div class="contact-item">
+                <div class="icon">📧</div>
+                <div>
+                    <h3><span data-lang="he">מייל כללי</span><span data-lang="en">General Email</span></h3>
+                    <p><a href="mailto:hello@nomi.app">hello@nomi.app</a></p>
+                </div>
+            </div>
+            
+            <div class="contact-item">
+                <div class="icon">🛡️</div>
+                <div>
+                    <h3><span data-lang="he">בטיחות</span><span data-lang="en">Safety</span></h3>
+                    <p><a href="mailto:safety@nomi.app">safety@nomi.app</a></p>
+                    <p><span data-lang="he">לדיווחים דחופים</span><span data-lang="en">For urgent reports</span></p>
+                </div>
+            </div>
+            
+            <div class="contact-item">
+                <div class="icon">♿</div>
+                <div>
+                    <h3><span data-lang="he">נגישות</span><span data-lang="en">Accessibility</span></h3>
+                    <p><a href="mailto:accessibility@nomi.app">accessibility@nomi.app</a></p>
+                    <p><span data-lang="he">לבעיות וההצעות נגישות</span><span data-lang="en">For accessibility issues and suggestions</span></p>
+                </div>
+            </div>
+            
+            <div class="contact-item">
+                <div class="icon">🤝</div>
+                <div>
+                    <h3><span data-lang="he">שותפויות</span><span data-lang="en">Partnerships</span></h3>
+                    <p><a href="mailto:partners@nomi.app">partners@nomi.app</a></p>
+                    <p><span data-lang="he">לשיתופי פעולה ועסקים</span><span data-lang="en">For collaborations and business</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="contact-form">
+            <h2><span data-lang="he">שלחו הודעה</span><span data-lang="en">Send a Message</span></h2>
+            <form action="mailto:hello@nomi.app" method="post" enctype="text/plain">
+                <div class="form-group">
+                    <label><span data-lang="he">שם</span><span data-lang="en">Name</span></label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label><span data-lang="he">מייל</span><span data-lang="en">Email</span></label>
+                    <input type="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label><span data-lang="he">נושא</span><span data-lang="en">Subject</span></label>
+                    <select name="subject">
+                        <option value="general"><span data-lang="he">שאלה כללית</span><span data-lang="en">General Question</span></option>
+                        <option value="bug"><span data-lang="he">דיווח על באג</span><span data-lang="en">Bug Report</span></option>
+                        <option value="feature"><span data-lang="he">בקשת פיצ'ר</span><span data-lang="en">Feature Request</span></option>
+                        <option value="safety"><span data-lang="he">בעיית בטיחות</span><span data-lang="en">Safety Issue</span></option>
+                        <option value="other"><span data-lang="he">אחר</span><span data-lang="en">Other</span></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><span data-lang="he">הודעה</span><span data-lang="en">Message</span></label>
+                    <textarea name="message" required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <span data-lang="he">שלח הודעה</span>
+                    <span data-lang="en">Send Message</span>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand"><span data-lang="he">נומי 🧡</span><span data-lang="en">Nomi 🧡</span></div>
+            <div class="footer-links">
+                <a href="/about.html"><span data-lang="he">עלינו</span><span data-lang="en">About</span></a>
+                <a href="/faq.html"><span data-lang="he">שאלות נפוצות</span><span data-lang="en">FAQ</span></a>
+                <a href="/safety.html"><span data-lang="he">בטיחות</span><span data-lang="en">Safety</span></a>
+                <a href="/terms.html"><span data-lang="he">תנאים</span><span data-lang="en">Terms</span></a>
+                <a href="/privacy.html"><span data-lang="he">פרטיות</span><span data-lang="en">Privacy</span></a>
+            </div>
+            <p class="copyright">© 2026 Nomi. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleLanguage() {
+            const html = document.documentElement;
+            html.setAttribute('lang', html.getAttribute('lang') === 'he' ? 'en' : 'he');
+            html.setAttribute('dir', html.getAttribute('lang') === 'he' ? 'rtl' : 'ltr');
+            localStorage.setItem('nomi-lang', html.getAttribute('lang'));
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('nomi-lang') === 'en') {
+                document.documentElement.setAttribute('lang', 'en');
+                document.documentElement.setAttribute('dir', 'ltr');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -22,6 +22,11 @@ urlpatterns: list[URLPattern] = [
         views.ConversationMessagesView.as_view(),
         name="conversation-messages",
     ),
+    path(
+        "conversations/<int:conversation_id>/voice/",
+        views.VoiceMessageUploadView.as_view(),
+        name="voice-message-upload",
+    ),
     # Block
     path("block/", views.BlockUserView.as_view(), name="block-user"),
     path("block/<int:user_id>/", views.BlockUserView.as_view(), name="unblock-user"),

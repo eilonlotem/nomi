@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import logging
 from typing import Any, Optional, cast
 
 from django.db.models import Q, QuerySet
 from rest_framework import generics, permissions, status
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,7 +22,10 @@ from .serializers import (
     MatchSerializer,
     MessageSerializer,
     SwipeSerializer,
+    VoiceMessageSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class DiscoveryView(APIView):
@@ -344,6 +349,90 @@ class ConversationMessagesView(generics.ListCreateAPIView):  # type: ignore[type
             )
             # Update conversation timestamp
             conversation.save()
+
+
+class VoiceMessageUploadView(APIView):
+    """Upload voice message for a conversation."""
+
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_conversation(self, user: User, conversation_id: int) -> Optional[Conversation]:
+        """Get conversation if user is a participant."""
+        return (
+            Conversation.objects.filter(id=conversation_id)
+            .filter(Q(match__user1=user) | Q(match__user2=user))
+            .first()
+        )
+
+    def post(self, request: Request, conversation_id: int) -> Response:
+        """Upload a voice message."""
+        user = cast(User, request.user)
+        conversation = self.get_conversation(user, conversation_id)
+
+        if not conversation:
+            return Response(
+                {"error": "Conversation not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = VoiceMessageSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        audio_file = serializer.validated_data["audio"]
+        duration = serializer.validated_data.get("duration", 0)
+
+        try:
+            # Upload to Cloudinary
+            import cloudinary.uploader
+
+            upload_result = cloudinary.uploader.upload(
+                audio_file,
+                resource_type="video",  # Cloudinary uses 'video' for audio
+                folder="nomi/voice_messages",
+                format="mp3",
+            )
+            audio_url = upload_result.get("secure_url", "")
+
+            if not audio_url:
+                return Response(
+                    {"error": "Failed to upload audio"},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+
+            # Create the message
+            message = Message.objects.create(
+                conversation=conversation,
+                sender=user,
+                message_type="voice",
+                content="🎤 Voice message",
+                audio_url=audio_url,
+                audio_duration=duration,
+            )
+
+            # Update conversation timestamp
+            conversation.save()
+
+            logger.info(f"Voice message uploaded: {message.id} by user {user.id}")
+
+            return Response(
+                MessageSerializer(message, context={"request": request}).data,
+                status=status.HTTP_201_CREATED,
+            )
+
+        except ImportError:
+            logger.error("Cloudinary not installed")
+            return Response(
+                {"error": "Voice messages not configured"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        except Exception as e:
+            logger.error(f"Error uploading voice message: {e}")
+            return Response(
+                {"error": "Failed to upload voice message"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class BlockUserView(APIView):

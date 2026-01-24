@@ -315,6 +315,34 @@ export const chatApi = {
       method: 'POST',
       body: JSON.stringify({ content, message_type: messageType }),
     }),
+  
+  /**
+   * Upload a voice message
+   * @param {number} conversationId - Conversation ID
+   * @param {Blob} audioBlob - Audio blob from MediaRecorder
+   * @param {number} duration - Duration in seconds
+   */
+  sendVoiceMessage: async (conversationId, audioBlob, duration = 0) => {
+    const token = getToken()
+    const formData = new FormData()
+    formData.append('audio', audioBlob, 'voice_message.webm')
+    formData.append('duration', duration.toString())
+    
+    const response = await fetch(`${API_URL}/conversations/${conversationId}/voice/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${token}`,
+      },
+      body: formData,
+    })
+    
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Upload failed' }))
+      throw new Error(error.error || 'Failed to upload voice message')
+    }
+    
+    return response.json()
+  },
 }
 
 /**

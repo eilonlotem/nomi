@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+    
+    <!-- Homepage - Main App -->
+    <url>
+        <loc>https://nomi-online.com/</loc>
+        <xhtml:link rel="alternate" hreflang="he" href="https://nomi-online.com/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://nomi-online.com/?lang=en"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://nomi-online.com/"/>
+        <lastmod>2026-01-20</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+    
+    <!-- About Page - High Priority Landing Page -->
+    <url>
+        <loc>https://nomi-online.com/about.html</loc>
+        <xhtml:link rel="alternate" hreflang="he" href="https://nomi-online.com/about.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://nomi-online.com/about.html?lang=en"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://nomi-online.com/about.html"/>
+        <lastmod>2026-01-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+        <image:image>
+            <image:loc>https://nomi-online.com/og-image.svg</image:loc>
+            <image:title>Nomi - Inclusive Dating App</image:title>
+        </image:image>
+    </url>
+    
+    <!-- FAQ Page - Important for SEO -->
+    <url>
+        <loc>https://nomi-online.com/faq.html</loc>
+        <xhtml:link rel="alternate" hreflang="he" href="https://nomi-online.com/faq.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://nomi-online.com/faq.html?lang=en"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://nomi-online.com/faq.html"/>
+        <lastmod>2026-01-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <!-- Safety Page -->
+    <url>
+        <loc>https://nomi-online.com/safety.html</loc>
+        <xhtml:link rel="alternate" hreflang="he" href="https://nomi-online.com/safety.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://nomi-online.com/safety.html?lang=en"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://nomi-online.com/safety.html"/>
+        <lastmod>2026-01-20</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <!-- Accessibility Page - Important for Brand -->
+    <url>
+        <loc>https://nomi-online.com/accessibility.html</loc>
+        <xhtml:link rel="alternate" hreflang="he" href="https://nomi-online.com/accessibility.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://nomi-online.com/accessibility.html?lang=en"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://nomi-online.com/accessibility.html"/>
+        <lastmod>2026-01-20</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <!-- Contact Page -->
+    <url>
+        <loc>https://nomi-online.com/contact.html</loc>
+        <xhtml:link rel="alternate" hreflang="he" href="https://nomi-online.com/contact.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://nomi-online.com/contact.html?lang=en"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://nomi-online.com/contact.html"/>
+        <lastmod>2026-01-20</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <!-- Privacy Policy -->
+    <url>
+        <loc>https://nomi-online.com/privacy.html</loc>
+        <xhtml:link rel="alternate" hreflang="he" href="https://nomi-online.com/privacy.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://nomi-online.com/privacy.html?lang=en"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://nomi-online.com/privacy.html"/>
+        <lastmod>2026-01-20</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    
+    <!-- Terms of Service -->
+    <url>
+        <loc>https://nomi-online.com/terms.html</loc>
+        <xhtml:link rel="alternate" hreflang="he" href="https://nomi-online.com/terms.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://nomi-online.com/terms.html?lang=en"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://nomi-online.com/terms.html"/>
+        <lastmod>2026-01-20</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    
+    <!-- Data Deletion -->
+    <url>
+        <loc>https://nomi-online.com/data-deletion.html</loc>
+        <xhtml:link rel="alternate" hreflang="he" href="https://nomi-online.com/data-deletion.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://nomi-online.com/data-deletion.html?lang=en"/>
+        <xhtml:link rel="alternate" hreflang="x-default" href="https://nomi-online.com/data-deletion.html"/>
+        <lastmod>2026-01-20</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.4</priority>
+    </url>
+    
+    <!-- HTML Sitemap -->
+    <url>
+        <loc>https://nomi-online.com/sitemap.html</loc>
+        <xhtml:link rel="alternate" hreflang="he" href="https://nomi-online.com/sitemap.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://nomi-online.com/sitemap.html?lang=en"/>
+        <lastmod>2026-01-20</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    
+</urlset>

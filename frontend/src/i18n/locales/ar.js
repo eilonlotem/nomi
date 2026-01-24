@@ -101,6 +101,13 @@ export default {
     disconnectTitle: 'قطع الاتصال من التطابق؟',
     disconnectMessage: 'سيؤدي هذا إلى إزالة هذا الشخص من تطابقاتك وحذف جميع رسائل الدردشة. لا يمكن التراجع عن هذا الإجراء.',
     disconnectConfirm: 'قطع الاتصال',
+    // Voice recording
+    recording: 'جاري التسجيل...',
+    cancelRecording: 'إلغاء التسجيل',
+    stopRecording: 'إيقاف وإرسال',
+    playVoice: 'تشغيل الرسالة الصوتية',
+    pauseVoice: 'إيقاف الرسالة الصوتية مؤقتاً',
+    voiceMessage: 'رسالة صوتية',
   },
   
   // Icebreaker prompts

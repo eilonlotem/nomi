@@ -102,6 +102,13 @@ export default {
     disconnectTitle: 'Disconnect from match?',
     disconnectMessage: 'This will remove this person from your matches and delete all chat messages. This action cannot be undone.',
     disconnectConfirm: 'Disconnect',
+    // Voice recording
+    recording: 'Recording...',
+    cancelRecording: 'Cancel recording',
+    stopRecording: 'Stop and send',
+    playVoice: 'Play voice message',
+    pauseVoice: 'Pause voice message',
+    voiceMessage: 'Voice message',
   },
   
   // Icebreaker prompts

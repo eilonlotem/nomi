@@ -101,6 +101,13 @@ export default {
     disconnectTitle: 'להתנתק מההתאמה?',
     disconnectMessage: 'פעולה זו תסיר את האדם הזה מההתאמות שלך ותמחק את כל ההודעות. לא ניתן לבטל פעולה זו.',
     disconnectConfirm: 'נתק',
+    // Voice recording
+    recording: 'מקליט...',
+    cancelRecording: 'בטל הקלטה',
+    stopRecording: 'עצור ושלח',
+    playVoice: 'נגן הודעה קולית',
+    pauseVoice: 'השהה הודעה קולית',
+    voiceMessage: 'הודעה קולית',
   },
   
   // Icebreaker prompts

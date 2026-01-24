@@ -101,6 +101,13 @@ export default {
     disconnectTitle: '¿Desconectar del match?',
     disconnectMessage: 'Esto eliminará a esta persona de tus matches y borrará todos los mensajes del chat. Esta acción no se puede deshacer.',
     disconnectConfirm: 'Desconectar',
+    // Voice recording
+    recording: 'Grabando...',
+    cancelRecording: 'Cancelar grabación',
+    stopRecording: 'Detener y enviar',
+    playVoice: 'Reproducir mensaje de voz',
+    pauseVoice: 'Pausar mensaje de voz',
+    voiceMessage: 'Mensaje de voz',
   },
   
   // Icebreaker prompts

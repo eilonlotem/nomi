@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17894583004"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-17894583004');
+    </script>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>הצהרת נגישות | נומי - אפליקציית היכרויות נגישה</title>
+    <meta name="description" content="הצהרת הנגישות של נומי. למדו על המחויבות שלנו לנגישות דיגיטלית, תמיכה בקוראי מסך, RTL ועוד.">
+    <link rel="canonical" href="https://nomi-online.com/accessibility.html">
+    <link rel="alternate" hreflang="he" href="https://nomi-online.com/accessibility.html">
+    <link rel="alternate" hreflang="en" href="https://nomi-online.com/accessibility.html?lang=en">
+    <meta property="og:title" content="הצהרת נגישות | נומי">
+    <meta property="og:description" content="המחויבות שלנו לנגישות דיגיטלית מלאה">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --primary: #F97316; --secondary: #E11D48; --accent: #7C3AED; --text: #0F172A; --text-muted: #475569; --bg: #FFFBF7; --border: rgba(0, 0, 0, 0.06); }
+        body { font-family: 'Rubik', sans-serif; line-height: 1.7; color: var(--text); background: var(--bg); }
+        html[dir="ltr"] body { font-family: 'Inter', sans-serif; }
+        [data-lang="en"] { display: none; } [data-lang="he"] { display: block; }
+        html[dir="ltr"] [data-lang="en"] { display: block; } html[dir="ltr"] [data-lang="he"] { display: none; }
+        span[data-lang="en"] { display: none; } span[data-lang="he"] { display: inline; }
+        html[dir="ltr"] span[data-lang="en"] { display: inline; } html[dir="ltr"] span[data-lang="he"] { display: none; }
+        .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(255, 251, 247, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+        .nav-logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+        .nav-actions { display: flex; gap: 1rem; }
+        .lang-toggle { background: transparent; border: 2px solid var(--border); padding: 0.5rem 1rem; border-radius: 100px; font-weight: 600; cursor: pointer; color: var(--text); }
+        .nav-cta { background: var(--text); color: white; padding: 0.75rem 1.5rem; border-radius: 100px; text-decoration: none; font-weight: 600; }
+        .hero { padding: 10rem 2rem 5rem; text-align: center; background: linear-gradient(180deg, #EDE9FE 0%, var(--bg) 100%); }
+        .hero h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; margin-bottom: 1.5rem; }
+        .hero h1 .highlight { color: var(--accent); }
+        .hero p { font-size: 1.25rem; color: var(--text-muted); max-width: 650px; margin: 0 auto; }
+        .content { max-width: 800px; margin: 0 auto; padding: 4rem 2rem; }
+        .section { margin-bottom: 3rem; }
+        .section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--text); display: flex; align-items: center; gap: 0.75rem; }
+        .section p, .section li { color: var(--text-muted); margin-bottom: 1rem; }
+        .section ul { padding-inline-start: 1.5rem; }
+        .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 3rem 0; }
+        .feature-card { background: white; padding: 2rem; border-radius: 20px; border: 1px solid var(--border); text-align: center; }
+        .feature-card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+        .feature-card h3 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+        .feature-card p { font-size: 0.9rem; color: var(--text-muted); }
+        .wcag-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, var(--accent), var(--secondary)); color: white; padding: 1rem 2rem; border-radius: 100px; font-weight: 600; margin: 2rem 0; }
+        footer { background: var(--text); color: white; padding: 3rem 2rem; }
+        .footer-inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; }
+        .footer-brand { font-size: 1.25rem; font-weight: 700; }
+        .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+        footer a { color: white; opacity: 0.7; text-decoration: none; }
+        .copyright { width: 100%; text-align: center; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); opacity: 0.5; }
+        @media (max-width: 768px) { .footer-inner { flex-direction: column; text-align: center; } .footer-links { justify-content: center; } }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="nav-logo"><span data-lang="he">נומי</span><span data-lang="en">Nomi</span></a>
+        <div class="nav-actions">
+            <button class="lang-toggle" onclick="toggleLanguage()"><span data-lang="he">🇬🇧 English</span><span data-lang="en">🇮🇱 עברית</span></button>
+            <a href="/" class="nav-cta"><span data-lang="he">התחברות</span><span data-lang="en">Login</span></a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1><span data-lang="he">הצהרת <span class="highlight">נגישות</span></span><span data-lang="en">Accessibility <span class="highlight">Statement</span></span></h1>
+        <p><span data-lang="he">נגישות היא לא פיצ'ר - היא עקרון ליבה. נומי נבנתה מהיסוד להיות נגישה לכולם.</span><span data-lang="en">Accessibility isn't a feature - it's a core principle. Nomi was built from the ground up to be accessible to everyone.</span></p>
+    </section>
+
+    <main class="content">
+        <div class="wcag-badge">
+            <span>♿</span>
+            <span data-lang="he">עומדים בתקן WCAG 2.1 AA</span>
+            <span data-lang="en">WCAG 2.1 AA Compliant</span>
+        </div>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="icon">👁️</div>
+                <h3><span data-lang="he">תמיכה בקוראי מסך</span><span data-lang="en">Screen Reader Support</span></h3>
+                <p><span data-lang="he">תוויות ARIA מלאות לכל האלמנטים</span><span data-lang="en">Full ARIA labels for all elements</span></p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🔤</div>
+                <h3><span data-lang="he">התאמת טקסט</span><span data-lang="en">Text Adjustment</span></h3>
+                <p><span data-lang="he">הגדלת טקסט וגופנים קריאים</span><span data-lang="en">Text enlargement and readable fonts</span></p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">🎨</div>
+                <h3><span data-lang="he">ניגודיות גבוהה</span><span data-lang="en">High Contrast</span></h3>
+                <p><span data-lang="he">יחסי ניגודיות עומדים בתקן AA</span><span data-lang="en">Contrast ratios meet AA standards</span></p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">⏸️</div>
+                <h3><span data-lang="he">הפחתת תנועה</span><span data-lang="en">Reduced Motion</span></h3>
+                <p><span data-lang="he">תמיכה ב-prefers-reduced-motion</span><span data-lang="en">Supports prefers-reduced-motion</span></p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">↔️</div>
+                <h3><span data-lang="he">תמיכה RTL</span><span data-lang="en">RTL Support</span></h3>
+                <p><span data-lang="he">עברית וערבית מימין לשמאל</span><span data-lang="en">Hebrew and Arabic right-to-left</span></p>
+            </div>
+            <div class="feature-card">
+                <div class="icon">👆</div>
+                <h3><span data-lang="he">מטרות מגע גדולות</span><span data-lang="en">Large Touch Targets</span></h3>
+                <p><span data-lang="he">מינימום 44x44 פיקסלים</span><span data-lang="en">Minimum 44x44 pixels</span></p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 <span data-lang="he">המחויבות שלנו</span><span data-lang="en">Our Commitment</span></h2>
+            <p data-lang="he">נומי מחויבת להנגיש את האפליקציה לאנשים עם מוגבלויות מכל הסוגים. אנחנו מאמינים שכולם ראויים לגישה שווה לאהבה וחיבור.</p>
+            <p data-lang="en">Nomi is committed to making the app accessible to people with disabilities of all types. We believe everyone deserves equal access to love and connection.</p>
+        </div>
+
+        <div class="section">
+            <h2>📋 <span data-lang="he">תכונות נגישות</span><span data-lang="en">Accessibility Features</span></h2>
+            <ul>
+                <li><span data-lang="he">תמיכה מלאה בקוראי מסך (VoiceOver, TalkBack)</span><span data-lang="en">Full screen reader support (VoiceOver, TalkBack)</span></li>
+                <li><span data-lang="he">ניווט מקלדת מלא</span><span data-lang="en">Full keyboard navigation</span></li>
+                <li><span data-lang="he">תוויות ARIA לכל האלמנטים האינטראקטיביים</span><span data-lang="en">ARIA labels for all interactive elements</span></li>
+                <li><span data-lang="he">מבנה HTML סמנטי</span><span data-lang="en">Semantic HTML structure</span></li>
+                <li><span data-lang="he">יחסי ניגודיות העומדים בתקן WCAG AA</span><span data-lang="en">Contrast ratios meeting WCAG AA standards</span></li>
+                <li><span data-lang="he">תמיכה בהגדלת טקסט</span><span data-lang="en">Text scaling support</span></li>
+                <li><span data-lang="he">מטרות מגע גדולות (מינימום 44x44px)</span><span data-lang="en">Large touch targets (minimum 44x44px)</span></li>
+                <li><span data-lang="he">תמיכה ב-prefers-reduced-motion</span><span data-lang="en">Prefers-reduced-motion support</span></li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🌍 <span data-lang="he">שפות נתמכות</span><span data-lang="en">Supported Languages</span></h2>
+            <p data-lang="he">נומי תומכת ב-5 שפות עם תמיכה מלאה ב-RTL:</p>
+            <p data-lang="en">Nomi supports 5 languages with full RTL support:</p>
+            <ul>
+                <li><span data-lang="he">עברית (RTL)</span><span data-lang="en">Hebrew (RTL)</span></li>
+                <li><span data-lang="he">ערבית (RTL)</span><span data-lang="en">Arabic (RTL)</span></li>
+                <li><span data-lang="he">אנגלית</span><span data-lang="en">English</span></li>
+                <li><span data-lang="he">צרפתית</span><span data-lang="en">French</span></li>
+                <li><span data-lang="he">ספרדית</span><span data-lang="en">Spanish</span></li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>📣 <span data-lang="he">משוב</span><span data-lang="en">Feedback</span></h2>
+            <p data-lang="he">אנחנו ממשיכים לשפר את הנגישות על בסיס משוב מהקהילה. אם נתקלתם בבעיית נגישות או יש לכם הצעה לשיפור, אנא צרו קשר:</p>
+            <p data-lang="en">We continue to improve accessibility based on community feedback. If you encounter an accessibility issue or have a suggestion for improvement, please contact us:</p>
+            <p><a href="mailto:accessibility@nomi.app" style="color: var(--primary);">accessibility@nomi.app</a></p>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-brand"><span data-lang="he">נומי 🧡</span><span data-lang="en">Nomi 🧡</span></div>
+            <div class="footer-links">
+                <a href="/about.html"><span data-lang="he">עלינו</span><span data-lang="en">About</span></a>
+                <a href="/faq.html"><span data-lang="he">שאלות נפוצות</span><span data-lang="en">FAQ</span></a>
+                <a href="/safety.html"><span data-lang="he">בטיחות</span><span data-lang="en">Safety</span></a>
+                <a href="/terms.html"><span data-lang="he">תנאים</span><span data-lang="en">Terms</span></a>
+                <a href="/privacy.html"><span data-lang="he">פרטיות</span><span data-lang="en">Privacy</span></a>
+            </div>
+            <p class="copyright">© 2026 Nomi. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleLanguage() {
+            const html = document.documentElement;
+            html.setAttribute('lang', html.getAttribute('lang') === 'he' ? 'en' : 'he');
+            html.setAttribute('dir', html.getAttribute('lang') === 'he' ? 'rtl' : 'ltr');
+            localStorage.setItem('nomi-lang', html.getAttribute('lang'));
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('nomi-lang') === 'en') {
+                document.documentElement.setAttribute('lang', 'en');
+                document.documentElement.setAttribute('dir', 'ltr');
+            }
+        });
+    </script>
+</body>
+</html>

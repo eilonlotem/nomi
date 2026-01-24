@@ -98,6 +98,39 @@ class MessageSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
         return False
 
 
+class VoiceMessageSerializer(serializers.Serializer):  # type: ignore[type-arg]
+    """Serializer for voice message upload."""
+
+    audio = serializers.FileField(required=True)
+    duration = serializers.IntegerField(required=False, default=0)
+
+    def validate_audio(self, value: Any) -> Any:
+        """Validate audio file."""
+        # Check file size (max 10MB)
+        max_size = 10 * 1024 * 1024
+        if value.size > max_size:
+            raise serializers.ValidationError("Audio file too large. Maximum size is 10MB.")
+
+        # Check content type
+        allowed_types = [
+            "audio/webm",
+            "audio/ogg",
+            "audio/mp4",
+            "audio/mpeg",
+            "audio/wav",
+            "audio/mp3",
+            "audio/m4a",
+            "audio/x-m4a",
+        ]
+        content_type = getattr(value, "content_type", "")
+        if content_type and content_type not in allowed_types:
+            raise serializers.ValidationError(
+                f"Unsupported audio format: {content_type}. Allowed: webm, ogg, mp4, mpeg, wav"
+            )
+
+        return value
+
+
 class ConversationSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
     """Serializer for conversations."""
 

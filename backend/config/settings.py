@@ -10,10 +10,29 @@ import os
 from pathlib import Path
 from typing import Any
 
+import sentry_sdk
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
+
+# =============================================================================
+# Sentry Error Tracking
+# =============================================================================
+SENTRY_DSN: str = os.getenv("SENTRY_DSN", "")
+
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring
+        traces_sample_rate=0.2 if not os.getenv("DEBUG", "True").lower() == "true" else 1.0,
+        # Set profiles_sample_rate to 1.0 to profile 100% of sampled transactions
+        profiles_sample_rate=0.1,
+        # Send PII (personally identifiable information) like user IDs
+        send_default_pii=True,
+        # Environment
+        environment="production" if not os.getenv("DEBUG", "True").lower() == "true" else "development",
+    )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR: Path = Path(__file__).resolve().parent.parent

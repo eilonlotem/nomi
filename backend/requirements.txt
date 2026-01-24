@@ -29,6 +29,9 @@ Pillow>=10.0
 gunicorn>=21.0
 whitenoise>=6.6
 
+# Error Tracking
+sentry-sdk[django]>=2.0
+
 # Type checking
 mypy>=1.8
 django-stubs>=4.2

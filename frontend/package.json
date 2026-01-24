@@ -16,6 +16,7 @@
     "test:mobile": "playwright test --project=mobile-chrome --project=mobile-safari"
   },
   "dependencies": {
+    "@sentry/vue": "^8.47.0",
     "vue": "^3.4.21",
     "vue-router": "^4.6.4"
   },

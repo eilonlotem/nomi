@@ -4,6 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ROUTES } from './router'
 import { useI18n } from './composables/useI18n'
 import { useAuth } from './composables/useAuth'
+import { useErrorHandler } from './composables/useErrorHandler'
 import { profileApi, matchingApi, chatApi, userApi, inviteApi, clearCache, getPhotoUrl } from './services/api'
 
 const { t, locale, isRTL, dir, setLocale, getLanguages } = useI18n()
@@ -24,8 +25,13 @@ const {
   handleFacebookCallback,
 } = useAuth()
 
+const { handleCriticalError, handleError, reportError } = useErrorHandler()
+
 // App loading state for smoother transitions
 const appLoading = ref(true)
+
+// Global error state for user feedback
+const globalError = ref(null)
 
 // Get all available languages
 const availableLanguages = getLanguages()
@@ -437,6 +443,21 @@ watch(currentProfileIndex, () => {
 // Discovery profiles from backend only
 const discoveryProfiles = ref([])
 const noMoreProfiles = ref(false)
+
+// Swipe hint visibility (shows for 2 seconds then hides)
+const showSwipeHint = ref(true)
+let swipeHintTimeout = null
+
+// Show hint for 2 seconds when entering discovery view
+watch(() => currentView.value, (newView) => {
+  if (newView === 'discovery') {
+    showSwipeHint.value = true
+    if (swipeHintTimeout) clearTimeout(swipeHintTimeout)
+    swipeHintTimeout = setTimeout(() => {
+      showSwipeHint.value = false
+    }, 10000)
+  }
+}, { immediate: true })
 
 // Current profile - uses backend data only, normalized for template
 const currentProfile = computed(() => {
@@ -885,7 +906,7 @@ const reactions = [
 
 // Tag definitions with gradient colors
 const disabilityTags = [
-  { id: 'wheelchairUser', icon: '♿', gradient: 'from-blue-500 to-cyan-400' },
+  { id: 'wheelchairUser', icon: '🦽', gradient: 'from-blue-500 to-cyan-400' },
   { id: 'neurodivergent', icon: '🧠', gradient: 'from-purple-500 to-pink-400' },
   { id: 'deafHoh', icon: '🦻', gradient: 'from-amber-500 to-orange-400' },
   { id: 'blindLowVision', icon: '👁️', gradient: 'from-emerald-500 to-teal-400' },
@@ -1322,10 +1343,21 @@ const fetchDiscoveryProfiles = async () => {
       currentProfileIndex.value = 0
       noMoreProfiles.value = false
     } else {
+      // Empty state is OK - user has swiped through all profiles
       noMoreProfiles.value = true
     }
   } catch (err) {
-    console.warn('Could not fetch discovery profiles:', err.message)
+    // Report error to Sentry
+    handleError(err, { source: 'fetchDiscoveryProfiles', action: 'discover' })
+    
+    // Check if this is an auth error (401/403) - redirect to login
+    if (err.message?.includes('401') || err.message?.includes('403') || err.message?.includes('Unauthorized')) {
+      handleCriticalError(err, { source: 'fetchDiscoveryProfiles', action: 'authError' }, true)
+      return
+    }
+    
+    // For other errors, set empty state but don't redirect
+    noMoreProfiles.value = true
   }
 }
 
@@ -1343,10 +1375,20 @@ const fetchMatches = async () => {
     } else if (result?.results && Array.isArray(result.results)) {
       matches.value = result.results
     } else {
+      // Empty state is OK
       matches.value = []
     }
   } catch (err) {
-    console.warn('Could not fetch matches:', err.message)
+    // Report error to Sentry
+    handleError(err, { source: 'fetchMatches', action: 'getMatches' })
+    
+    // Check if this is an auth error - redirect to login
+    if (err.message?.includes('401') || err.message?.includes('403') || err.message?.includes('Unauthorized')) {
+      handleCriticalError(err, { source: 'fetchMatches', action: 'authError' }, true)
+      return
+    }
+    
+    // For other errors, set empty state
     matches.value = []
   }
 }
@@ -1359,7 +1401,17 @@ const fetchConversations = async () => {
     const result = await chatApi.getConversations()
     conversations.value = result.results || result || []
   } catch (err) {
-    console.warn('Could not fetch conversations:', err.message)
+    // Report error to Sentry
+    handleError(err, { source: 'fetchConversations', action: 'getConversations' })
+    
+    // Check if this is an auth error - redirect to login
+    if (err.message?.includes('401') || err.message?.includes('403') || err.message?.includes('Unauthorized')) {
+      handleCriticalError(err, { source: 'fetchConversations', action: 'authError' }, true)
+      return
+    }
+    
+    // For other errors, set empty state
+    conversations.value = []
   }
 }
 
@@ -1866,7 +1918,8 @@ const saveProfile = async () => {
       
       console.log('Profile saved to backend')
     } catch (err) {
-      console.warn('Could not save profile to backend:', err.message)
+      // Report profile save error (non-critical)
+      handleError(err, { source: 'completeOnboarding', action: 'saveProfile' })
     }
   }
   
@@ -1883,55 +1936,78 @@ const saveProfile = async () => {
 const handleSocialLogin = async (provider) => {
   loginError.value = null
   
-  const result = await login(provider)
-  
-  // If redirecting to OAuth provider, stop here (page will navigate away)
-  if (result.redirecting) {
-    return
-  }
-  
-  if (result.success) {
-    loggedInWith.value = provider
+  try {
+    const result = await login(provider)
     
-    // Update user profile with data from social login
-    if (result.facebookData) {
-      userProfile.value.name = result.facebookData.name || userProfile.value.name
-      if (result.facebookData.picture_url) {
-        userProfile.value.photo = result.facebookData.picture_url
+    // If redirecting to OAuth provider, stop here (page will navigate away)
+    if (result.redirecting) {
+      return
+    }
+    
+    if (result.success) {
+      loggedInWith.value = provider
+      
+      // Update user profile with data from social login
+      if (result.facebookData) {
+        userProfile.value.name = result.facebookData.name || userProfile.value.name
+        if (result.facebookData.picture_url) {
+          userProfile.value.photo = result.facebookData.picture_url
+        }
       }
-    }
-    
-    // Check if user has already completed onboarding
-    if (user.value?.is_onboarded) {
-      // Skip onboarding, go directly to discovery
-      navigateTo('discovery')
-      // Fetch discovery data
-      await fetchDiscoveryProfiles()
-      await fetchMatches()
+      
+      // Check if user has already completed onboarding
+      if (user.value?.is_onboarded) {
+        // Skip onboarding, go directly to discovery
+        navigateTo('discovery')
+        // Fetch discovery data
+        await fetchDiscoveryProfiles()
+        await fetchMatches()
+      } else {
+        // Navigate directly to onboarding (Hebrew only)
+        navigateTo('onboarding')
+      }
     } else {
-      // Navigate directly to onboarding (Hebrew only)
-      navigateTo('onboarding')
+      // Report login failure
+      handleError(new Error(result.error || 'Login failed'), { 
+        source: 'handleSocialLogin', 
+        action: 'login',
+        provider,
+      })
+      loginError.value = result.error || 'Login failed. Please try again.'
     }
-  } else {
-    loginError.value = result.error || 'Login failed. Please try again.'
+  } catch (err) {
+    // Critical login error - report but don't redirect (user is already on login page)
+    handleError(err, { source: 'handleSocialLogin', action: 'unexpectedError', provider })
+    loginError.value = 'An unexpected error occurred. Please try again.'
   }
 }
 
 const handleGuestLogin = async () => {
   loginError.value = null
   
-  const result = await loginAsGuest()
-  
-  if (result.success) {
-    loggedInWith.value = 'guest'
+  try {
+    const result = await loginAsGuest()
     
-    // Guest user (mock_maya) is already onboarded with a complete profile
-    // Go directly to discovery
-    navigateTo('discovery')
-    await fetchDiscoveryProfiles()
-    await fetchMatches()
-  } else {
-    loginError.value = result.error || 'Guest login failed. Please try again.'
+    if (result.success) {
+      loggedInWith.value = 'guest'
+      
+      // Guest user (mock_maya) is already onboarded with a complete profile
+      // Go directly to discovery
+      navigateTo('discovery')
+      await fetchDiscoveryProfiles()
+      await fetchMatches()
+    } else {
+      // Report guest login failure
+      handleError(new Error(result.error || 'Guest login failed'), { 
+        source: 'handleGuestLogin', 
+        action: 'loginAsGuest',
+      })
+      loginError.value = result.error || 'Guest login failed. Please try again.'
+    }
+  } catch (err) {
+    // Critical login error - report but don't redirect
+    handleError(err, { source: 'handleGuestLogin', action: 'unexpectedError' })
+    loginError.value = 'An unexpected error occurred. Please try again.'
   }
 }
 
@@ -1944,13 +2020,23 @@ const useBackendData = ref(false)
 // Optimized parallel data fetching
 const initializeApp = async () => {
   appLoading.value = true
+  globalError.value = null
   
   try {
     // Start fetching tags immediately (doesn't require auth)
-    const tagsPromise = profileApi.getTags().catch(() => null)
+    const tagsPromise = profileApi.getTags().catch((err) => {
+      handleError(err, { source: 'initializeApp', action: 'fetchTags' })
+      return null
+    })
     
     // Validate token
-    const isValid = await validateToken()
+    let isValid = false
+    try {
+      isValid = await validateToken()
+    } catch (err) {
+      // Token validation failed - report but don't redirect yet
+      handleError(err, { source: 'initializeApp', action: 'validateToken' })
+    }
     
     if (isValid && user.value) {
       loggedInWith.value = user.value.social_provider || 'facebook'
@@ -1961,13 +2047,60 @@ const initializeApp = async () => {
       }
       
       // Fetch profile, tags, discovery profiles, matches, and conversations in parallel
+      // Track which requests fail for error reporting
+      let profileError = null
+      let discoverError = null
+      let matchesError = null
+      let conversationsError = null
+      
       const [profile, tagsResponse, discoverResponse, matchesResponse, conversationsResponse] = await Promise.all([
-        profileApi.getMyProfile().catch(() => null),
+        profileApi.getMyProfile().catch((err) => {
+          profileError = err
+          return null
+        }),
         tagsPromise,
-        matchingApi.discover().catch(() => []),
-        matchingApi.getMatches().catch(() => ({ results: [] })),
-        chatApi.getConversations().catch(() => ({ results: [] })),
+        matchingApi.discover().catch((err) => {
+          discoverError = err
+          return []
+        }),
+        matchingApi.getMatches().catch((err) => {
+          matchesError = err
+          return { results: [] }
+        }),
+        chatApi.getConversations().catch((err) => {
+          conversationsError = err
+          return { results: [] }
+        }),
       ])
+      
+      // Report non-critical errors
+      if (profileError) {
+        handleError(profileError, { source: 'initializeApp', action: 'fetchProfile' })
+      }
+      if (discoverError) {
+        handleError(discoverError, { source: 'initializeApp', action: 'fetchDiscover' })
+      }
+      if (matchesError) {
+        handleError(matchesError, { source: 'initializeApp', action: 'fetchMatches' })
+      }
+      if (conversationsError) {
+        handleError(conversationsError, { source: 'initializeApp', action: 'fetchConversations' })
+      }
+      
+      // Check for critical failure - if profile fetch failed and we have no data
+      if (profileError && !profile) {
+        // Report as critical error and redirect to login
+        handleCriticalError(
+          new Error('Failed to load user profile'),
+          { 
+            source: 'initializeApp', 
+            action: 'criticalProfileFailure',
+            originalError: profileError.message,
+          },
+          true // redirect to login
+        )
+        return
+      }
       
       // Process tags
       if (tagsResponse && (tagsResponse.results || tagsResponse.length)) {
@@ -1975,7 +2108,7 @@ const initializeApp = async () => {
         useBackendData.value = true
       }
       
-      // Process discovery profiles
+      // Process discovery profiles (empty state is OK)
       if (discoverResponse && discoverResponse.length > 0) {
         discoveryProfiles.value = discoverResponse
         noMoreProfiles.value = false
@@ -1983,10 +2116,10 @@ const initializeApp = async () => {
         noMoreProfiles.value = true
       }
       
-      // Process matches
+      // Process matches (empty state is OK)
       matches.value = matchesResponse?.results || matchesResponse || []
       
-      // Process conversations
+      // Process conversations (empty state is OK)
       conversations.value = conversationsResponse?.results || conversationsResponse || []
       
       // Process profile
@@ -2046,8 +2179,11 @@ const initializeApp = async () => {
       }
     }
   } catch (err) {
-    console.warn('Initialization error:', err.message)
-    useBackendData.value = false
+    // Critical error during initialization - report and redirect to login
+    handleCriticalError(err, { 
+      source: 'initializeApp', 
+      action: 'unexpectedError',
+    }, true)
   } finally {
     appLoading.value = false
   }
@@ -2120,41 +2256,50 @@ onMounted(async () => {
   // Load saved accessibility settings
   loadA11ySettings()
   
-  // Check if this is a Facebook OAuth callback
-  if (isFacebookCallback()) {
-    console.log('Handling Facebook OAuth callback...')
-    appLoading.value = true
-    
-    const result = await handleFacebookCallback()
-    
-    if (result.success) {
-      loggedInWith.value = 'facebook'
+  try {
+    // Check if this is a Facebook OAuth callback
+    if (isFacebookCallback()) {
+      console.log('Handling Facebook OAuth callback...')
+      appLoading.value = true
       
-      // Update user profile with data from social login
-      if (result.facebookData) {
-        userProfile.value.name = result.facebookData.name || userProfile.value.name
-        if (result.facebookData.picture_url) {
-          userProfile.value.photo = result.facebookData.picture_url
+      const result = await handleFacebookCallback()
+      
+      if (result.success) {
+        loggedInWith.value = 'facebook'
+        
+        // Update user profile with data from social login
+        if (result.facebookData) {
+          userProfile.value.name = result.facebookData.name || userProfile.value.name
+          if (result.facebookData.picture_url) {
+            userProfile.value.photo = result.facebookData.picture_url
+          }
         }
-      }
-      
-      // Navigate based on onboarding status
-      if (user.value?.is_onboarded) {
-        navigateTo('discovery')
+        
+        // Navigate based on onboarding status
+        if (user.value?.is_onboarded) {
+          navigateTo('discovery')
+        } else {
+          navigateTo('onboarding')
+        }
+        
+        // Continue with normal initialization to load profile data
+        await initializeApp()
       } else {
-        navigateTo('onboarding')
+        // Callback failed - report and show login with error
+        handleError(new Error(result.error || 'Facebook callback failed'), {
+          source: 'onMounted',
+          action: 'handleFacebookCallback',
+        })
+        loginError.value = result.error || 'Facebook login failed. Please try again.'
+        appLoading.value = false
       }
-      
-      // Continue with normal initialization to load profile data
-      await initializeApp()
     } else {
-      // Callback failed, show login with error
-      loginError.value = result.error || 'Facebook login failed. Please try again.'
-      appLoading.value = false
+      // Normal initialization
+      await initializeApp()
     }
-  } else {
-    // Normal initialization
-    initializeApp()
+  } catch (err) {
+    // Critical error during mount - report and redirect to login
+    handleCriticalError(err, { source: 'onMounted', action: 'initialization' }, true)
   }
 })
 
@@ -2212,7 +2357,7 @@ const constellationPoints = computed(() => {
       :aria-label="t('a11y.title')"
       :title="t('a11y.title')"
     >
-      <span class="text-lg">♿</span>
+      <span class="text-lg">⚙️</span>
       <span class="text-xs font-medium text-text-deep hidden xs:inline">{{ t('a11y.title') }}</span>
     </button>
 
@@ -2227,7 +2372,7 @@ const constellationPoints = computed(() => {
       >
         <div class="flex items-center justify-between mb-4">
           <h3 class="font-semibold text-text-deep flex items-center gap-2">
-            <span>♿</span>
+            <span>⚙️</span>
             {{ t('a11y.title') }}
           </h3>
           <button
@@ -3018,15 +3163,18 @@ const constellationPoints = computed(() => {
       
       <!-- Profile Card -->
       <main class="flex-1 px-3 xs:px-4 py-3 xs:py-6 flex flex-col items-center justify-center overflow-hidden relative">
-        <!-- Accessible swipe hint for all users -->
-        <div 
-          class="absolute -top-1 left-1/2 -translate-x-1/2 z-30 text-center text-text-deep text-xs bg-surface/95 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/20 shadow-soft pointer-events-none"
-          role="status"
-          aria-live="polite"
-        >
-          <span class="font-medium">{{ t('discovery.accessibleHint') }}</span>
-          <span class="block text-[10px] text-text-muted mt-0.5">{{ t('discovery.keyboardHint') }}</span>
-        </div>
+        <!-- Accessible swipe hint for all users (auto-hides after 10 seconds) -->
+        <Transition name="fade">
+          <div 
+            v-if="showSwipeHint"
+            class="absolute -top-1 -start-3 -end-3 xs:-start-4 xs:-end-4 sm:start-auto sm:end-auto sm:left-1/2 sm:-translate-x-1/2 z-[5] text-center text-text-deep text-xs bg-surface/95 backdrop-blur-sm px-4 py-2 rounded-none sm:rounded-full border-y sm:border border-primary/20 shadow-soft pointer-events-none"
+            role="status"
+            aria-live="polite"
+          >
+            <span class="font-medium">{{ t('discovery.accessibleHint') }}</span>
+            <span class="block text-[10px] text-text-muted mt-0.5">{{ t('discovery.keyboardHint') }}</span>
+          </div>
+        </Transition>
         
         <div 
           v-if="currentProfile"

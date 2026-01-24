@@ -324,8 +324,22 @@ export const chatApi = {
    */
   sendVoiceMessage: async (conversationId, audioBlob, duration = 0) => {
     const token = getToken()
+    
+    // Determine file extension based on MIME type
+    const mimeType = audioBlob.type || 'audio/webm'
+    let extension = 'webm'
+    if (mimeType.includes('mp4') || mimeType.includes('m4a')) {
+      extension = 'mp4'
+    } else if (mimeType.includes('ogg')) {
+      extension = 'ogg'
+    } else if (mimeType.includes('mpeg') || mimeType.includes('mp3')) {
+      extension = 'mp3'
+    } else if (mimeType.includes('wav')) {
+      extension = 'wav'
+    }
+    
     const formData = new FormData()
-    formData.append('audio', audioBlob, 'voice_message.webm')
+    formData.append('audio', audioBlob, `voice_message.${extension}`)
     formData.append('duration', duration.toString())
     
     const response = await fetch(`${API_URL}/conversations/${conversationId}/voice/`, {

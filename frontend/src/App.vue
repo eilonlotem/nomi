@@ -625,11 +625,54 @@ const mediaRecorder = ref(null)
 const audioChunks = ref([])
 const isUploadingVoice = ref(false)
 
+// Get best supported audio MIME type
+const getSupportedMimeType = () => {
+  const types = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/ogg;codecs=opus',
+    'audio/mp4',
+    'audio/mpeg',
+    ''  // Empty string = browser default
+  ]
+  for (const type of types) {
+    if (type === '' || MediaRecorder.isTypeSupported(type)) {
+      return type
+    }
+  }
+  return ''
+}
+
+// Voice recording error state
+const voiceRecordingError = ref(null)
+
 // Voice recording functions
 const startRecording = async () => {
+  voiceRecordingError.value = null
+  
+  // Check if MediaRecorder is supported
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    voiceRecordingError.value = 'Voice recording is not supported in this browser'
+    console.error('MediaDevices API not supported')
+    return
+  }
+  
+  if (typeof MediaRecorder === 'undefined') {
+    voiceRecordingError.value = 'Voice recording is not supported in this browser'
+    console.error('MediaRecorder API not supported')
+    return
+  }
+  
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    mediaRecorder.value = new MediaRecorder(stream, { mimeType: 'audio/webm' })
+    
+    // Get the best supported MIME type
+    const mimeType = getSupportedMimeType()
+    const options = mimeType ? { mimeType } : {}
+    
+    console.log('Starting recording with MIME type:', mimeType || 'browser default')
+    
+    mediaRecorder.value = new MediaRecorder(stream, options)
     audioChunks.value = []
     
     mediaRecorder.value.ondataavailable = (event) => {
@@ -639,7 +682,8 @@ const startRecording = async () => {
     }
     
     mediaRecorder.value.onstop = async () => {
-      const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' })
+      const actualMimeType = mediaRecorder.value?.mimeType || mimeType || 'audio/webm'
+      const audioBlob = new Blob(audioChunks.value, { type: actualMimeType })
       
       // Stop all tracks
       stream.getTracks().forEach(track => track.stop())
@@ -648,7 +692,13 @@ const startRecording = async () => {
       await uploadVoiceMessage(audioBlob, recordingDuration.value)
     }
     
-    mediaRecorder.value.start()
+    mediaRecorder.value.onerror = (event) => {
+      console.error('MediaRecorder error:', event.error)
+      voiceRecordingError.value = 'Recording failed'
+      cancelRecording()
+    }
+    
+    mediaRecorder.value.start(1000) // Collect data every second
     isRecording.value = true
     recordingDuration.value = 0
     
@@ -663,7 +713,13 @@ const startRecording = async () => {
     
   } catch (error) {
     console.error('Failed to start recording:', error)
-    // Could show a toast/alert here
+    if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+      voiceRecordingError.value = 'Microphone access denied. Please allow microphone access.'
+    } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+      voiceRecordingError.value = 'No microphone found'
+    } else {
+      voiceRecordingError.value = 'Failed to start recording'
+    }
   }
 }
 
@@ -699,6 +755,7 @@ const uploadVoiceMessage = async (audioBlob, duration) => {
   if (!currentConversation.value) return
   
   isUploadingVoice.value = true
+  voiceRecordingError.value = null
   
   // Add optimistic message
   const tempId = -Date.now()
@@ -728,6 +785,7 @@ const uploadVoiceMessage = async (audioBlob, duration) => {
     }
   } catch (error) {
     console.error('Failed to upload voice message:', error)
+    voiceRecordingError.value = 'Failed to send voice message'
     // Remove failed message
     chatMessages.value = chatMessages.value.filter(m => m.id !== tempId)
   } finally {
@@ -3380,23 +3438,34 @@ const constellationPoints = computed(() => {
           </button>
 
           <!-- Voice Note Button -->
-          <button
-            @click="startRecording"
-            :disabled="isUploadingVoice"
-            :class="[
-              'w-10 h-10 xs:w-11 xs:h-11 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors',
-              isUploadingVoice ? 'bg-gray-200 text-gray-400' : 'bg-primary-light text-primary'
-            ]"
-            :aria-label="t('a11y.recordVoice')"
-          >
-            <svg v-if="!isUploadingVoice" class="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
-            </svg>
-            <svg v-else class="w-5 h-5 xs:w-6 xs:h-6 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </button>
+          <div class="relative">
+            <button
+              @click="startRecording"
+              :disabled="isUploadingVoice"
+              :class="[
+                'w-10 h-10 xs:w-11 xs:h-11 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors',
+                voiceRecordingError ? 'bg-red-100 text-red-500' : isUploadingVoice ? 'bg-gray-200 text-gray-400' : 'bg-primary-light text-primary'
+              ]"
+              :aria-label="t('a11y.recordVoice')"
+            >
+              <svg v-if="!isUploadingVoice" class="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+              </svg>
+              <svg v-else class="w-5 h-5 xs:w-6 xs:h-6 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </button>
+            <!-- Error tooltip -->
+            <div 
+              v-if="voiceRecordingError"
+              class="absolute bottom-full mb-2 start-0 bg-red-500 text-white text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap z-20"
+              @click="voiceRecordingError = null"
+            >
+              {{ voiceRecordingError }}
+              <div class="absolute top-full start-4 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-red-500"></div>
+            </div>
+          </div>
           
           <!-- Text Input -->
           <textarea

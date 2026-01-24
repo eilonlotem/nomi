@@ -3020,7 +3020,7 @@ const constellationPoints = computed(() => {
       <main class="flex-1 px-3 xs:px-4 py-3 xs:py-6 flex flex-col items-center justify-center overflow-hidden relative">
         <!-- Accessible swipe hint for all users -->
         <div 
-          class="absolute top-4 left-1/2 -translate-x-1/2 z-30 text-center text-text-deep text-xs bg-surface/95 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/20 shadow-soft pointer-events-none"
+          class="absolute -top-1 left-1/2 -translate-x-1/2 z-30 text-center text-text-deep text-xs bg-surface/95 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/20 shadow-soft pointer-events-none"
           role="status"
           aria-live="polite"
         >

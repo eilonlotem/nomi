@@ -349,12 +349,22 @@ const normalizeRelationshipTypes = (types = []) => {
   return [...new Set((types || []).map(t => map[t] || t).filter(Boolean))]
 }
 
+// Age range validation
+const ageRangeError = ref('')
+
 const normalizeAgeRange = () => {
   const range = userProfile.value.lookingFor.ageRange
   const min = Math.max(18, Math.min(99, Number(range.min) || 18))
-  const max = Math.max(min, Math.min(99, Number(range.max) || min))
-  range.min = min
-  range.max = max
+  const max = Math.max(18, Math.min(99, Number(range.max) || 50))
+  
+  // Check for invalid range and show error
+  if (min > max) {
+    ageRangeError.value = t('lookingFor.ageRangeError')
+  } else {
+    ageRangeError.value = ''
+    range.min = min
+    range.max = max
+  }
 }
 
 watch(
@@ -887,6 +897,16 @@ const getLocalized = (obj, fallback = '') => {
   if (Array.isArray(obj)) return obj
   // Handle localized objects {en: '...', he: '...'}
   return obj[locale.value] || obj.en || fallback
+}
+
+// Helper to translate interest names
+const translateInterest = (interest) => {
+  if (!interest) return ''
+  const key = typeof interest === 'string' ? interest : interest.name
+  // Try to get translated interest, fall back to original
+  const translated = t(`interests.${key}`)
+  // If translation key not found (returns the key itself), use original
+  return translated.startsWith('interests.') ? key : translated
 }
 
 // Mobile keyboard detection
@@ -2075,10 +2095,12 @@ const constellationPoints = computed(() => {
     <button
       v-if="!isKeyboardOpen"
       @click="showA11yPanel = !showA11yPanel"
-      class="fixed bottom-20 xs:bottom-24 end-3 xs:end-4 z-50 w-11 h-11 xs:w-12 xs:h-12 bg-surface rounded-full shadow-card flex items-center justify-center active:scale-95 transition-transform touch-manipulation"
+      class="fixed bottom-20 xs:bottom-24 end-3 xs:end-4 z-50 bg-surface rounded-full shadow-card flex items-center gap-1.5 px-3 py-2 active:scale-95 transition-transform touch-manipulation group"
       :aria-label="t('a11y.title')"
+      :title="t('a11y.title')"
     >
-      <span class="text-lg xs:text-xl">⚙️</span>
+      <span class="text-lg">♿</span>
+      <span class="text-xs font-medium text-text-deep hidden xs:inline">{{ t('a11y.title') }}</span>
     </button>
 
     <!-- Accessibility Panel -->
@@ -2945,7 +2967,7 @@ const constellationPoints = computed(() => {
                   interestColorClasses[idx % interestColorClasses.length]
                 ]"
               >
-                {{ interest }}
+                {{ translateInterest(interest) }}
               </span>
             </div>
             
@@ -3011,9 +3033,16 @@ const constellationPoints = computed(() => {
           <h2 class="text-lg xs:text-xl font-semibold text-text-deep mb-2">
             {{ t('discovery.noMoreProfiles') }}
           </h2>
-          <p class="text-sm xs:text-base text-text-muted">
-            {{ t('discovery.checkBackLater') }}
+          <p class="text-sm xs:text-base text-text-muted mb-4">
+            {{ t('discovery.noMoreExplanation') }}
           </p>
+          <!-- Action to adjust preferences -->
+          <button
+            @click="goToProfile"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-primary-light text-primary rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-colors"
+          >
+            ⚙️ {{ t('lookingFor.title') }}
+          </button>
         </div>
       </main>
       
@@ -3022,6 +3051,21 @@ const constellationPoints = computed(() => {
         v-if="currentProfile"
         class="sticky bottom-0 bg-surface/90 backdrop-blur-lg p-4 xs:p-6 bottom-bar-safe"
       >
+        <!-- Swipe Hint - Clear and Visible -->
+        <div class="text-center mb-3">
+          <p class="text-sm font-medium text-text-deep bg-primary-light/50 inline-flex items-center gap-3 px-4 py-2 rounded-full border border-primary/20">
+            <span class="flex items-center gap-1 text-danger">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+              {{ t('discovery.passBtn') }}
+            </span>
+            <span class="text-text-muted">|</span>
+            <span class="flex items-center gap-1 text-primary">
+              {{ t('discovery.connectBtn') }}
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </span>
+          </p>
+        </div>
+        
         <div class="flex items-center justify-center gap-4 xs:gap-6">
           <!-- Pass Button -->
           <button
@@ -3541,7 +3585,7 @@ const constellationPoints = computed(() => {
       v-else-if="currentView === 'profile'" 
       class="min-h-screen-safe flex flex-col relative z-10 bg-background"
     >
-      <!-- Header -->
+      <!-- Header with Sticky Save -->
       <header class="sticky top-0 z-20 bg-surface/90 backdrop-blur-lg border-b border-border header-safe">
         <div class="flex items-center justify-between px-3 xs:px-4 py-2 xs:py-3">
           <button
@@ -3558,10 +3602,12 @@ const constellationPoints = computed(() => {
             <h1 class="text-base xs:text-lg font-semibold text-text-deep">{{ t('profile.editProfile') }}</h1>
           </div>
           
+          <!-- Prominent Save Button in Header -->
           <button
             @click="saveProfile"
-            class="text-primary font-medium px-2 xs:px-3 py-2 min-h-[48px] touch-manipulation active:opacity-70"
+            class="bg-primary text-white font-medium px-4 py-2 rounded-full min-h-[44px] touch-manipulation active:scale-95 shadow-sm flex items-center gap-1.5"
           >
+            <span>💾</span>
             {{ t('save') }}
           </button>
         </div>
@@ -3666,9 +3712,15 @@ const constellationPoints = computed(() => {
               {{ photoUploadError }}
             </p>
             
-            <p class="text-xs text-text-muted mt-2 text-center">
-              {{ t('profile.photoHint') }} ({{ userProfile.photos.length }}/6)
-            </p>
+            <!-- Photo instructions -->
+            <div class="mt-3 p-3 bg-primary-light/30 rounded-xl border border-primary/10">
+              <p class="text-xs text-text-muted text-center leading-relaxed">
+                {{ t('profile.photoInstructions') }}
+              </p>
+              <p class="text-xs text-primary font-medium mt-1 text-center">
+                {{ userProfile.photos.length }}/6 {{ t('profile.photos') }}
+              </p>
+            </div>
           </div>
 
           <!-- Basic Info -->
@@ -3742,19 +3794,22 @@ const constellationPoints = computed(() => {
             
             <div class="space-y-3 xs:space-y-4">
               <!-- Prompt Selector -->
-              <div class="flex flex-wrap gap-2">
+              <div class="flex flex-col gap-2">
                 <button
                   v-for="promptId in profilePromptOptions"
                   :key="promptId"
                   @click="userProfile.promptId = promptId"
                   :class="[
-                    'px-3 xs:px-4 py-2 rounded-full text-xs xs:text-sm font-medium transition-colors touch-manipulation active:scale-95',
+                    'px-4 py-3 rounded-xl text-xs xs:text-sm font-medium transition-all touch-manipulation active:scale-[0.98] text-start',
                     userProfile.promptId === promptId 
-                      ? 'bg-primary text-white' 
-                      : 'bg-primary-light text-primary'
+                      ? 'bg-primary text-white shadow-md' 
+                      : 'bg-primary-light text-primary border border-primary/20 hover:border-primary/40'
                   ]"
                 >
-                  {{ t(`profilePrompts.${promptId}`).substring(0, 25) }}...
+                  <span class="flex items-center gap-2">
+                    <span v-if="userProfile.promptId === promptId" class="text-base">✓</span>
+                    <span>{{ t(`profilePrompts.${promptId}`) }}</span>
+                  </span>
                 </button>
               </div>
               
@@ -3783,20 +3838,23 @@ const constellationPoints = computed(() => {
             
             <div class="space-y-3 xs:space-y-4">
               <!-- Prompt Selection -->
-              <div class="flex flex-wrap gap-1.5 xs:gap-2">
+              <div class="flex flex-col gap-2">
                 <button
                   v-for="prompt in askMePrompts"
                   :key="prompt.id"
                   @click="userProfile.askMePromptId = prompt.id"
                   :class="[
-                    'px-3 xs:px-4 py-2 rounded-full text-xs xs:text-sm font-medium transition-colors touch-manipulation active:scale-95',
+                    'px-4 py-3 rounded-xl text-xs xs:text-sm font-medium transition-all touch-manipulation active:scale-[0.98] text-start',
                     userProfile.askMePromptId === prompt.id 
-                      ? 'bg-purple-500 text-white' 
-                      : 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300'
+                      ? 'bg-purple-500 text-white shadow-md' 
+                      : 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 border border-purple-200 hover:border-purple-400'
                   ]"
                 >
-                  <span class="me-1">{{ prompt.emoji }}</span>
-                  {{ t(`askMeAboutIt.prompts.${prompt.id}`).substring(0, 20) }}...
+                  <span class="flex items-center gap-2">
+                    <span class="text-base">{{ prompt.emoji }}</span>
+                    <span class="flex-1">{{ t(`askMeAboutIt.prompts.${prompt.id}`) }}</span>
+                    <span v-if="userProfile.askMePromptId === prompt.id" class="text-base">✓</span>
+                  </span>
                 </button>
               </div>
               
@@ -3945,12 +4003,13 @@ const constellationPoints = computed(() => {
                   :class="[
                     'flex items-center gap-2 px-3 xs:px-4 py-2 xs:py-2.5 rounded-full transition-all touch-manipulation active:scale-95',
                     userProfile.lookingFor.genders.includes(gender.id)
-                      ? 'bg-primary text-white shadow-soft'
+                      ? 'bg-primary text-white shadow-soft ring-2 ring-primary/30'
                       : 'bg-surface border border-border text-text-muted hover:border-primary/50'
                   ]"
                 >
                   <span class="text-base">{{ gender.emoji }}</span>
                   <span class="text-xs xs:text-sm font-medium">{{ t(`lookingFor.genders.${gender.id}`) }}</span>
+                  <span v-if="userProfile.lookingFor.genders.includes(gender.id)" class="text-sm">✓</span>
                 </button>
               </div>
             </div>
@@ -3999,7 +4058,7 @@ const constellationPoints = computed(() => {
               <p class="text-xs xs:text-sm text-text-muted mb-3">{{ t('lookingFor.ageRange') }}</p>
               <div class="flex items-center gap-3">
                 <div class="flex-1">
-                  <label class="block text-[10px] xs:text-xs text-text-muted mb-1">{{ t('lookingFor.minAge') }}</label>
+                  <label class="block text-[10px] xs:text-xs text-text-muted mb-1">{{ t('lookingFor.minAge') }}: {{ userProfile.lookingFor.ageRange.min }}</label>
                   <input 
                     v-model.number="userProfile.lookingFor.ageRange.min"
                     type="number"
@@ -4007,11 +4066,12 @@ const constellationPoints = computed(() => {
                     min="18"
                     max="99"
                     class="input-field text-center text-sm"
+                    :class="{ 'border-danger ring-danger/30': ageRangeError }"
                   />
                 </div>
                 <span class="text-text-muted mt-4">–</span>
                 <div class="flex-1">
-                  <label class="block text-[10px] xs:text-xs text-text-muted mb-1">{{ t('lookingFor.maxAge') }}</label>
+                  <label class="block text-[10px] xs:text-xs text-text-muted mb-1">{{ t('lookingFor.maxAge') }}: {{ userProfile.lookingFor.ageRange.max }}</label>
                   <input 
                     v-model.number="userProfile.lookingFor.ageRange.max"
                     type="number"
@@ -4019,36 +4079,57 @@ const constellationPoints = computed(() => {
                     min="18"
                     max="99"
                     class="input-field text-center text-sm"
+                    :class="{ 'border-danger ring-danger/30': ageRangeError }"
                   />
                 </div>
               </div>
+              <!-- Age range validation error -->
+              <p v-if="ageRangeError" class="text-xs text-danger mt-2 flex items-center gap-1">
+                <span>⚠️</span>
+                {{ ageRangeError }}
+              </p>
             </div>
 
             <!-- Location -->
             <div class="mb-5">
-              <p class="text-xs xs:text-sm text-text-muted mb-3">{{ t('lookingFor.location') }}</p>
+              <p class="text-xs xs:text-sm text-text-muted mb-2">{{ t('lookingFor.location') }}</p>
               <input 
                 v-model="userProfile.lookingFor.location"
                 type="text"
                 class="input-field"
                 :placeholder="t('lookingFor.locationPlaceholder')"
               />
+              <p class="text-[10px] text-text-muted/70 mt-1.5 flex items-center gap-1">
+                <span>💡</span>
+                {{ t('lookingFor.locationHint') }}
+              </p>
             </div>
 
             <!-- Distance -->
             <div>
               <div class="flex items-center justify-between mb-2">
-                <p class="text-xs xs:text-sm text-text-muted">{{ t('lookingFor.maxDistance') }}</p>
-                <span class="text-sm font-semibold text-primary">{{ userProfile.lookingFor.maxDistance }} {{ t('lookingFor.km') }}</span>
+                <div>
+                  <p class="text-xs xs:text-sm text-text-muted">{{ t('lookingFor.maxDistance') }}</p>
+                  <p class="text-[10px] text-text-muted/70">{{ t('lookingFor.distanceRange') }}</p>
+                </div>
+                <span class="text-lg font-bold text-primary bg-primary-light px-3 py-1 rounded-full">{{ userProfile.lookingFor.maxDistance }} {{ t('lookingFor.km') }}</span>
               </div>
-              <input 
-                v-model.number="userProfile.lookingFor.maxDistance"
-                type="range"
-                min="5"
-                max="200"
-                step="5"
-                class="w-full h-2 bg-border rounded-full appearance-none cursor-pointer accent-primary"
-              />
+              <div class="relative">
+                <input 
+                  v-model.number="userProfile.lookingFor.maxDistance"
+                  type="range"
+                  min="5"
+                  max="200"
+                  step="5"
+                  class="w-full h-3 bg-gradient-to-r from-primary/20 to-primary/60 rounded-full appearance-none cursor-pointer accent-primary"
+                />
+                <!-- Distance range labels -->
+                <div class="flex justify-between mt-1 text-[10px] text-text-muted">
+                  <span>5 {{ t('lookingFor.km') }}</span>
+                  <span>100 {{ t('lookingFor.km') }}</span>
+                  <span>200 {{ t('lookingFor.km') }}</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -4068,7 +4149,7 @@ const constellationPoints = computed(() => {
                   interestColorClasses[index % interestColorClasses.length]
                 ]"
               >
-                {{ interest }}
+                {{ translateInterest(interest) }}
                 <button 
                   @click="removeInterest(index)"
                   class="opacity-60 hover:opacity-100 active:text-danger touch-manipulation transition-opacity"
@@ -4268,7 +4349,7 @@ const constellationPoints = computed(() => {
                     interestColorClasses[idx % interestColorClasses.length]
                   ]"
                 >
-                  {{ typeof interest === 'string' ? interest : interest.name }}
+                  {{ translateInterest(typeof interest === 'string' ? interest : interest.name) }}
                 </span>
               </div>
             </div>

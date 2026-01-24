@@ -72,6 +72,8 @@ export default {
     shared: 'partagé',
     compatibility: 'Compatibilité',
     swipeHint: '← Glissez à gauche pour passer | Glissez à droite pour aimer →',
+    accessibleHint: 'Glissez, appuyez sur les boutons ou utilisez les flèches',
+    keyboardHint: '← Passer | Aimer → | Espace: Annuler | Entrée: Voir Profil',
   },
   
   // Matches

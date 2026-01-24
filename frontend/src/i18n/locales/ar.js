@@ -72,6 +72,8 @@ export default {
     shared: 'مشترك',
     compatibility: 'التوافق',
     swipeHint: '→ اسحب يميناً للإعجاب | اسحب يساراً للتخطي ←',
+    accessibleHint: 'اسحب، اضغط على الأزرار، أو استخدم مفاتيح الأسهم',
+    keyboardHint: '→ تخطي | إعجاب ← | مسافة: تراجع | Enter: عرض الملف',
   },
   
   // Matches

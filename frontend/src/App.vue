@@ -85,7 +85,30 @@ const a11ySettings = ref({
   textSize: 'normal', // 'normal', 'large', 'xl'
   reducedMotion: false,
   highContrast: false,
+  screenReaderMode: false, // Optimizes for screen readers
+  showEmojis: true, // Toggle emoji visibility
 })
+
+// Save accessibility settings to localStorage
+const saveA11ySettings = () => {
+  localStorage.setItem('nomi-a11y-settings', JSON.stringify(a11ySettings.value))
+}
+
+// Load accessibility settings from localStorage
+const loadA11ySettings = () => {
+  const saved = localStorage.getItem('nomi-a11y-settings')
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved)
+      Object.assign(a11ySettings.value, parsed)
+    } catch (e) {
+      console.warn('Failed to load accessibility settings:', e)
+    }
+  }
+}
+
+// Watch for changes and save
+watch(a11ySettings, saveA11ySettings, { deep: true })
 const showA11yPanel = ref(false)
 
 // Current mood/energy
@@ -914,6 +937,25 @@ const translateInterest = (interest) => {
   return translated.startsWith('interests.') ? key : translated
 }
 
+// Helper to generate accessible alt text for profile photos
+const getProfilePhotoAlt = (profile, photoIndex, totalPhotos) => {
+  if (!profile) return ''
+  const name = profile.name || ''
+  const age = profile.age || ''
+  const distance = profile.distance ? `${profile.distance} ${t('discovery.distance', { km: '' }).trim()}` : ''
+  
+  // Get translated disability tags for screen readers
+  const tags = (profile.tags || []).map(tagId => t(`tags.${tagId}`)).filter(tag => !tag.startsWith('tags.')).join(', ')
+  
+  // Format: "Name, Age, Distance. Photo X of Y. Tags"
+  let alt = `${name}, ${age}`
+  if (distance) alt += `, ${distance}`
+  if (totalPhotos > 1) alt += `. ${t('a11y.photoOf', { current: photoIndex + 1, total: totalPhotos })}`
+  if (tags) alt += `. ${tags}`
+  
+  return alt
+}
+
 // Mobile keyboard detection
 const isKeyboardOpen = ref(false)
 const initialViewportHeight = ref(0)
@@ -932,6 +974,7 @@ onMounted(() => {
   onUnmounted(() => {
     window.visualViewport?.removeEventListener('resize', handleResize)
     window.removeEventListener('resize', handleResize)
+    document.removeEventListener('keydown', handleKeyboardNavigation)
   })
 })
 
@@ -2010,8 +2053,73 @@ const initializeApp = async () => {
   }
 }
 
+// Keyboard navigation handler for discovery and profile save
+const handleKeyboardNavigation = (event) => {
+  // Handle Cmd+S / Ctrl+S for saving profile
+  if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+    event.preventDefault()
+    if (currentView.value === 'profile' || currentView.value === 'preferences') {
+      saveProfile()
+    }
+    return
+  }
+  
+  // Only handle arrow key events when on discovery page
+  if (currentView.value !== 'discovery' || !currentProfile.value) return
+  
+  // Don't handle if user is typing in an input
+  if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return
+  
+  switch (event.key) {
+    case 'ArrowLeft':
+      // RTL: Left arrow = Like (in RTL, left is like)
+      // LTR: Left arrow = Pass
+      event.preventDefault()
+      if (dir.value === 'rtl') {
+        connectProfile()
+      } else {
+        passProfile()
+      }
+      break
+    case 'ArrowRight':
+      // RTL: Right arrow = Pass
+      // LTR: Right arrow = Like
+      event.preventDefault()
+      if (dir.value === 'rtl') {
+        passProfile()
+      } else {
+        connectProfile()
+      }
+      break
+    case ' ':
+      // Space = Undo (if available)
+      event.preventDefault()
+      // Undo functionality - go back to previous profile if possible
+      if (currentProfileIndex.value > 0) {
+        currentProfileIndex.value--
+      }
+      break
+    case 'Escape':
+      // Escape = Go back
+      event.preventDefault()
+      goBack()
+      break
+    case 'Enter':
+      // Enter = Open profile detail view
+      event.preventDefault()
+      openProfileView(currentProfile.value)
+      break
+  }
+}
+
 // Check for existing auth on mount
 onMounted(async () => {
+  // Add keyboard navigation listener
+  document.addEventListener('keydown', handleKeyboardNavigation)
+  
+  // Load saved accessibility settings
+  loadA11ySettings()
+  
   // Check if this is a Facebook OAuth callback
   if (isFacebookCallback()) {
     console.log('Handling Facebook OAuth callback...')
@@ -2112,12 +2220,22 @@ const constellationPoints = computed(() => {
     <Transition name="slide-up">
       <div 
         v-if="showA11yPanel"
-        class="fixed bottom-32 xs:bottom-40 end-3 xs:end-4 z-50 bg-surface rounded-2xl shadow-card p-4 w-[calc(100vw-24px)] xs:w-64 max-w-[280px]"
+        class="fixed bottom-32 xs:bottom-40 end-3 xs:end-4 z-50 bg-surface rounded-2xl shadow-card p-4 w-[calc(100vw-24px)] xs:w-72 max-w-[320px] max-h-[60vh] overflow-y-auto"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="t('a11y.title')"
       >
-        <h3 class="font-semibold text-text-deep mb-3 flex items-center gap-2">
-          <span>♿</span>
-          {{ t('a11y.title') }}
-        </h3>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-text-deep flex items-center gap-2">
+            <span>♿</span>
+            {{ t('a11y.title') }}
+          </h3>
+          <button
+            @click="showA11yPanel = false"
+            class="text-text-muted hover:text-text-deep p-1"
+            :aria-label="t('cancel')"
+          >✕</button>
+        </div>
         
         <!-- Text Size -->
         <div class="mb-4">
@@ -2130,11 +2248,12 @@ const constellationPoints = computed(() => {
               :key="size"
               @click="a11ySettings.textSize = size"
               :class="[
-                'flex-1 py-3 rounded-lg text-sm font-medium transition-colors touch-manipulation active:scale-95',
+                'flex-1 py-3 rounded-lg text-sm font-medium transition-colors touch-manipulation active:scale-95 min-h-[48px]',
                 a11ySettings.textSize === size 
                   ? 'bg-primary text-white' 
-                  : 'bg-background text-text-muted'
+                  : 'bg-background text-text-muted border border-border'
               ]"
+              :aria-pressed="a11ySettings.textSize === size"
             >
               {{ size === 'normal' ? 'A' : size === 'large' ? 'A+' : 'A++' }}
             </button>
@@ -2142,14 +2261,19 @@ const constellationPoints = computed(() => {
         </div>
 
         <!-- High Contrast -->
-        <label class="flex items-center justify-between py-3 cursor-pointer touch-manipulation">
-          <span class="text-sm">{{ t('a11y.highContrast') }}</span>
+        <label class="flex items-center justify-between py-3 cursor-pointer touch-manipulation min-h-[48px]">
+          <div>
+            <span class="text-sm block">{{ t('a11y.highContrast') }}</span>
+            <span class="text-[10px] text-text-muted">{{ t('a11y.highContrastDesc') }}</span>
+          </div>
           <button
             @click="a11ySettings.highContrast = !a11ySettings.highContrast"
             :class="[
-              'w-14 h-8 rounded-full transition-colors relative',
+              'w-14 h-8 rounded-full transition-colors relative shrink-0',
               a11ySettings.highContrast ? 'bg-primary' : 'bg-border'
             ]"
+            role="switch"
+            :aria-checked="a11ySettings.highContrast"
           >
             <span 
               :class="[
@@ -2161,14 +2285,19 @@ const constellationPoints = computed(() => {
         </label>
 
         <!-- Reduced Motion -->
-        <label class="flex items-center justify-between py-3 cursor-pointer touch-manipulation">
-          <span class="text-sm">{{ t('a11y.reducedMotion') }}</span>
+        <label class="flex items-center justify-between py-3 cursor-pointer touch-manipulation min-h-[48px]">
+          <div>
+            <span class="text-sm block">{{ t('a11y.reducedMotion') }}</span>
+            <span class="text-[10px] text-text-muted">{{ t('a11y.reducedMotionDesc') }}</span>
+          </div>
           <button
             @click="a11ySettings.reducedMotion = !a11ySettings.reducedMotion"
             :class="[
-              'w-14 h-8 rounded-full transition-colors relative',
+              'w-14 h-8 rounded-full transition-colors relative shrink-0',
               a11ySettings.reducedMotion ? 'bg-primary' : 'bg-border'
             ]"
+            role="switch"
+            :aria-checked="a11ySettings.reducedMotion"
           >
             <span 
               :class="[
@@ -2178,6 +2307,65 @@ const constellationPoints = computed(() => {
             ></span>
           </button>
         </label>
+        
+        <!-- Screen Reader Mode -->
+        <label class="flex items-center justify-between py-3 cursor-pointer touch-manipulation min-h-[48px]">
+          <div>
+            <span class="text-sm block">{{ t('a11y.screenReaderMode') }}</span>
+            <span class="text-[10px] text-text-muted">{{ t('a11y.screenReaderModeDesc') }}</span>
+          </div>
+          <button
+            @click="a11ySettings.screenReaderMode = !a11ySettings.screenReaderMode"
+            :class="[
+              'w-14 h-8 rounded-full transition-colors relative shrink-0',
+              a11ySettings.screenReaderMode ? 'bg-primary' : 'bg-border'
+            ]"
+            role="switch"
+            :aria-checked="a11ySettings.screenReaderMode"
+          >
+            <span 
+              :class="[
+                'absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-all',
+                a11ySettings.screenReaderMode ? 'end-1' : 'start-1'
+              ]"
+            ></span>
+          </button>
+        </label>
+        
+        <!-- Show Emojis Toggle -->
+        <label class="flex items-center justify-between py-3 cursor-pointer touch-manipulation min-h-[48px]">
+          <div>
+            <span class="text-sm block">{{ t('a11y.showEmojis') }}</span>
+            <span class="text-[10px] text-text-muted">{{ t('a11y.showEmojisDesc') }}</span>
+          </div>
+          <button
+            @click="a11ySettings.showEmojis = !a11ySettings.showEmojis"
+            :class="[
+              'w-14 h-8 rounded-full transition-colors relative shrink-0',
+              a11ySettings.showEmojis ? 'bg-primary' : 'bg-border'
+            ]"
+            role="switch"
+            :aria-checked="a11ySettings.showEmojis"
+          >
+            <span 
+              :class="[
+                'absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-all',
+                a11ySettings.showEmojis ? 'end-1' : 'start-1'
+              ]"
+            ></span>
+          </button>
+        </label>
+        
+        <!-- Keyboard Shortcuts Info -->
+        <div class="mt-4 pt-4 border-t border-border">
+          <p class="text-xs text-text-muted mb-2 font-medium">{{ t('a11y.keyboardShortcuts') }}</p>
+          <ul class="text-[10px] text-text-muted space-y-1">
+            <li>← / → : {{ t('a11y.arrowKeysHint') }}</li>
+            <li>Space : {{ t('a11y.spaceHint') }}</li>
+            <li>⌘S / Ctrl+S : {{ t('a11y.saveHint') }}</li>
+            <li>Enter : {{ t('a11y.enterHint') }}</li>
+          </ul>
+        </div>
       </div>
     </Transition>
 
@@ -2724,12 +2912,39 @@ const constellationPoints = computed(() => {
               />
             </div>
             
-            <!-- Distance Slider -->
+            <!-- Distance Slider - Accessible -->
             <div>
-              <div class="flex items-center justify-between mb-2">
-                <label class="text-xs text-text-muted">{{ t('lookingFor.maxDistance') }}</label>
-                <span class="text-sm font-semibold text-primary">{{ userProfile.lookingFor.maxDistance }} {{ t('lookingFor.km') }}</span>
+              <label :for="'distance-input-prefs'" class="text-xs text-text-muted block mb-2">{{ t('lookingFor.maxDistance') }}</label>
+              
+              <!-- Accessible distance control -->
+              <div class="flex items-center gap-2 mb-2" role="group" :aria-label="t('a11y.distanceSlider', { km: userProfile.lookingFor.maxDistance })">
+                <button
+                  type="button"
+                  @click="userProfile.lookingFor.maxDistance = Math.max(5, userProfile.lookingFor.maxDistance - 5)"
+                  class="w-10 h-10 bg-surface border border-primary/30 rounded-full flex items-center justify-center text-primary font-bold touch-manipulation active:scale-90"
+                  :aria-label="t('a11y.decreaseDistance')"
+                >−</button>
+                
+                <input
+                  id="distance-input-prefs"
+                  v-model.number="userProfile.lookingFor.maxDistance"
+                  type="number"
+                  min="5"
+                  max="200"
+                  step="5"
+                  class="w-16 text-center font-semibold text-primary bg-primary-light border border-primary/30 rounded-lg py-1"
+                  @blur="userProfile.lookingFor.maxDistance = Math.min(200, Math.max(5, userProfile.lookingFor.maxDistance || 50))"
+                />
+                <span class="text-xs text-text-muted">{{ t('lookingFor.km') }}</span>
+                
+                <button
+                  type="button"
+                  @click="userProfile.lookingFor.maxDistance = Math.min(200, userProfile.lookingFor.maxDistance + 5)"
+                  class="w-10 h-10 bg-surface border border-primary/30 rounded-full flex items-center justify-center text-primary font-bold touch-manipulation active:scale-90"
+                  :aria-label="t('a11y.increaseDistance')"
+                >+</button>
               </div>
+              
               <input 
                 v-model.number="userProfile.lookingFor.maxDistance"
                 type="range"
@@ -2737,6 +2952,7 @@ const constellationPoints = computed(() => {
                 max="200"
                 step="5"
                 class="w-full h-2 bg-border rounded-full appearance-none cursor-pointer accent-primary"
+                :aria-label="t('a11y.distanceSlider', { km: userProfile.lookingFor.maxDistance })"
               />
               <div class="flex justify-between text-[10px] text-text-muted mt-1">
                 <span>5 {{ t('lookingFor.km') }}</span>
@@ -2802,11 +3018,14 @@ const constellationPoints = computed(() => {
       
       <!-- Profile Card -->
       <main class="flex-1 px-3 xs:px-4 py-3 xs:py-6 flex flex-col items-center justify-center overflow-hidden relative">
-        <!-- Swipe hint for first-time users -->
-        <div class="absolute top-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 text-text-muted text-xs animate-pulse-soft pointer-events-none">
-          <span>👈</span>
-          <span>Swipe to decide</span>
-          <span>👉</span>
+        <!-- Accessible swipe hint for all users -->
+        <div 
+          class="absolute top-4 left-1/2 -translate-x-1/2 z-30 text-center text-text-deep text-xs bg-surface/95 backdrop-blur-sm px-4 py-2 rounded-full border border-primary/20 shadow-soft pointer-events-none"
+          role="status"
+          aria-live="polite"
+        >
+          <span class="font-medium">{{ t('discovery.accessibleHint') }}</span>
+          <span class="block text-[10px] text-text-muted mt-0.5">{{ t('discovery.keyboardHint') }}</span>
         </div>
         
         <div 
@@ -2899,9 +3118,10 @@ const constellationPoints = computed(() => {
             
             <img 
               :src="getAllPhotos(currentProfile)[currentPhotoIndex] || getPhotoUrl(currentProfile.photo || currentProfile.picture_url)" 
-              :alt="currentProfile.name"
+              :alt="getProfilePhotoAlt(currentProfile, currentPhotoIndex, getAllPhotos(currentProfile).length)"
               class="w-full h-full object-cover"
               loading="lazy"
+              role="img"
             />
             <!-- Gradient Overlay -->
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
@@ -3611,6 +3831,8 @@ const constellationPoints = computed(() => {
           <button
             @click="saveProfile"
             class="bg-primary text-white font-medium px-4 py-2 rounded-full min-h-[44px] touch-manipulation active:scale-95 shadow-sm flex items-center gap-1.5"
+            :aria-label="t('a11y.saveChanges')"
+            :title="`${t('save')} (⌘S / Ctrl+S)`"
           >
             <span>💾</span>
             {{ t('save') }}
@@ -4110,15 +4332,59 @@ const constellationPoints = computed(() => {
               </p>
             </div>
 
-            <!-- Distance -->
+            <!-- Distance - Accessible with +/- buttons and text input -->
             <div>
               <div class="flex items-center justify-between mb-2">
                 <div>
-                  <p class="text-xs xs:text-sm text-text-muted">{{ t('lookingFor.maxDistance') }}</p>
+                  <label :for="'distance-input-profile'" class="text-xs xs:text-sm text-text-muted">{{ t('lookingFor.maxDistance') }}</label>
                   <p class="text-[10px] text-text-muted/70">{{ t('lookingFor.distanceRange') }}</p>
                 </div>
-                <span class="text-lg font-bold text-primary bg-primary-light px-3 py-1 rounded-full">{{ userProfile.lookingFor.maxDistance }} {{ t('lookingFor.km') }}</span>
               </div>
+              
+              <!-- Accessible distance control with +/- buttons and text input -->
+              <div class="flex items-center gap-3 mb-3" role="group" :aria-label="t('a11y.distanceSlider', { km: userProfile.lookingFor.maxDistance })">
+                <!-- Decrease button -->
+                <button
+                  type="button"
+                  @click="userProfile.lookingFor.maxDistance = Math.max(5, userProfile.lookingFor.maxDistance - 5)"
+                  class="w-12 h-12 bg-surface border-2 border-primary/30 rounded-full flex items-center justify-center text-primary font-bold text-xl touch-manipulation active:scale-90 active:bg-primary-light hover:bg-primary-light transition-colors"
+                  :aria-label="t('a11y.decreaseDistance')"
+                  :disabled="userProfile.lookingFor.maxDistance <= 5"
+                  :class="{ 'opacity-50 cursor-not-allowed': userProfile.lookingFor.maxDistance <= 5 }"
+                >
+                  −
+                </button>
+                
+                <!-- Text input for direct entry -->
+                <div class="flex-1 flex items-center justify-center">
+                  <input
+                    id="distance-input-profile"
+                    v-model.number="userProfile.lookingFor.maxDistance"
+                    type="number"
+                    min="5"
+                    max="200"
+                    step="5"
+                    class="w-20 text-center text-xl font-bold text-primary bg-primary-light border-2 border-primary/30 rounded-xl py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                    :aria-label="t('lookingFor.maxDistance')"
+                    @blur="userProfile.lookingFor.maxDistance = Math.min(200, Math.max(5, userProfile.lookingFor.maxDistance || 50))"
+                  />
+                  <span class="text-sm text-text-muted ms-2">{{ t('lookingFor.km') }}</span>
+                </div>
+                
+                <!-- Increase button -->
+                <button
+                  type="button"
+                  @click="userProfile.lookingFor.maxDistance = Math.min(200, userProfile.lookingFor.maxDistance + 5)"
+                  class="w-12 h-12 bg-surface border-2 border-primary/30 rounded-full flex items-center justify-center text-primary font-bold text-xl touch-manipulation active:scale-90 active:bg-primary-light hover:bg-primary-light transition-colors"
+                  :aria-label="t('a11y.increaseDistance')"
+                  :disabled="userProfile.lookingFor.maxDistance >= 200"
+                  :class="{ 'opacity-50 cursor-not-allowed': userProfile.lookingFor.maxDistance >= 200 }"
+                >
+                  +
+                </button>
+              </div>
+              
+              <!-- Slider as alternative input method -->
               <div class="relative">
                 <input 
                   v-model.number="userProfile.lookingFor.maxDistance"
@@ -4127,6 +4393,8 @@ const constellationPoints = computed(() => {
                   max="200"
                   step="5"
                   class="w-full h-3 bg-gradient-to-r from-primary/20 to-primary/60 rounded-full appearance-none cursor-pointer accent-primary"
+                  :aria-label="t('a11y.distanceSlider', { km: userProfile.lookingFor.maxDistance })"
+                  aria-hidden="true"
                 />
                 <!-- Distance range labels -->
                 <div class="flex justify-between mt-1 text-[10px] text-text-muted">
@@ -4208,9 +4476,21 @@ const constellationPoints = computed(() => {
           </button>
           
           <!-- Bottom spacing for safe area -->
-          <div class="h-4"></div>
+          <div class="h-20"></div>
         </div>
       </main>
+      
+      <!-- Floating Save Button (FAB) - Always visible for accessibility -->
+      <button
+        @click="saveProfile"
+        class="fixed bottom-6 end-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center touch-manipulation active:scale-90 z-30 animate-bounce-soft"
+        :aria-label="t('a11y.saveChanges')"
+        :title="`${t('save')} (⌘S / Ctrl+S)`"
+      >
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </button>
     </div>
 
     <!-- Profile View Overlay -->

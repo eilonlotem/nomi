@@ -72,6 +72,8 @@ export default {
     shared: 'compartido',
     compatibility: 'Compatibilidad',
     swipeHint: '← Desliza a la izquierda para pasar | Desliza a la derecha para gustar →',
+    accessibleHint: 'Desliza, toca botones o usa las flechas',
+    keyboardHint: '← Pasar | Gustar → | Espacio: Deshacer | Enter: Ver Perfil',
   },
   
   // Matches

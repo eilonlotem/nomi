@@ -664,7 +664,27 @@ const startRecording = async () => {
   }
   
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+    // Request microphone with a reasonable timeout
+    let stream
+    try {
+      // Create a promise race with a timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Permission timeout')), 10000)
+      })
+      
+      stream = await Promise.race([
+        navigator.mediaDevices.getUserMedia({ audio: true }),
+        timeoutPromise
+      ])
+    } catch (permError) {
+      console.error('Permission error:', permError)
+      if (permError.message === 'Permission timeout') {
+        voiceRecordingError.value = 'Microphone permission timed out. Please try again.'
+      } else {
+        throw permError
+      }
+      return
+    }
     
     // Get the best supported MIME type
     const mimeType = getSupportedMimeType()
@@ -672,7 +692,14 @@ const startRecording = async () => {
     
     console.log('Starting recording with MIME type:', mimeType || 'browser default')
     
-    mediaRecorder.value = new MediaRecorder(stream, options)
+    try {
+      mediaRecorder.value = new MediaRecorder(stream, options)
+    } catch (recorderError) {
+      // If the preferred MIME type fails, try without options
+      console.warn('MediaRecorder creation failed with options, trying default:', recorderError)
+      mediaRecorder.value = new MediaRecorder(stream)
+    }
+    
     audioChunks.value = []
     
     mediaRecorder.value.ondataavailable = (event) => {
@@ -688,8 +715,13 @@ const startRecording = async () => {
       // Stop all tracks
       stream.getTracks().forEach(track => track.stop())
       
-      // Upload the voice message
-      await uploadVoiceMessage(audioBlob, recordingDuration.value)
+      // Only upload if we have audio data
+      if (audioBlob.size > 0) {
+        await uploadVoiceMessage(audioBlob, recordingDuration.value)
+      } else {
+        console.warn('No audio data recorded')
+        voiceRecordingError.value = 'No audio recorded'
+      }
     }
     
     mediaRecorder.value.onerror = (event) => {
@@ -711,12 +743,18 @@ const startRecording = async () => {
       }
     }, 1000)
     
+    console.log('Recording started successfully')
+    
   } catch (error) {
     console.error('Failed to start recording:', error)
     if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
       voiceRecordingError.value = 'Microphone access denied. Please allow microphone access.'
     } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
       voiceRecordingError.value = 'No microphone found'
+    } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+      voiceRecordingError.value = 'Microphone is in use by another app'
+    } else if (error.name === 'OverconstrainedError') {
+      voiceRecordingError.value = 'Microphone configuration error'
     } else {
       voiceRecordingError.value = 'Failed to start recording'
     }

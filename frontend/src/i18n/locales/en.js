@@ -63,6 +63,7 @@ export default {
     subtitle: 'People who get you',
     noMoreProfiles: "You've seen everyone for now!",
     checkBackLater: 'Check back later for new connections',
+    noMoreExplanation: "You've viewed all available matches for your filters. Check back later for new profiles or adjust your preferences.",
     passBtn: 'Pass',
     connectBtn: 'Connect',
     superBtn: 'Super',
@@ -70,6 +71,7 @@ export default {
     distance: '{km} km away',
     shared: 'shared',
     compatibility: 'Match',
+    swipeHint: '← Swipe Left to Pass | Swipe Right to Like →',
   },
   
   // Matches
@@ -153,10 +155,10 @@ export default {
     },
     responsePace: 'My response pace',
     responsePaceOptions: {
-      quick: 'I respond quickly',
-      moderate: 'Within a few hours',
-      slow: 'May take a day or more',
-      variable: 'Depends on my energy',
+      quick: 'Within 1 hour',
+      moderate: 'Within 2-4 hours',
+      slow: 'Within 1-2 days',
+      variable: 'Varies by energy level',
     },
     datePace: 'Meeting preferences',
     datePaceOptions: {
@@ -181,14 +183,15 @@ export default {
     age: 'Age',
     location: 'Location',
     bio: 'Bio',
-    bioPlaceholder: 'Tell others about yourself...',
+    bioPlaceholder: 'Tell about yourself...',
     myTags: 'My Identity Tags',
     myInterests: 'My Interests',
     addInterest: 'Add interest',
     prompt: 'Profile Prompt',
-    promptAnswer: 'Your answer',
+    promptAnswer: 'Write your answer...',
     saveChanges: 'Save Changes',
-    photoHint: 'Tap photos to manage',
+    photoHint: 'Tap to manage',
+    photoInstructions: 'Upload up to 6 photos. Recommended: 800x800px, JPG/PNG formats. Tap to reorder or delete.',
     setAsPrimary: 'Set as primary photo',
     main: 'Main',
     addPhoto: 'Add Photo',
@@ -213,10 +216,13 @@ export default {
     ageRange: 'Age Range',
     minAge: 'Min',
     maxAge: 'Max',
+    ageRangeError: 'Minimum age must be less than or equal to maximum age',
     location: 'Location',
     yourLocation: 'Your city or area',
     locationPlaceholder: 'e.g. Tel Aviv, New York...',
+    locationHint: 'Select a recognized city for accurate distance matching',
     maxDistance: 'Maximum distance',
+    distanceRange: 'Range: 5-200 km',
     km: 'km',
     genders: {
       male: 'Men',
@@ -250,7 +256,7 @@ export default {
   
   // Accessibility
   a11y: {
-    title: 'Accessibility',
+    title: 'Accessibility Settings',
     switchLanguage: 'Switch language',
     goBack: 'Go back',
     toggleTag: 'Toggle {tag} tag',
@@ -290,10 +296,10 @@ export default {
   
   // Invite Friends
   inviteFriends: {
-    title: 'Invite Friends',
+    title: 'Send Invite to Friends',
     subtitle: 'Share the love!',
     description: 'Invite your Facebook friends to join Nomi and find their connections.',
-    inviteButton: 'Invite Friends',
+    inviteButton: 'Send Invite to Friends',
     loading: 'Loading friends...',
     noFriends: 'No friends to invite',
     noFriendsDescription: 'Connect with Facebook to see friends you can invite.',
@@ -311,5 +317,29 @@ export default {
       accepted: 'Joined',
       pending: 'Pending',
     },
+  },
+
+  // Interest Tags (for translation lookup)
+  interests: {
+    Music: 'Music',
+    Reading: 'Reading',
+    Hiking: 'Hiking',
+    Cooking: 'Cooking',
+    Gaming: 'Gaming',
+    Art: 'Art',
+    Sports: 'Sports',
+    Travel: 'Travel',
+    Movies: 'Movies',
+    Photography: 'Photography',
+    Dancing: 'Dancing',
+    Writing: 'Writing',
+    Yoga: 'Yoga',
+    Meditation: 'Meditation',
+    Nature: 'Nature',
+    Technology: 'Technology',
+    Fashion: 'Fashion',
+    Food: 'Food',
+    Fitness: 'Fitness',
+    Animals: 'Animals',
   },
 }

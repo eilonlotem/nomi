@@ -53,7 +53,7 @@ export default {
     cognitive: 'הבדל קוגניטיבי',
     invisible: 'מוגבלות נסתרת',
     acquired: 'מוגבלות נרכשת',
-    caregiver: 'מטפל/בן ברית',
+    caregiver: 'מטפל/ת או בן/בת לוויה',
     autism: 'אוטיזם',
   },
   
@@ -63,6 +63,7 @@ export default {
     subtitle: 'אנשים שמבינים אותך',
     noMoreProfiles: 'ראית את כולם לעת עתה!',
     checkBackLater: 'חזור מאוחר יותר לחיבורים חדשים',
+    noMoreExplanation: 'צפית בכל הפרופילים הזמינים לפי ההעדפות שלך. בדוק מאוחר יותר לפרופילים חדשים או התאם את העדפות החיפוש.',
     passBtn: 'דלג',
     connectBtn: 'התחבר',
     superBtn: 'סופר',
@@ -70,6 +71,7 @@ export default {
     distance: '{km} ק״מ',
     shared: 'משותף',
     compatibility: 'התאמה',
+    swipeHint: 'החלק שמאלה לדלג ← | → החלק ימינה לחיבור',
   },
   
   // Matches
@@ -152,10 +154,10 @@ export default {
     },
     responsePace: 'קצב התגובה שלי',
     responsePaceOptions: {
-      quick: 'אני מגיב/ה מהר',
-      moderate: 'תוך כמה שעות',
-      slow: 'עשוי לקחת יום או יותר',
-      variable: 'תלוי באנרגיה שלי',
+      quick: 'תוך שעה',
+      moderate: 'תוך 2-4 שעות',
+      slow: 'תוך 1-2 ימים',
+      variable: 'משתנה לפי האנרגיה שלי',
     },
     datePace: 'העדפות מפגש',
     datePaceOptions: {
@@ -180,14 +182,15 @@ export default {
     age: 'גיל',
     location: 'מיקום',
     bio: 'אודות',
-    bioPlaceholder: 'ספר לאחרים על עצמך...',
+    bioPlaceholder: 'ספר על עצמך...',
     myTags: 'התגים שלי',
     myInterests: 'תחומי העניין שלי',
     addInterest: 'הוסף תחום עניין',
     prompt: 'שאלת פרופיל',
-    promptAnswer: 'התשובה שלך',
+    promptAnswer: 'כתוב את התשובה שלך...',
     saveChanges: 'שמור שינויים',
-    photoHint: 'לחץ על תמונות לניהול',
+    photoHint: 'לחץ לניהול',
+    photoInstructions: 'העלה עד 6 תמונות. מומלץ: 800x800 פיקסלים, פורמט JPG/PNG. לחץ לסידור או מחיקה.',
     setAsPrimary: 'הגדר כתמונה ראשית',
     main: 'ראשית',
     addPhoto: 'הוסף תמונה',
@@ -212,10 +215,13 @@ export default {
     ageRange: 'טווח גילאים',
     minAge: 'מינימום',
     maxAge: 'מקסימום',
+    ageRangeError: 'גיל מינימום חייב להיות קטן או שווה לגיל מקסימום',
     location: 'מיקום',
     yourLocation: 'העיר או האזור שלך',
     locationPlaceholder: 'לדוגמה: תל אביב, ירושלים...',
+    locationHint: 'בחר עיר מוכרת לחישוב מרחק מדויק',
     maxDistance: 'מרחק מקסימלי',
+    distanceRange: 'טווח: 5-200 ק״מ',
     km: 'ק״מ',
     genders: {
       male: 'גברים',
@@ -249,7 +255,7 @@ export default {
   
   // Accessibility
   a11y: {
-    title: 'נגישות',
+    title: 'הגדרות נגישות',
     switchLanguage: 'החלף שפה',
     goBack: 'חזור אחורה',
     toggleTag: 'הפעל/כבה תגית {tag}',
@@ -289,10 +295,10 @@ export default {
   
   // Invite Friends
   inviteFriends: {
-    title: 'הזמן חברים',
+    title: 'שלח הזמנה לחברים',
     subtitle: 'שתפו את האהבה!',
     description: 'הזמינו את חברי הפייסבוק שלכם להצטרף לנומי ולמצוא את החיבורים שלהם.',
-    inviteButton: 'הזמן חברים',
+    inviteButton: 'שלח הזמנה לחברים',
     loading: 'טוען חברים...',
     noFriends: 'אין חברים להזמנה',
     noFriendsDescription: 'התחברו עם פייסבוק כדי לראות חברים שניתן להזמין.',
@@ -310,5 +316,29 @@ export default {
       accepted: 'הצטרפו',
       pending: 'ממתין',
     },
+  },
+
+  // Interest Tags (translated)
+  interests: {
+    Music: 'מוזיקה',
+    Reading: 'קריאה',
+    Hiking: 'טיולים',
+    Cooking: 'בישול',
+    Gaming: 'משחקים',
+    Art: 'אמנות',
+    Sports: 'ספורט',
+    Travel: 'נסיעות',
+    Movies: 'סרטים',
+    Photography: 'צילום',
+    Dancing: 'ריקוד',
+    Writing: 'כתיבה',
+    Yoga: 'יוגה',
+    Meditation: 'מדיטציה',
+    Nature: 'טבע',
+    Technology: 'טכנולוגיה',
+    Fashion: 'אופנה',
+    Food: 'אוכל',
+    Fitness: 'כושר',
+    Animals: 'בעלי חיים',
   },
 }

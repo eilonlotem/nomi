@@ -3276,21 +3276,6 @@ const constellationPoints = computed(() => {
         v-if="currentProfile"
         class="sticky bottom-0 bg-surface/90 backdrop-blur-lg p-4 xs:p-6 bottom-bar-safe"
       >
-        <!-- Swipe Hint - Clear and Visible -->
-        <div class="text-center mb-3">
-          <p class="text-sm font-medium text-text-deep bg-primary-light/50 inline-flex items-center gap-3 px-4 py-2 rounded-full border border-primary/20">
-            <span class="flex items-center gap-1 text-danger">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-              {{ t('discovery.passBtn') }}
-            </span>
-            <span class="text-text-muted">|</span>
-            <span class="flex items-center gap-1 text-primary">
-              {{ t('discovery.connectBtn') }}
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
-            </span>
-          </p>
-        </div>
-        
         <div class="flex items-center justify-center gap-4 xs:gap-6">
           <!-- Pass Button -->
           <button

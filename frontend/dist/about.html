@@ -2,11 +2,70 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-17894583004"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'AW-17894583004');
+    </script>
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>נומי - היכרויות שמבינות אותך</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>עלינו | נומי - אפליקציית היכרויות לאנשים עם מוגבלויות</title>
+    <meta name="title" content="עלינו | נומי - אפליקציית היכרויות לאנשים עם מוגבלויות">
+    <meta name="description" content="הכירו את נומי - אפליקציית ההיכרויות המכילה הראשונה בישראל. הסיפור שלנו, החזון, ואיך אנחנו יוצרים מרחב בטוח לאהבה בלי התנצלות.">
+    <meta name="keywords" content="נומי, אפליקציית היכרויות, מוגבלות, דייטינג נגיש, היכרויות מכילות, אהבה, about nomi, disability dating">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://nomi-online.com/about.html">
+    
+    <!-- Hreflang -->
+    <link rel="alternate" hreflang="he" href="https://nomi-online.com/about.html">
+    <link rel="alternate" hreflang="en" href="https://nomi-online.com/about.html?lang=en">
+    <link rel="alternate" hreflang="x-default" href="https://nomi-online.com/about.html">
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nomi-online.com/about.html">
+    <meta property="og:title" content="עלינו | נומי - דייטינג שמבין אותך">
+    <meta property="og:description" content="הכירו את נומי - מרחב בטוח להיכרויות לאנשים עם מוגבלויות. החזון, הסיפור, והערכים שלנו.">
+    <meta property="og:image" content="https://nomi-online.com/og-image.png">
+    <meta property="og:locale" content="he_IL">
+    <meta property="og:locale:alternate" content="en_US">
+    <meta property="og:site_name" content="Nomi">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="עלינו | נומי - דייטינג שמבין אותך">
+    <meta name="twitter:description" content="הכירו את נומי - מרחב בטוח להיכרויות לאנשים עם מוגבלויות.">
+    <meta name="twitter:image" content="https://nomi-online.com/og-image.png">
+    
+    <!-- Schema.org -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "AboutPage",
+        "name": "About Nomi",
+        "description": "Learn about Nomi - the inclusive dating app for people with disabilities",
+        "url": "https://nomi-online.com/about.html",
+        "mainEntity": {
+            "@type": "Organization",
+            "name": "Nomi",
+            "description": "Inclusive dating app for people with disabilities",
+            "url": "https://nomi-online.com",
+            "foundingDate": "2025",
+            "slogan": "אהבה בלי התנצלות - Love without apology"
+        }
+    }
+    </script>
+    
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -30,6 +89,25 @@
             background: var(--bg);
             overflow-x: hidden;
         }
+
+        /* LTR mode font adjustment */
+        html[dir="ltr"] body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        /* Language toggle visibility */
+        [data-lang="en"] { display: none; }
+        [data-lang="he"] { display: block; }
+        
+        html[dir="ltr"] [data-lang="en"] { display: block; }
+        html[dir="ltr"] [data-lang="he"] { display: none; }
+
+        /* Inline language elements */
+        span[data-lang="en"], a[data-lang="en"] { display: none; }
+        span[data-lang="he"], a[data-lang="he"] { display: inline; }
+        
+        html[dir="ltr"] span[data-lang="en"], html[dir="ltr"] a[data-lang="en"] { display: inline; }
+        html[dir="ltr"] span[data-lang="he"], html[dir="ltr"] a[data-lang="he"] { display: none; }
 
         /* Navbar */
         .navbar {
@@ -55,6 +133,36 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
             text-decoration: none;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .lang-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: transparent;
+            border: 2px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text);
+        }
+
+        .lang-toggle:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .lang-toggle .flag {
+            font-size: 1.1rem;
         }
 
         .nav-cta {
@@ -396,8 +504,15 @@
             background: white;
             padding: 2.5rem;
             border-radius: 24px;
-            text-align: right;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        html[dir="rtl"] .story-content {
+            text-align: right;
+        }
+
+        html[dir="ltr"] .story-content {
+            text-align: left;
         }
 
         .story-content p {
@@ -416,7 +531,14 @@
             padding: 1.5rem;
             border-radius: 16px;
             margin-top: 1.5rem;
+        }
+
+        html[dir="rtl"] .story-highlight {
             border-right: 4px solid var(--primary);
+        }
+
+        html[dir="ltr"] .story-highlight {
+            border-left: 4px solid var(--primary);
         }
 
         .story-highlight p {
@@ -498,6 +620,177 @@
             color: white;
         }
 
+        /* Safety Section */
+        .safety {
+            background: linear-gradient(180deg, #ECFDF5 0%, #D1FAE5 50%, #A7F3D0 100%);
+            padding: 6rem 2rem;
+            max-width: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .safety::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -25%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 6s ease-in-out infinite;
+        }
+
+        .safety::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -15%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(5, 150, 105, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 8s ease-in-out infinite reverse;
+        }
+
+        .safety-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .safety-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #047857;
+            margin-bottom: 1.5rem;
+        }
+
+        .safety-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .safety-highlight {
+            background: linear-gradient(135deg, #10B981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .safety-intro {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .safety-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .safety-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            transition: all 0.3s ease;
+            text-align: right;
+        }
+
+        html[dir="ltr"] .safety-card {
+            text-align: left;
+        }
+
+        .safety-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.2);
+        }
+
+        .safety-card-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #D1FAE5, #A7F3D0);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .safety-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+        }
+
+        .safety-card p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .safety-cta {
+            margin-top: 1rem;
+        }
+
+        .safety-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #059669;
+            font-weight: 600;
+            font-size: 1.05rem;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 100px;
+            background: rgba(16, 185, 129, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .safety-link:hover {
+            background: rgba(16, 185, 129, 0.2);
+            transform: translateX(-4px);
+        }
+
+        html[dir="ltr"] .safety-link:hover {
+            transform: translateX(4px);
+        }
+
+        @media (max-width: 768px) {
+            .safety-card {
+                text-align: center;
+            }
+
+            .safety-card-icon {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .safety-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .principles-inner {
             max-width: 1000px;
             margin: 0 auto;
@@ -553,6 +846,209 @@
             font-size: 0.9rem;
             opacity: 0.75;
             line-height: 1.6;
+        }
+
+        /* Technology Section */
+        .technology {
+            background: linear-gradient(135deg, #EDE9FE 0%, #FDF4FF 50%, #FFF7ED 100%);
+            padding: 6rem 2rem;
+            max-width: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .technology::before {
+            content: '';
+            position: absolute;
+            top: -30%;
+            left: -20%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 7s ease-in-out infinite;
+        }
+
+        .technology::after {
+            content: '';
+            position: absolute;
+            bottom: -20%;
+            right: -15%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: pulse 9s ease-in-out infinite reverse;
+        }
+
+        .technology-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .technology-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(124, 58, 237, 0.12);
+            border: 1px solid rgba(124, 58, 237, 0.25);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #6D28D9;
+            margin-bottom: 1.5rem;
+        }
+
+        .technology-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .technology-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+
+        .technology-highlight {
+            background: linear-gradient(135deg, #7C3AED, #9333EA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .technology-intro {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            max-width: 650px;
+            margin: 0 auto;
+        }
+
+        .technology-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .technology-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .tech-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(124, 58, 237, 0.08);
+            border: 1px solid rgba(124, 58, 237, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tech-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .tech-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 48px rgba(124, 58, 237, 0.15);
+        }
+
+        .tech-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .tech-card-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #EDE9FE, #FDF4FF);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .tech-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .tech-card-tagline {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .tech-card-desc {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 1.25rem;
+        }
+
+        .tech-card-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .tech-card-list li {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            padding: 0.35rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tech-card-list li::before {
+            content: '✓';
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        html[dir="rtl"] .tech-card {
+            text-align: right;
+        }
+
+        html[dir="ltr"] .tech-card {
+            text-align: left;
+        }
+
+        @media (max-width: 768px) {
+            .tech-card {
+                text-align: center;
+            }
+
+            .tech-card-icon {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .tech-card-list li {
+                justify-content: center;
+            }
         }
         
         /* Stats Section */
@@ -641,9 +1137,14 @@
             transition: all 0.3s ease;
         }
 
-        .step:hover {
+        html[dir="rtl"] .step:hover {
             transform: translateX(-8px);
             box-shadow: 8px 8px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        html[dir="ltr"] .step:hover {
+            transform: translateX(8px);
+            box-shadow: -8px 8px 30px rgba(0, 0, 0, 0.06);
         }
         
         .step-number {
@@ -786,6 +1287,20 @@
                 padding: 0.75rem 1rem;
             }
 
+            .nav-actions {
+                gap: 0.5rem;
+            }
+
+            .lang-toggle {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.8rem;
+            }
+
+            .nav-cta {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 1.5rem;
@@ -798,7 +1313,7 @@
             }
 
             .step:hover {
-                transform: translateY(-4px);
+                transform: translateY(-4px) !important;
             }
 
             .footer-inner {
@@ -817,11 +1332,12 @@
 
             .story-content {
                 padding: 1.5rem;
-                text-align: center;
+                text-align: center !important;
             }
 
             .story-highlight {
-                border-right: none;
+                border-right: none !important;
+                border-left: none !important;
                 border-top: 4px solid var(--primary);
             }
 
@@ -829,13 +1345,36 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Reduced motion support */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar">
-        <a href="/" class="nav-logo">נומי</a>
-        <a href="/" class="nav-cta">התחברות</a>
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <a href="/" class="nav-logo">
+            <span data-lang="he">נומי</span>
+            <span data-lang="en">Nomi</span>
+        </a>
+        <div class="nav-actions">
+            <button class="lang-toggle" onclick="toggleLanguage()" aria-label="Switch language">
+                <span class="flag" data-lang="he">🇬🇧</span>
+                <span class="flag" data-lang="en">🇮🇱</span>
+                <span data-lang="he">English</span>
+                <span data-lang="en">עברית</span>
+            </button>
+            <a href="/" class="nav-cta">
+                <span data-lang="he">התחברות</span>
+                <span data-lang="en">Login</span>
+            </a>
+        </div>
     </nav>
 
     <!-- Hero -->
@@ -843,50 +1382,94 @@
         <div class="hero-content">
             <div class="hero-badge">
                 <span>💜</span>
-                <span>דייטינג לאנשים עם מוגבלויות נראות ושקופות</span>
+                <span data-lang="he">דייטינג לאנשים עם מוגבלויות נראות ושקופות</span>
+                <span data-lang="en">Dating for people with visible and invisible disabilities</span>
             </div>
-            <div class="logo">🧡</div>
-            <h1>שוויון אמיתי<br><span class="highlight">באהבה</span></h1>
+            <div class="logo" aria-hidden="true">🧡</div>
+            <h1>
+                <span data-lang="he">שוויון אמיתי<br><span class="highlight">באהבה</span></span>
+                <span data-lang="en">Real Equality<br><span class="highlight">in Love</span></span>
+            </h1>
             <p class="tagline">
-                נומי יוצרת מרחב בטוח להכרויות ויצירת קשרים רומנטיים לאנשים עם מוגבלויות פיזיות, חושיות, קוגניטיביות ורגשיות. כאן אתם לא צריכים להסביר, להתנצל, או "לצאת מהארון" של המוגבלות.
+                <span data-lang="he">נומי יוצרת מרחב בטוח להכרויות ויצירת קשרים רומנטיים לאנשים עם מוגבלויות פיזיות, חושיות, קוגניטיביות ורגשיות. כאן אתם לא צריכים להסביר, להתנצל, או "לצאת מהארון" של המוגבלות.</span>
+                <span data-lang="en">Nomi creates a safe space for dating and romantic connections for people with physical, sensory, cognitive, and emotional disabilities. Here you don't need to explain, apologize, or "come out" about your disability.</span>
             </p>
             <div class="cta-group">
-                <a href="/" class="cta-button">בואו נתחיל 🧡</a>
-                <a href="#story" class="cta-secondary">הסיפור שלנו</a>
+                <a href="/" class="cta-button">
+                    <span data-lang="he">בואו נתחיל 🧡</span>
+                    <span data-lang="en">Let's Begin 🧡</span>
+                </a>
+                <a href="#story" class="cta-secondary">
+                    <span data-lang="he">הסיפור שלנו</span>
+                    <span data-lang="en">Our Story</span>
+                </a>
             </div>
         </div>
-        <div class="scroll-hint">↓</div>
+        <div class="scroll-hint" aria-hidden="true">↓</div>
     </section>
     
     <!-- Problem -->
     <section class="problem">
         <div class="problem-inner">
             <div class="section-header">
-                <span class="section-eyebrow">הבעיה</span>
-                <h2 class="section-title">עולם הדייטינג הדיגיטלי לא נגיש</h2>
-                <p class="section-subtitle">למרות שמדובר במיליוני אנשים ברחבי העולם, אין פלטפורמה מובילה שמאפשרת היכרות זוגית במרחב מותאם, בטוח ולא שיפוטי.</p>
+                <span class="section-eyebrow">
+                    <span data-lang="he">הבעיה</span>
+                    <span data-lang="en">THE PROBLEM</span>
+                </span>
+                <h2 class="section-title">
+                    <span data-lang="he">עולם הדייטינג הדיגיטלי לא נגיש</span>
+                    <span data-lang="en">Digital Dating Isn't Accessible</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span data-lang="he">למרות שמדובר במיליוני אנשים ברחבי העולם, אין פלטפורמה מובילה שמאפשרת היכרות זוגית במרחב מותאם, בטוח ולא שיפוטי.</span>
+                    <span data-lang="en">Despite millions of people worldwide, there's no leading platform that enables dating in an adapted, safe, and non-judgmental space.</span>
+                </p>
             </div>
             
             <div class="problem-grid">
                 <div class="problem-card">
-                    <div class="problem-icon">🚫</div>
-                    <h3>אין פילטרים רלוונטיים</h3>
-                    <p>האפליקציות הקיימות כמו Tinder ו-Bumble לא כוללות אפשרויות סינון רלוונטיות למוגבלות</p>
+                    <div class="problem-icon" aria-hidden="true">🚫</div>
+                    <h3>
+                        <span data-lang="he">אין פילטרים רלוונטיים</span>
+                        <span data-lang="en">No Relevant Filters</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">האפליקציות הקיימות כמו Tinder ו-Bumble לא כוללות אפשרויות סינון רלוונטיות למוגבלות</span>
+                        <span data-lang="en">Existing apps like Tinder and Bumble don't include filtering options relevant to disability</span>
+                    </p>
                 </div>
                 <div class="problem-card">
-                    <div class="problem-icon">🔇</div>
-                    <h3>לא מותאמות</h3>
-                    <p>חוסר התאמה ב-UX, בשפה, ובפונקציונליות לאנשים עם מוגבלויות שונות</p>
+                    <div class="problem-icon" aria-hidden="true">🔇</div>
+                    <h3>
+                        <span data-lang="he">לא מותאמות</span>
+                        <span data-lang="en">Not Adapted</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">חוסר התאמה ב-UX, בשפה, ובפונקציונליות לאנשים עם מוגבלויות שונות</span>
+                        <span data-lang="en">Lack of adaptation in UX, language, and functionality for people with various disabilities</span>
+                    </p>
                 </div>
                 <div class="problem-card">
-                    <div class="problem-icon">💔</div>
-                    <h3>חוויית דחייה</h3>
-                    <p>האפליקציות יוצרות חוויית דחייה, הסתרה והתנצלות - ודוחפות אנשים "להסביר את עצמם"</p>
+                    <div class="problem-icon" aria-hidden="true">💔</div>
+                    <h3>
+                        <span data-lang="he">חוויית דחייה</span>
+                        <span data-lang="en">Rejection Experience</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">האפליקציות יוצרות חוויית דחייה, הסתרה והתנצלות - ודוחפות אנשים "להסביר את עצמם"</span>
+                        <span data-lang="en">Apps create experiences of rejection, hiding, and apologizing - pushing people to "explain themselves"</span>
+                    </p>
                 </div>
                 <div class="problem-card">
-                    <div class="problem-icon">😔</div>
-                    <h3>בדידות</h3>
-                    <p>אוכלוסייה שלמה מודרת מאחד המרחבים החברתיים החשובים ביותר – זוגיות</p>
+                    <div class="problem-icon" aria-hidden="true">😔</div>
+                    <h3>
+                        <span data-lang="he">בדידות</span>
+                        <span data-lang="en">Loneliness</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">אוכלוסייה שלמה מודרת מאחד המרחבים החברתיים החשובים ביותר – זוגיות</span>
+                        <span data-lang="en">An entire population is excluded from one of the most important social spaces – relationships</span>
+                    </p>
                 </div>
             </div>
         </div>
@@ -895,17 +1478,34 @@
     <!-- Story Section - Meet Shaon -->
     <section class="story" id="story">
         <div class="story-inner">
-            <div class="story-avatar">👩‍🦽</div>
-            <h2 class="story-title">הכירו את שון</h2>
-            <p class="story-intro">שון היא אישה צעירה, חכמה, מצחיקה, מחפשת זוגיות – כמו כולם.<br>יש לה שיתוק מוחין והיא מתניידת על כסא גלגלים.</p>
+            <div class="story-avatar" aria-hidden="true">👩‍🦽</div>
+            <h2 class="story-title">
+                <span data-lang="he">הכירו את שון</span>
+                <span data-lang="en">Meet Shaon</span>
+            </h2>
+            <p class="story-intro">
+                <span data-lang="he">שון היא אישה צעירה, חכמה, מצחיקה, מחפשת זוגיות – כמו כולם.<br>יש לה שיתוק מוחין והיא מתניידת על כסא גלגלים.</span>
+                <span data-lang="en">Shaon is a young, smart, funny woman looking for a relationship – like everyone else.<br>She has cerebral palsy and uses a wheelchair.</span>
+            </p>
             
             <div class="story-content">
-                <p>כששון פותחת אפליקציית דייטינג רגילה, אין לה דרך לסמן מי היא באמת. אנשים רואים את כסא הגלגלים שלה לפני שרואים אותה.</p>
-                <p>היא לא פוגשת אנשים כמוה – אנשים עם שיתוק מוחין שמחפשים זוגיות. אין פילטר, אין שפה מתאימה, אין התאמה אמיתית.</p>
-                <p>ובפועל, אין לה אף פלטפורמה שמכירה בזכות שלה לזוגיות בלי התנצלות.</p>
-                
-                <div class="story-highlight">
-                    <p>נומי נולדה מהפער הזה:<br>בין הרצון האנושי הבסיסי לאהבה – לבין קהילות דיגיטליות שאינן מותאמות ונגישות לאנשים עם מוגבלויות.</p>
+                <div data-lang="he">
+                    <p>כששון פותחת אפליקציית דייטינג רגילה, אין לה דרך לסמן מי היא באמת. אנשים רואים את כסא הגלגלים שלה לפני שרואים אותה.</p>
+                    <p>היא לא פוגשת אנשים כמוה – אנשים עם שיתוק מוחין שמחפשים זוגיות. אין פילטר, אין שפה מתאימה, אין התאמה אמיתית.</p>
+                    <p>ובפועל, אין לה אף פלטפורמה שמכירה בזכות שלה לזוגיות בלי התנצלות.</p>
+                    
+                    <div class="story-highlight">
+                        <p>נומי נולדה מהפער הזה:<br>בין הרצון האנושי הבסיסי לאהבה – לבין קהילות דיגיטליות שאינן מותאמות ונגישות לאנשים עם מוגבלויות.</p>
+                    </div>
+                </div>
+                <div data-lang="en">
+                    <p>When Shaon opens a regular dating app, there's no way for her to show who she really is. People see her wheelchair before they see her.</p>
+                    <p>She doesn't meet people like her – people with cerebral palsy looking for relationships. No filter, no appropriate language, no real matching.</p>
+                    <p>In practice, she has no platform that recognizes her right to love without apology.</p>
+                    
+                    <div class="story-highlight">
+                        <p>Nomi was born from this gap:<br>Between the basic human desire for love – and digital communities that aren't adapted and accessible for people with disabilities.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -915,31 +1515,258 @@
     <section class="principles">
         <div class="principles-inner">
             <div class="principles-header">
-                <h2>עקרונות הליבה שלנו</h2>
-                <p>כל החלטה ב-נומי נבחנת דרך העקרונות האלה</p>
+                <h2>
+                    <span data-lang="he">עקרונות הליבה שלנו</span>
+                    <span data-lang="en">Our Core Principles</span>
+                </h2>
+                <p>
+                    <span data-lang="he">כל החלטה ב-נומי נבחנת דרך העקרונות האלה</span>
+                    <span data-lang="en">Every decision at Nomi is evaluated through these principles</span>
+                </p>
             </div>
 
             <div class="principles-grid">
                 <div class="principle-card">
-                    <div class="principle-icon">♿</div>
-                    <h3>נגישות מלאה</h3>
-                    <p>UX, שפה, פונקציונליות – הכל מותאם למוגבלויות פיזיות, חושיות, קוגניטיביות ורגשיות</p>
+                    <div class="principle-icon" aria-hidden="true">♿</div>
+                    <h3>
+                        <span data-lang="he">נגישות מלאה</span>
+                        <span data-lang="en">Full Accessibility</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">UX, שפה, פונקציונליות – הכל מותאם למוגבלויות פיזיות, חושיות, קוגניטיביות ורגשיות</span>
+                        <span data-lang="en">UX, language, functionality – everything adapted for physical, sensory, cognitive, and emotional disabilities</span>
+                    </p>
                 </div>
                 <div class="principle-card">
-                    <div class="principle-icon">🎯</div>
-                    <h3>בחירה, לא חשיפה</h3>
-                    <p>אתם מחליטים מה, מתי ואיך לשתף. הסיפור שלכם, בשליטה שלכם</p>
+                    <div class="principle-icon" aria-hidden="true">🎯</div>
+                    <h3>
+                        <span data-lang="he">בחירה, לא חשיפה</span>
+                        <span data-lang="en">Choice, Not Exposure</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">אתם מחליטים מה, מתי ואיך לשתף. הסיפור שלכם, בשליטה שלכם</span>
+                        <span data-lang="en">You decide what, when, and how to share. Your story, your control</span>
+                    </p>
                 </div>
                 <div class="principle-card">
-                    <div class="principle-icon">🛡️</div>
-                    <h3>מרחב בטוח</h3>
-                    <p>בלי צורך להסביר, להתנצל או "לצאת מהארון" של המוגבלות</p>
+                    <div class="principle-icon" aria-hidden="true">🛡️</div>
+                    <h3>
+                        <span data-lang="he">מרחב בטוח</span>
+                        <span data-lang="en">Safe Space</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">בלי צורך להסביר, להתנצל או "לצאת מהארון" של המוגבלות</span>
+                        <span data-lang="en">No need to explain, apologize, or "come out" about your disability</span>
+                    </p>
                 </div>
                 <div class="principle-card">
-                    <div class="principle-icon">💡</div>
-                    <h3>התאמות חכמות</h3>
-                    <p>לא לפי מגבלה, אלא לפי התאמה אנושית – חוויות דומות, סגנון חיים, קצב</p>
+                    <div class="principle-icon" aria-hidden="true">💡</div>
+                    <h3>
+                        <span data-lang="he">התאמות חכמות</span>
+                        <span data-lang="en">Smart Matching</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">לא לפי מגבלה, אלא לפי התאמה אנושית – חוויות דומות, סגנון חיים, קצב</span>
+                        <span data-lang="en">Not by limitation, but by human compatibility – shared experiences, lifestyle, pace</span>
+                    </p>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Section -->
+    <section class="technology" id="technology">
+        <div class="technology-inner">
+            <div class="technology-header">
+                <div class="technology-badge">
+                    <span>⚡</span>
+                    <span data-lang="he">חדשנות טכנולוגית</span>
+                    <span data-lang="en">Innovation</span>
+                </div>
+                <h2 class="technology-title">
+                    <span data-lang="he">הטכנולוגיה <span class="technology-highlight">שלנו</span></span>
+                    <span data-lang="en">Our <span class="technology-highlight">Technology</span></span>
+                </h2>
+                <p class="technology-intro">
+                    <span data-lang="he">בנינו טכנולוגיה שמבינה שנגישות אמיתית דורשת התאמה אישית – לא פתרון אחיד לכולם.</span>
+                    <span data-lang="en">True accessibility requires personalization, not one-size-fits-all. Our AI adapts to you.</span>
+                </p>
+            </div>
+
+            <div class="technology-grid">
+                <!-- Adaptive Accessibility -->
+                <div class="tech-card">
+                    <div class="tech-card-icon" aria-hidden="true">🧠</div>
+                    <h3>
+                        <span data-lang="he">נגישות אדפטיבית</span>
+                        <span data-lang="en">Adaptive Accessibility</span>
+                    </h3>
+                    <p class="tech-card-tagline">
+                        <span data-lang="he">האפליקציה מתאימה את עצמה אליכם</span>
+                        <span data-lang="en">The app adapts to you, not the reverse</span>
+                    </p>
+                    <p class="tech-card-desc">
+                        <span data-lang="he">בינה מלאכותית שלומדת את הצרכים הייחודיים שלכם ומתאימה את הממשק בזמן אמת – בלי שתצטרכו לבקש.</span>
+                        <span data-lang="en">Context-aware AI learns your unique needs and adjusts the interface in real-time – without you asking.</span>
+                    </p>
+                    <ul class="tech-card-list">
+                        <li>
+                            <span data-lang="he">קלט רב-מודלי: קול, טקסט, תנועה</span>
+                            <span data-lang="en">Multi-modal input: voice, text, gesture</span>
+                        </li>
+                        <li>
+                            <span data-lang="he">ממשק דינמי שמשתנה לפי הקשר</span>
+                            <span data-lang="en">Dynamic interface adapts to context</span>
+                        </li>
+                        <li>
+                            <span data-lang="he">למידה רציפה מההתנהגות שלכם</span>
+                            <span data-lang="en">Continuous learning from your behavior</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Privacy-First Safety -->
+                <div class="tech-card">
+                    <div class="tech-card-icon" aria-hidden="true">🔐</div>
+                    <h3>
+                        <span data-lang="he">פרטיות קודם כל</span>
+                        <span data-lang="en">Privacy-First Safety</span>
+                    </h3>
+                    <p class="tech-card-tagline">
+                        <span data-lang="he">הגנה מלאה בלי לוותר על פרטיות</span>
+                        <span data-lang="en">Protection without privacy trade-offs</span>
+                    </p>
+                    <p class="tech-card-desc">
+                        <span data-lang="he">מודלי AI שרצים על המכשיר שלכם. זיהוי ניסיונות ניצול ללא שליחת מידע אישי לשרתים חיצוניים.</span>
+                        <span data-lang="en">AI models run entirely on your device. Exploitation detection without personal data ever leaving your phone.</span>
+                    </p>
+                    <ul class="tech-card-list">
+                        <li>
+                            <span data-lang="he">עיבוד מקומי על המכשיר</span>
+                            <span data-lang="en">On-device edge computing</span>
+                        </li>
+                        <li>
+                            <span data-lang="he">זיהוי פרואקטיבי של ניצול</span>
+                            <span data-lang="en">Proactive exploitation detection</span>
+                        </li>
+                        <li>
+                            <span data-lang="he">המידע שלכם נשאר אצלכם</span>
+                            <span data-lang="en">Your data stays with you</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Communication Bridging -->
+                <div class="tech-card">
+                    <div class="tech-card-icon" aria-hidden="true">🌉</div>
+                    <h3>
+                        <span data-lang="he">גישור תקשורתי</span>
+                        <span data-lang="en">Communication Bridging</span>
+                    </h3>
+                    <p class="tech-card-tagline">
+                        <span data-lang="he">תרגום בין סגנונות תקשורת שונים</span>
+                        <span data-lang="en">Translating between communication styles</span>
+                    </p>
+                    <p class="tech-card-desc">
+                        <span data-lang="he">AI שמגשר בין דרכי תקשורת מגוונות – כך ששני הצדדים יכולים להיות עצמם ולהבין אחד את השני.</span>
+                        <span data-lang="en">AI bridges diverse communication needs so both users can be authentically themselves while understanding each other.</span>
+                    </p>
+                    <ul class="tech-card-list">
+                        <li>
+                            <span data-lang="he">תיאורים חזותיים לעיוורים</span>
+                            <span data-lang="en">Visual descriptions for blind users</span>
+                        </li>
+                        <li>
+                            <span data-lang="he">שפה ליטרלית לנוירו-דיברגנטים</span>
+                            <span data-lang="en">Literal language for neurodivergent</span>
+                        </li>
+                        <li>
+                            <span data-lang="he">התאמת קצב לאנרגיה משתנה</span>
+                            <span data-lang="en">Pacing for variable energy levels</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Safety Section -->
+    <section class="safety" id="safety">
+        <div class="safety-inner">
+            <div class="safety-badge">
+                <span>🛡️</span>
+                <span data-lang="he">בטיחות ואמון</span>
+                <span data-lang="en">Safety & Trust</span>
+            </div>
+            <h2 class="safety-title">
+                <span data-lang="he">המרחב <span class="safety-highlight">הבטוח</span> שלכם</span>
+                <span data-lang="en">Your <span class="safety-highlight">Safe</span> Space</span>
+            </h2>
+            <p class="safety-intro">
+                <span data-lang="he">בנומי, הבטיחות והאמון הם תנאי בסיס – לא תוספת.</span>
+                <span data-lang="en">At Nomi, safety and trust are fundamental – not an afterthought.</span>
+            </p>
+            
+            <div class="safety-grid">
+                <div class="safety-card">
+                    <div class="safety-card-icon">
+                        <span aria-hidden="true">🪪</span>
+                    </div>
+                    <h3>
+                        <span data-lang="he">אימות מתקדם</span>
+                        <span data-lang="en">Advanced Verification</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">כל משתמש ומשתמשת עוברים תהליך אימות הכולל העלאת תעודת זהות ובקרה אנושית, כדי לוודא שמדובר באדם אמיתי ולמנוע התחזות או ניצול.</span>
+                        <span data-lang="en">Every user undergoes a verification process including ID upload and human review, ensuring real people and preventing impersonation or exploitation.</span>
+                    </p>
+                </div>
+                <div class="safety-card">
+                    <div class="safety-card-icon">
+                        <span aria-hidden="true">🔍</span>
+                    </div>
+                    <h3>
+                        <span data-lang="he">ניטור חכם</span>
+                        <span data-lang="en">Smart Monitoring</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">מנגנוני ניטור חכמים, זיהוי התנהגות חריגה ומערך דיווח מהיר ונגיש – כי הביטחון שלכם בראש סדר העדיפויות.</span>
+                        <span data-lang="en">Smart monitoring mechanisms, unusual behavior detection, and a fast, accessible reporting system – because your security is our top priority.</span>
+                    </p>
+                </div>
+                <div class="safety-card">
+                    <div class="safety-card-icon">
+                        <span aria-hidden="true">📚</span>
+                    </div>
+                    <h3>
+                        <span data-lang="he">הדרכה להיכרות בטוחה</span>
+                        <span data-lang="en">Safe Dating Guidance</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">הדרכה ברורה ורגישה – מה חשוב לדעת לפני מפגש פיזי, איך לזהות סימני אזהרה, ואיך לפעול במקרה של חוסר נוחות.</span>
+                        <span data-lang="en">Clear and sensitive guidance – what to know before meeting, how to identify warning signs, and how to act if you feel uncomfortable.</span>
+                    </p>
+                </div>
+                <div class="safety-card">
+                    <div class="safety-card-icon">
+                        <span aria-hidden="true">👥</span>
+                    </div>
+                    <h3>
+                        <span data-lang="he">צוות אנושי</span>
+                        <span data-lang="en">Human Team</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">השילוב בין טכנולוגיה, צוות אנושי והדרכה יוצר מרחב היכרויות מוגן, מכבד ובטוח באמת.</span>
+                        <span data-lang="en">The combination of technology, human team, and guidance creates a truly protected, respectful, and safe dating space.</span>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="safety-cta">
+                <a href="/safety.html" class="safety-link">
+                    <span data-lang="he">למידע נוסף על בטיחות ←</span>
+                    <span data-lang="en">Learn more about safety →</span>
+                </a>
             </div>
         </div>
     </section>
@@ -947,41 +1774,86 @@
     <!-- Features -->
     <section>
         <div class="section-header">
-            <span class="section-eyebrow">הפתרון</span>
-            <h2 class="section-title">נבנה אחרת. בכוונה.</h2>
-            <p class="section-subtitle">נומי אינה "אפליקציה לאנשים עם מוגבלויות". היא אפליקציית דייטינג טובה – שנגישה לכולם.</p>
+            <span class="section-eyebrow">
+                <span data-lang="he">הפתרון</span>
+                <span data-lang="en">THE SOLUTION</span>
+            </span>
+            <h2 class="section-title">
+                <span data-lang="he">נבנה אחרת. בכוונה.</span>
+                <span data-lang="en">Built Different. On Purpose.</span>
+            </h2>
+            <p class="section-subtitle">
+                <span data-lang="he">נומי אינה "אפליקציה לאנשים עם מוגבלויות". היא אפליקציית דייטינג טובה – שנגישה לכולם.</span>
+                <span data-lang="en">Nomi isn't "an app for people with disabilities." It's a good dating app – that's accessible to everyone.</span>
+            </p>
         </div>
         
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon">🏷️</div>
-                <h3>תגיות זהות</h3>
-                <p>בחרו תגיות שמתארות אתכם בשפה מכבדת ולא רפואית. כשמישהו רואה את הפרופיל שלכם, הוא כבר יודע – בלי שאלות מביכות.</p>
+                <div class="feature-icon" aria-hidden="true">🏷️</div>
+                <h3>
+                    <span data-lang="he">תגיות זהות</span>
+                    <span data-lang="en">Identity Tags</span>
+                </h3>
+                <p>
+                    <span data-lang="he">בחרו תגיות שמתארות אתכם בשפה מכבדת ולא רפואית. כשמישהו רואה את הפרופיל שלכם, הוא כבר יודע – בלי שאלות מביכות.</span>
+                    <span data-lang="en">Choose tags that describe you in respectful, non-medical language. When someone sees your profile, they already know – no awkward questions.</span>
+                </p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">✨</div>
-                <h3>"תשאלו אותי על..."</h3>
-                <p>במקום להסתיר, לחגוג. ספרו על הדברים שהמוגבלות לימדה אתכם, על הכוחות שפיתחתם. עיצוב שחוגג שונות – לא מנסה להעלים אותה.</p>
+                <div class="feature-icon" aria-hidden="true">✨</div>
+                <h3>
+                    <span data-lang="he">"תשאלו אותי על..."</span>
+                    <span data-lang="en">"Ask Me About..."</span>
+                </h3>
+                <p>
+                    <span data-lang="he">במקום להסתיר, לחגוג. ספרו על הדברים שהמוגבלות לימדה אתכם, על הכוחות שפיתחתם. עיצוב שחוגג שונות – לא מנסה להעלים אותה.</span>
+                    <span data-lang="en">Instead of hiding, celebrate. Share what disability taught you, the strengths you've developed. Design that celebrates difference – doesn't try to hide it.</span>
+                </p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🌡️</div>
-                <h3>מד אנרגיה</h3>
-                <p>עדכנו את המצב שלכם: "יום קשה", "פתוחה לשיחה", "מרגיש הרפתקני". אנשים יבינו מה לצפות – כי יש ימים שיש כוחות ויש ימים שאין.</p>
+                <div class="feature-icon" aria-hidden="true">🌡️</div>
+                <h3>
+                    <span data-lang="he">מד אנרגיה</span>
+                    <span data-lang="en">Energy Meter</span>
+                </h3>
+                <p>
+                    <span data-lang="he">עדכנו את המצב שלכם: "יום קשה", "פתוחה לשיחה", "מרגיש הרפתקני". אנשים יבינו מה לצפות – כי יש ימים שיש כוחות ויש ימים שאין.</span>
+                    <span data-lang="en">Update your status: "tough day," "open to chat," "feeling adventurous." People will know what to expect – because some days you have energy, some days you don't.</span>
+                </p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">⏱️</div>
-                <h3>קצב משלכם</h3>
-                <p>הגדירו כמה מהר אתם עונים בדרך כלל, מתי אתם זמינים. בלי לחץ, בלי ציפיות לא ריאליות.</p>
+                <div class="feature-icon" aria-hidden="true">⏱️</div>
+                <h3>
+                    <span data-lang="he">קצב משלכם</span>
+                    <span data-lang="en">Your Own Pace</span>
+                </h3>
+                <p>
+                    <span data-lang="he">הגדירו כמה מהר אתם עונים בדרך כלל, מתי אתם זמינים. בלי לחץ, בלי ציפיות לא ריאליות.</span>
+                    <span data-lang="en">Set how quickly you usually respond, when you're available. No pressure, no unrealistic expectations.</span>
+                </p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🎯</div>
-                <h3>התאמה אמיתית</h3>
-                <p>האלגוריתם שלנו מתחשב בדברים שחשובים: חוויות מוגבלות דומות, סגנון תקשורת, קצב חיים. חוויות משותפות יוצרות הבנה עמוקה יותר.</p>
+                <div class="feature-icon" aria-hidden="true">🎯</div>
+                <h3>
+                    <span data-lang="he">התאמה אמיתית</span>
+                    <span data-lang="en">Real Matching</span>
+                </h3>
+                <p>
+                    <span data-lang="he">האלגוריתם שלנו מתחשב בדברים שחשובים: חוויות מוגבלות דומות, סגנון תקשורת, קצב חיים. חוויות משותפות יוצרות הבנה עמוקה יותר.</span>
+                    <span data-lang="en">Our algorithm considers what matters: shared disability experiences, communication style, life pace. Shared experiences create deeper understanding.</span>
+                </p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon">🛡️</div>
-                <h3>הגנה וקהילה</h3>
-                <p>מנגנוני הגנה מובנים, דיווח, וקהילה תומכת שמבינה את המציאות שלכם.</p>
+                <div class="feature-icon" aria-hidden="true">🛡️</div>
+                <h3>
+                    <span data-lang="he">הגנה וקהילה</span>
+                    <span data-lang="en">Protection & Community</span>
+                </h3>
+                <p>
+                    <span data-lang="he">מנגנוני הגנה מובנים, דיווח, וקהילה תומכת שמבינה את המציאות שלכם.</span>
+                    <span data-lang="en">Built-in protection mechanisms, reporting, and a supportive community that understands your reality.</span>
+                </p>
             </div>
         </div>
     </section>
@@ -989,25 +1861,43 @@
     <!-- Stats -->
     <section class="stats">
         <div class="stats-header">
-            <h2>Blue Ocean – שוק לא מנוצל</h2>
-            <p>אין כיום שחקן גלובלי עם מוצר מתקדם וחזון ברור</p>
+            <h2>
+                <span data-lang="he">Blue Ocean – שוק לא מנוצל</span>
+                <span data-lang="en">Blue Ocean – Untapped Market</span>
+            </h2>
+            <p>
+                <span data-lang="he">אין כיום שחקן גלובלי עם מוצר מתקדם וחזון ברור</span>
+                <span data-lang="en">No global player today with an advanced product and clear vision</span>
+            </p>
         </div>
         <div class="stats-grid">
             <div>
                 <div class="stat-number">18%</div>
-                <div class="stat-label">מאוכלוסיית ישראל עם מוגבלות</div>
+                <div class="stat-label">
+                    <span data-lang="he">מאוכלוסיית ישראל עם מוגבלות</span>
+                    <span data-lang="en">of Israel's population with disability</span>
+                </div>
             </div>
             <div>
                 <div class="stat-number">61M</div>
-                <div class="stat-label">אנשים עם מוגבלות בארה"ב</div>
+                <div class="stat-label">
+                    <span data-lang="he">אנשים עם מוגבלות בארה"ב</span>
+                    <span data-lang="en">people with disabilities in the USA</span>
+                </div>
             </div>
             <div>
                 <div class="stat-number">87M</div>
-                <div class="stat-label">אנשים עם מוגבלות באירופה</div>
+                <div class="stat-label">
+                    <span data-lang="he">אנשים עם מוגבלות באירופה</span>
+                    <span data-lang="en">people with disabilities in Europe</span>
+                </div>
             </div>
             <div>
-                <div class="stat-number">$B</div>
-                <div class="stat-label">שוק דייטינג דיגיטלי גלובלי</div>
+                <div class="stat-number">$13B</div>
+                <div class="stat-label">
+                    <span data-lang="he">שוק דייטינג דיגיטלי גלובלי</span>
+                    <span data-lang="en">global digital dating market</span>
+                </div>
             </div>
         </div>
     </section>
@@ -1015,30 +1905,54 @@
     <!-- How it Works -->
     <section id="how">
         <div class="section-header">
-            <span class="section-eyebrow">פשוט להתחיל</span>
-            <h2 class="section-title">שלושה צעדים לחיבור אמיתי</h2>
+            <span class="section-eyebrow">
+                <span data-lang="he">פשוט להתחיל</span>
+                <span data-lang="en">EASY TO START</span>
+            </span>
+            <h2 class="section-title">
+                <span data-lang="he">שלושה צעדים לחיבור אמיתי</span>
+                <span data-lang="en">Three Steps to Real Connection</span>
+            </h2>
         </div>
         
         <div class="steps">
             <div class="step">
                 <div class="step-number">1</div>
                 <div class="step-content">
-                    <h3>התחברו עם פייסבוק</h3>
-                    <p>הרשמה בלחיצה אחת. בלי סיסמאות, בלי טפסים מסובכים.</p>
+                    <h3>
+                        <span data-lang="he">התחברו עם פייסבוק</span>
+                        <span data-lang="en">Connect with Facebook</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">הרשמה בלחיצה אחת. בלי סיסמאות, בלי טפסים מסובכים.</span>
+                        <span data-lang="en">One-click signup. No passwords, no complicated forms.</span>
+                    </p>
                 </div>
             </div>
             <div class="step">
                 <div class="step-number">2</div>
                 <div class="step-content">
-                    <h3>ספרו על עצמכם</h3>
-                    <p>בחרו תגיות זהות, כתבו קצת, הגדירו מה אתם מחפשים – בקצב שלכם.</p>
+                    <h3>
+                        <span data-lang="he">ספרו על עצמכם</span>
+                        <span data-lang="en">Tell Us About Yourself</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">בחרו תגיות זהות, כתבו קצת, הגדירו מה אתם מחפשים – בקצב שלכם.</span>
+                        <span data-lang="en">Choose identity tags, write a bit, define what you're looking for – at your own pace.</span>
+                    </p>
                 </div>
             </div>
             <div class="step">
                 <div class="step-number">3</div>
                 <div class="step-content">
-                    <h3>גלו אנשים שמבינים</h3>
-                    <p>החליקו, התאימו, התחילו לדבר. בלי צורך להסביר, בלי להתנצל.</p>
+                    <h3>
+                        <span data-lang="he">גלו אנשים שמבינים</span>
+                        <span data-lang="en">Discover People Who Get You</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">החליקו, התאימו, התחילו לדבר. בלי צורך להסביר, בלי להתנצל.</span>
+                        <span data-lang="en">Swipe, match, start talking. No need to explain, no apologies.</span>
+                    </p>
                 </div>
             </div>
         </div>
@@ -1048,10 +1962,12 @@
     <section class="vision">
         <div class="vision-inner">
             <div class="vision-quote">
-                "נומי אינה אפליקציה לאנשים עם מוגבלויות.<br>היא אפליקציית דייטינג טובה – שנגישה לכולם."
+                <span data-lang="he">"נומי אינה אפליקציה לאנשים עם מוגבלויות.<br>היא אפליקציית דייטינג טובה – שנגישה לכולם."</span>
+                <span data-lang="en">"Nomi isn't an app for people with disabilities.<br>It's a good dating app – that's accessible to everyone."</span>
             </div>
             <p class="vision-text">
-                אנחנו מאמינים שכל אדם זכאי לזוגיות בלי התנצלות. אנחנו בונים את הפלטפורמה שהיינו רוצים שתהיה קיימת – מרחב שמכבד, מבין, ומאפשר חיבורים אמיתיים.
+                <span data-lang="he">אנחנו מאמינים שכל אדם זכאי לזוגיות בלי התנצלות. אנחנו בונים את הפלטפורמה שהיינו רוצים שתהיה קיימת – מרחב שמכבד, מבין, ומאפשר חיבורים אמיתיים.</span>
+                <span data-lang="en">We believe everyone deserves love without apology. We're building the platform we wish existed – a space that respects, understands, and enables real connections.</span>
             </p>
         </div>
     </section>
@@ -1059,25 +1975,110 @@
     <!-- Final CTA -->
     <section class="final-cta">
         <div class="final-cta-inner">
-            <div class="final-cta-icon">🧡</div>
-            <h2>מוכנים לאהבה בלי התנצלות?</h2>
-            <p>הצטרפו לקהילה שלנו. בחינם, בלי התחייבות, בלי שיפוטיות.</p>
-            <a href="/" class="cta-button">הצטרפו עכשיו – בחינם</a>
+            <div class="final-cta-icon" aria-hidden="true">🧡</div>
+            <h2>
+                <span data-lang="he">מוכנים לאהבה בלי התנצלות?</span>
+                <span data-lang="en">Ready for Love Without Apology?</span>
+            </h2>
+            <p>
+                <span data-lang="he">הצטרפו לקהילה שלנו. בחינם, בלי התחייבות, בלי שיפוטיות.</span>
+                <span data-lang="en">Join our community. Free, no commitment, no judgment.</span>
+            </p>
+            <a href="/" class="cta-button">
+                <span data-lang="he">הצטרפו עכשיו – בחינם</span>
+                <span data-lang="en">Join Now – It's Free</span>
+            </a>
         </div>
     </section>
     
     <!-- Footer -->
     <footer>
         <div class="footer-inner">
-            <div class="footer-brand">נומי 🧡</div>
-            <div class="footer-links">
-                <a href="/">בית</a>
-                <a href="/terms.html">תנאי שימוש</a>
-                <a href="/privacy.html">מדיניות פרטיות</a>
-                <a href="mailto:hello@nomi.app">צור קשר</a>
+            <div class="footer-brand">
+                <span data-lang="he">נומי 🧡</span>
+                <span data-lang="en">Nomi 🧡</span>
             </div>
-            <p class="copyright">© 2026 נומי. כל הזכויות שמורות.</p>
+            <div class="footer-links">
+                <a href="/">
+                    <span data-lang="he">בית</span>
+                    <span data-lang="en">Home</span>
+                </a>
+                <a href="/faq.html">
+                    <span data-lang="he">שאלות נפוצות</span>
+                    <span data-lang="en">FAQ</span>
+                </a>
+                <a href="/safety.html">
+                    <span data-lang="he">בטיחות</span>
+                    <span data-lang="en">Safety</span>
+                </a>
+                <a href="/accessibility.html">
+                    <span data-lang="he">נגישות</span>
+                    <span data-lang="en">Accessibility</span>
+                </a>
+                <a href="/contact.html">
+                    <span data-lang="he">צור קשר</span>
+                    <span data-lang="en">Contact</span>
+                </a>
+                <a href="/terms.html">
+                    <span data-lang="he">תנאים</span>
+                    <span data-lang="en">Terms</span>
+                </a>
+                <a href="/privacy.html">
+                    <span data-lang="he">פרטיות</span>
+                    <span data-lang="en">Privacy</span>
+                </a>
+                <a href="/sitemap.html">
+                    <span data-lang="he">מפת אתר</span>
+                    <span data-lang="en">Sitemap</span>
+                </a>
+            </div>
+            <p class="copyright">
+                <span data-lang="he">© 2026 נומי. כל הזכויות שמורות.</span>
+                <span data-lang="en">© 2026 Nomi. All rights reserved.</span>
+            </p>
         </div>
     </footer>
+
+    <script>
+        // Language toggle functionality
+        function toggleLanguage() {
+            const html = document.documentElement;
+            const currentLang = html.getAttribute('lang');
+            const currentDir = html.getAttribute('dir');
+            
+            if (currentLang === 'he') {
+                html.setAttribute('lang', 'en');
+                html.setAttribute('dir', 'ltr');
+                localStorage.setItem('nomi-about-lang', 'en');
+            } else {
+                html.setAttribute('lang', 'he');
+                html.setAttribute('dir', 'rtl');
+                localStorage.setItem('nomi-about-lang', 'he');
+            }
+        }
+
+        // Restore language preference on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedLang = localStorage.getItem('nomi-about-lang');
+            if (savedLang === 'en') {
+                document.documentElement.setAttribute('lang', 'en');
+                document.documentElement.setAttribute('dir', 'ltr');
+            }
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>

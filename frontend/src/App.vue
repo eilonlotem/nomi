@@ -2170,7 +2170,8 @@ const checkForNewMessages = async () => {
     // Update last seen
     const maxId = Math.max(...newMessages.map(m => m.id))
     lastSeenMessageId.value = maxId
-    fetchSuggestions()
+    // Force refresh suggestions to ensure they update based on new messages
+    fetchSuggestions(true)
     if (shouldAutoScroll) {
       await scrollChatToBottom('smooth')
     }
@@ -2273,7 +2274,7 @@ const sendMessage = async (overrideText = null) => {
     
     // Check for AI response after a short delay
     setTimeout(checkForNewMessages, 2000)
-    fetchSuggestions()
+    fetchSuggestions(true)
     
   } catch (error) {
     console.error('Failed to send:', error)
@@ -2309,7 +2310,7 @@ const sendIcebreaker = async (prompt) => {
       lastSeenMessageId.value = serverMsg.id
     }
     setTimeout(checkForNewMessages, 2000)
-    fetchSuggestions()
+    fetchSuggestions(true)
   } catch (error) {
     console.error('Failed to send icebreaker:', error)
     chatMessages.value = chatMessages.value.map(m => 
@@ -2385,7 +2386,7 @@ const toggleSuggestions = () => {
   if (showSuggestions.value) {
     showIcebreakers.value = false
     showShortcuts.value = false
-    fetchSuggestions()
+    fetchSuggestions(true)
   }
 }
 
@@ -4672,7 +4673,12 @@ const constellationPoints = computed(() => {
         <div class="flex-1 flex flex-col min-h-0">
         <!-- Messages -->
         <main ref="chatScrollContainer" class="flex-1 px-3 xs:px-4 py-3 xs:py-4 overflow-y-auto overscroll-contain momentum-scroll hide-scrollbar">
-          <div class="max-w-3xl mx-auto w-full space-y-4 pb-4">
+          <div 
+            class="max-w-3xl mx-auto w-full space-y-4"
+            :class="[
+              showSuggestions || showShortcuts ? 'pb-20 xs:pb-24' : 'pb-4'
+            ]"
+          >
             <!-- Date Separator -->
             <div class="text-center">
               <span class="inline-block px-3 xs:px-4 py-1 xs:py-1.5 bg-surface rounded-full text-[10px] xs:text-xs text-text-muted font-medium shadow-soft">

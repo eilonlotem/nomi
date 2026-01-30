@@ -766,6 +766,13 @@ const loadChatSettings = () => {
 
 watch(showSuggestions, saveChatSettings)
 
+watch(showSuggestions, async (isShown) => {
+  if (isShown && currentView.value === 'chat') {
+    await nextTick()
+    await scrollChatToBottom('smooth')
+  }
+})
+
 watch(currentView, async (view) => {
   if (view !== 'chat') return
   await scrollChatToBottom()
@@ -4063,102 +4070,102 @@ const constellationPoints = computed(() => {
             {{ sharedTags.length }} {{ t('discovery.shared') }}
           </div>
 
-          <!-- Photo Carousel -->
-          <div 
-            ref="discoveryPhotoCarousel"
-            class="relative aspect-[5/4] xs:aspect-[4/3] sm:aspect-[3/2] overflow-hidden transition-all duration-300 ease-out"
-            :style="{ transform: `translateY(-${photoScrollOffset}px)` }"
-          >
-            <!-- Photo indicators -->
-            <div 
-              v-if="getAllPhotos(currentProfile).length > 1"
-              class="absolute top-2 inset-x-2 z-20 flex gap-1"
-            >
-              <div 
-                v-for="(photo, index) in getAllPhotos(currentProfile)"
-                :key="index"
-                class="flex-1 h-0.5 rounded-full transition-all"
-                :class="index === currentPhotoIndex ? 'bg-white' : 'bg-white/40'"
-              ></div>
-            </div>
-            
-            <!-- Tap zones for photo navigation -->
-            <div 
-              v-if="getAllPhotos(currentProfile).length > 1"
-              class="absolute inset-0 z-10 flex"
-            >
-              <div 
-                class="w-1/3 h-full cursor-pointer" 
-                @click.stop="prevPhoto"
-              ></div>
-              <div class="w-1/3 h-full"></div>
-              <div 
-                class="w-1/3 h-full cursor-pointer" 
-                @click.stop="nextPhoto"
-              ></div>
-            </div>
-            
-            <img 
-              :src="getAllPhotos(currentProfile)[currentPhotoIndex] || getPhotoUrl(currentProfile.photo || currentProfile.picture_url)" 
-              :alt="getProfilePhotoAlt(currentProfile, currentPhotoIndex, getAllPhotos(currentProfile).length)"
-              class="w-full h-full object-cover"
-              loading="lazy"
-              role="img"
-            />
-            <!-- Gradient Overlay -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
-            
-            <!-- Bot Badge -->
-            <div 
-              v-if="currentProfile.isBot"
-              class="absolute top-3 start-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-cyan-500/90 to-blue-500/90 backdrop-blur-sm border border-white/20 shadow-lg"
-              :aria-label="t('bot.badge')"
-            >
-              <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zm-3 10a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z"/>
-              </svg>
-              <span class="text-[10px] xs:text-xs font-semibold text-white tracking-wide">{{ t('bot.badge') }}</span>
-            </div>
-
-            <!-- Profile Info -->
-            <div class="absolute bottom-0 inset-x-0 p-3 xs:p-4 text-white">
-              <h2 class="text-lg xs:text-xl font-bold mb-0.5 flex items-center gap-2">
-                {{ currentProfile.name }}, {{ currentProfile.age }}
-              </h2>
-              <p class="text-[10px] xs:text-xs text-white/80 mb-1.5 xs:mb-2">
-                📍 {{ t('discovery.distance', { km: currentProfile.distance }) }}
-              </p>
-
-              <div v-if="currentProfile.relationshipIntent" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/25 backdrop-blur-md text-white text-[10px] xs:text-xs font-semibold border border-white/30 mb-1.5 xs:mb-2">
-                <span>🎯</span>
-                <span>{{ t(`intent.options.${currentProfile.relationshipIntent}`) }}</span>
-              </div>
-              
-              <!-- Tags -->
-              <div class="flex flex-wrap gap-1 xs:gap-1.5">
-                <span 
-                  v-for="tagId in currentProfile.tags" 
-                  :key="tagId"
-                  :class="[
-                    'inline-flex items-center gap-1 xs:gap-1.5 px-2 xs:px-2.5 py-0.5 xs:py-1 rounded-full text-[10px] xs:text-xs font-semibold transition-all',
-                    sharedTags.includes(tagId) 
-                      ? 'bg-primary text-white shadow-md' 
-                      : 'bg-white/25 backdrop-blur-md text-white border border-white/30'
-                  ]"
-                >
-                  <span>{{ getTagIcon(tagId) }}</span>
-                  <span>{{ getTagLabel(tagId) }}</span>
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Bio & Prompt - Progressive Disclosure -->
+          <!-- Scrollable Content Area (Photo + Details) -->
           <div 
             ref="discoveryDetailsScroll"
-            class="p-3 xs:p-4 sm:p-5 pb-16 xs:pb-20 flex-1 min-h-0 overflow-y-auto momentum-scroll space-y-2.5 xs:space-y-3"
-            @scroll="handleDiscoveryScroll"
+            class="flex-1 min-h-0 overflow-y-auto momentum-scroll"
           >
+            <!-- Photo Carousel -->
+            <div 
+              ref="discoveryPhotoCarousel"
+              class="relative aspect-[5/4] xs:aspect-[4/3] sm:aspect-[3/2] overflow-hidden"
+            >
+              <!-- Photo indicators -->
+              <div 
+                v-if="getAllPhotos(currentProfile).length > 1"
+                class="absolute top-2 inset-x-2 z-20 flex gap-1"
+              >
+                <div 
+                  v-for="(photo, index) in getAllPhotos(currentProfile)"
+                  :key="index"
+                  class="flex-1 h-0.5 rounded-full transition-all"
+                  :class="index === currentPhotoIndex ? 'bg-white' : 'bg-white/40'"
+                ></div>
+              </div>
+              
+              <!-- Tap zones for photo navigation -->
+              <div 
+                v-if="getAllPhotos(currentProfile).length > 1"
+                class="absolute inset-0 z-10 flex"
+              >
+                <div 
+                  class="w-1/3 h-full cursor-pointer" 
+                  @click.stop="prevPhoto"
+                ></div>
+                <div class="w-1/3 h-full"></div>
+                <div 
+                  class="w-1/3 h-full cursor-pointer" 
+                  @click.stop="nextPhoto"
+                ></div>
+              </div>
+              
+              <img 
+                :src="getAllPhotos(currentProfile)[currentPhotoIndex] || getPhotoUrl(currentProfile.photo || currentProfile.picture_url)" 
+                :alt="getProfilePhotoAlt(currentProfile, currentPhotoIndex, getAllPhotos(currentProfile).length)"
+                class="w-full h-full object-cover"
+                loading="lazy"
+                role="img"
+              />
+              <!-- Gradient Overlay -->
+              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
+              
+              <!-- Bot Badge -->
+              <div 
+                v-if="currentProfile.isBot"
+                class="absolute top-3 start-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-cyan-500/90 to-blue-500/90 backdrop-blur-sm border border-white/20 shadow-lg"
+                :aria-label="t('bot.badge')"
+              >
+                <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zm-3 10a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z"/>
+                </svg>
+                <span class="text-[10px] xs:text-xs font-semibold text-white tracking-wide">{{ t('bot.badge') }}</span>
+              </div>
+
+              <!-- Profile Info -->
+              <div class="absolute bottom-0 inset-x-0 p-3 xs:p-4 text-white">
+                <h2 class="text-lg xs:text-xl font-bold mb-0.5 flex items-center gap-2">
+                  {{ currentProfile.name }}, {{ currentProfile.age }}
+                </h2>
+                <p class="text-[10px] xs:text-xs text-white/80 mb-1.5 xs:mb-2">
+                  📍 {{ t('discovery.distance', { km: currentProfile.distance }) }}
+                </p>
+
+                <div v-if="currentProfile.relationshipIntent" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/25 backdrop-blur-md text-white text-[10px] xs:text-xs font-semibold border border-white/30 mb-1.5 xs:mb-2">
+                  <span>🎯</span>
+                  <span>{{ t(`intent.options.${currentProfile.relationshipIntent}`) }}</span>
+                </div>
+                
+                <!-- Tags -->
+                <div class="flex flex-wrap gap-1 xs:gap-1.5">
+                  <span 
+                    v-for="tagId in currentProfile.tags" 
+                    :key="tagId"
+                    :class="[
+                      'inline-flex items-center gap-1 xs:gap-1.5 px-2 xs:px-2.5 py-0.5 xs:py-1 rounded-full text-[10px] xs:text-xs font-semibold transition-all',
+                      sharedTags.includes(tagId) 
+                        ? 'bg-primary text-white shadow-md' 
+                        : 'bg-white/25 backdrop-blur-md text-white border border-white/30'
+                    ]"
+                  >
+                    <span>{{ getTagIcon(tagId) }}</span>
+                    <span>{{ getTagLabel(tagId) }}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Bio & Prompt - Progressive Disclosure -->
+            <div class="p-3 xs:p-4 sm:p-5 pb-2 space-y-2.5 xs:space-y-3">
             <!-- LAYER 1: Essential - Always visible -->
             <!-- Profile Prompt (headline/hook) -->
             <div class="bg-gradient-to-br from-primary-light via-peach/40 to-accent/20 rounded-xl p-3 xs:p-4 mb-3 xs:mb-4 border border-primary/25 shadow-sm">
@@ -4230,6 +4237,7 @@ const constellationPoints = computed(() => {
                   <span>{{ t(`timePreferences.datePaceOptions.${currentProfile.datePace}`) }}</span>
                 </span>
               </div>
+            </div>
             </div>
           </div>
         </div>
@@ -4654,7 +4662,7 @@ const constellationPoints = computed(() => {
         <div class="flex-1 flex flex-col min-h-0">
         <!-- Messages -->
         <main ref="chatScrollContainer" class="flex-1 px-3 xs:px-4 py-3 xs:py-4 overflow-y-auto overscroll-contain momentum-scroll hide-scrollbar">
-          <div class="max-w-3xl mx-auto w-full space-y-4">
+          <div class="max-w-3xl mx-auto w-full space-y-4 pb-4">
             <!-- Date Separator -->
             <div class="text-center">
               <span class="inline-block px-3 xs:px-4 py-1 xs:py-1.5 bg-surface rounded-full text-[10px] xs:text-xs text-text-muted font-medium shadow-soft">

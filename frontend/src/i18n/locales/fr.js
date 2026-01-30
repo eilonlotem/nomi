@@ -11,6 +11,7 @@ export default {
   skip: 'Passer',
   done: 'Terminé',
   save: 'Enregistrer',
+  saving: 'Enregistrement...',
   logout: 'Déconnexion',
   cancel: 'Annuler',
   edit: 'Modifier',
@@ -74,6 +75,20 @@ export default {
     swipeHint: '← Glissez à gauche pour passer | Glissez à droite pour aimer →',
     accessibleHint: 'Glissez, appuyez sur les boutons ou utilisez les flèches',
     keyboardHint: '← Passer | Aimer → | Espace: Annuler | Entrée: Voir Profil',
+    // Progressive disclosure
+    learnMore: 'En savoir plus',
+    deepDive: 'Voir tout',
+    showLess: 'Afficher moins',
+    // Match breakdown
+    whyMatch: 'Pourquoi ce match?',
+    sharedTags: 'tags partagés',
+    nearby: 'À proximité',
+    sharedInterests: 'Intérêts partagés',
+    matchDisclaimer: 'Les scores sont des suggestions. La connexion arrive de façons inattendues! 💫',
+    // Undo
+    skipping: 'Passage de',
+    connecting: 'Connexion avec',
+    undo: 'Annuler',
   },
   
   // Matches
@@ -126,6 +141,13 @@ export default {
     laughMost: 'Ce qui me fait le plus rire...',
     perfectSunday: 'Mon dimanche parfait ressemble à...',
     convinced: 'Je suis convaincu(e) que...',
+    // Additional prompts from Ask Me About It
+    coolestThing: 'Ce qu\'il y a de plus cool dans ma condition...',
+    superpower: 'Mon super-pouvoir d\'être différent(e) est...',
+    wishPeopleKnew: 'Ce que j\'aimerais que les gens sachent...',
+    proudOf: 'Quelque chose dont je suis fier/fière...',
+    dontLetStop: 'Je ne laisse rien m\'empêcher de...',
+    loveAboutCommunity: 'Ce que j\'aime dans la communauté du handicap...',
   },
   
   // Profile

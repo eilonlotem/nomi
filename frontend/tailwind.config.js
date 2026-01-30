@@ -120,6 +120,7 @@ export default {
         'shimmer': 'shimmer 2s linear infinite',
         'spin-slow': 'spin 8s linear infinite',
         'gradient-shift': 'gradient-shift 8s ease infinite',
+        'shrink-width': 'shrink-width linear forwards',
       },
       keyframes: {
         'float': {
@@ -181,6 +182,10 @@ export default {
         'gradient-shift': {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
+        },
+        'shrink-width': {
+          '0%': { width: '100%' },
+          '100%': { width: '0%' },
         },
       },
       backgroundImage: {

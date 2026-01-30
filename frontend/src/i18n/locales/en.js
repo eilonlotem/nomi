@@ -11,6 +11,7 @@ export default {
   skip: 'Skip',
   done: 'Done',
   save: 'Save',
+  saving: 'Saving...',
   logout: 'Log Out',
   cancel: 'Cancel',
   edit: 'Edit',
@@ -64,8 +65,8 @@ export default {
     noMoreProfiles: "You've seen everyone for now!",
     checkBackLater: 'Check back later for new connections',
     noMoreExplanation: "You've viewed all available matches for your filters. Check back later for new profiles or adjust your preferences.",
-    passBtn: 'Pass',
-    connectBtn: 'Connect',
+    passBtn: 'Not now',
+    connectBtn: 'Say hi',
     superBtn: 'Super',
     age: '{age} years old',
     distance: '{km} km away',
@@ -74,6 +75,20 @@ export default {
     swipeHint: '← Swipe Left to Pass | Swipe Right to Like →',
     accessibleHint: 'Swipe, tap buttons, or use arrow keys',
     keyboardHint: '← Pass | Like → | Space: Undo | Enter: View Profile',
+    // Progressive disclosure
+    learnMore: 'Learn more',
+    deepDive: 'Deep dive',
+    showLess: 'Show less',
+    // Match breakdown
+    whyMatch: 'Why this match?',
+    sharedTags: 'shared tags',
+    nearby: 'Nearby',
+    sharedInterests: 'Shared interests',
+    matchDisclaimer: 'Match scores are suggestions. Connection happens in unexpected ways! 💫',
+    // Undo
+    skipping: 'Skipping',
+    connecting: 'Connecting with',
+    undo: 'Undo',
   },
   
   // Matches
@@ -101,7 +116,10 @@ export default {
     today: 'Today',
     yesterday: 'Yesterday',
     icebreaker: 'Icebreaker',
-    icebreakers: 'Icebreakers',
+    icebreakers: 'Conversation starters',
+    needHelp: 'Need help starting?',
+    notSureWhatToSay: 'Not sure what to say?',
+    starterHint: 'Try one of these to break the ice:',
     disconnect: 'Disconnect',
     disconnectTitle: 'Disconnect from match?',
     disconnectMessage: 'This will remove this person from your matches and delete all chat messages. This action cannot be undone.',
@@ -127,6 +145,13 @@ export default {
     laughMost: 'The thing that makes me laugh most is...',
     perfectSunday: 'My perfect Sunday looks like...',
     convinced: "I'm convinced that...",
+    // Additional prompts from Ask Me About It
+    coolestThing: 'The coolest thing about my condition is...',
+    superpower: 'My superpower from being different is...',
+    wishPeopleKnew: 'What I wish people knew is...',
+    proudOf: "Something I'm proud of overcoming is...",
+    dontLetStop: "I don't let anything stop me from...",
+    loveAboutCommunity: 'What I love about the disability community is...',
   },
   
   // Ask Me About It - Celebration prompts

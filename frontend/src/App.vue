@@ -170,6 +170,9 @@ const userProfile = ref({
 const isUploadingPhoto = ref(false)
 const photoUploadError = ref(null)
 
+// Profile saving state
+const isSavingProfile = ref(false)
+
 // Handle photo upload
 const handlePhotoUpload = async (event) => {
   const file = event.target.files?.[0]
@@ -381,24 +384,36 @@ const normalizeRelationshipTypes = (types = []) => {
 // Age range validation
 const ageRangeError = ref('')
 
+// Validate age range (show error but don't modify values while typing)
+const validateAgeRange = () => {
+  const range = userProfile.value.lookingFor.ageRange
+  const min = Number(range.min) || 0
+  const max = Number(range.max) || 0
+  
+  // Check for invalid range and show error
+  if (min > 0 && max > 0 && min > max) {
+    ageRangeError.value = t('lookingFor.ageRangeError')
+  } else {
+    ageRangeError.value = ''
+  }
+}
+
+// Normalize age range on blur (when user finishes editing)
 const normalizeAgeRange = () => {
   const range = userProfile.value.lookingFor.ageRange
   const min = Math.max(18, Math.min(99, Number(range.min) || 18))
   const max = Math.max(18, Math.min(99, Number(range.max) || 50))
   
-  // Check for invalid range and show error
-  if (min > max) {
-    ageRangeError.value = t('lookingFor.ageRangeError')
-  } else {
-    ageRangeError.value = ''
-    range.min = min
-    range.max = max
-  }
+  range.min = min
+  range.max = max
+  
+  // Re-validate after normalization
+  validateAgeRange()
 }
 
 watch(
   () => [userProfile.value.lookingFor.ageRange.min, userProfile.value.lookingFor.ageRange.max],
-  normalizeAgeRange,
+  validateAgeRange,
 )
 
 // Toggle looking for options
@@ -458,6 +473,59 @@ watch(() => currentView.value, (newView) => {
     }, 10000)
   }
 }, { immediate: true })
+
+// Progressive disclosure - reveal levels for discovery cards
+const profileRevealLevel = ref('essential') // 'essential' | 'curious' | 'deep-dive'
+
+const cycleRevealLevel = () => {
+  if (profileRevealLevel.value === 'essential') {
+    profileRevealLevel.value = 'curious'
+  } else if (profileRevealLevel.value === 'curious') {
+    profileRevealLevel.value = 'deep-dive'
+  } else {
+    profileRevealLevel.value = 'essential'
+  }
+}
+
+// Reset reveal level when moving to next profile
+watch(currentProfileIndex, () => {
+  profileRevealLevel.value = 'essential'
+})
+
+// Match breakdown visibility
+const showMatchBreakdown = ref(false)
+
+// Undo functionality for swipes
+const lastSwipeAction = ref(null)
+const showUndoToast = ref(false)
+let undoTimeout = null
+const UNDO_DURATION = 4000 // 4 seconds to undo
+
+const executeSwipe = async (action, profile) => {
+  if (action === 'like') {
+    const profileId = profile.user_id || profile.id
+    const result = await matchingApi.swipe(profileId, 'like')
+    if (result.is_match) {
+      matchNotification.value = {
+        name: profile.name,
+        photo: profile.photo || profile.picture_url
+      }
+    }
+  } else {
+    const profileId = profile.user_id || profile.id
+    await matchingApi.swipe(profileId, 'pass')
+  }
+}
+
+const undoSwipe = () => {
+  if (lastSwipeAction.value && undoTimeout) {
+    clearTimeout(undoTimeout)
+    // Restore the profile
+    currentProfileIndex.value = Math.max(0, currentProfileIndex.value - 1)
+    showUndoToast.value = false
+    lastSwipeAction.value = null
+  }
+}
 
 // Current profile - uses backend data only, normalized for template
 const currentProfile = computed(() => {
@@ -1086,15 +1154,6 @@ const handleTouchEnd = (e) => {
     return
   }
   
-  // Treat as tap if minimal movement
-  const isTap = Math.abs(deltaX) < 10 && Math.abs(deltaY) < 10 && deltaTime < 250
-  if (isTap && currentProfile.value) {
-    openProfileView(currentProfile.value)
-    // Snap back to center in case there was slight movement
-    animateSnapBack()
-    return
-  }
-  
   // Snap back to center with spring animation
   animateSnapBack()
 }
@@ -1246,6 +1305,28 @@ const goToDiscovery = async () => {
     }
   }
   
+  // Save looking for preferences (including age range) to backend
+  if (isAuthenticated.value) {
+    try {
+      // Normalize age range before saving (in case user didn't blur)
+      normalizeAgeRange()
+      
+      const genders = normalizeGenderList(userProfile.value.lookingFor.genders)
+      const relationshipTypes = normalizeRelationshipTypes(userProfile.value.lookingFor.relationshipTypes)
+      await profileApi.updateLookingFor({
+        genders: genders.length ? genders : ['everyone'],
+        relationship_types: relationshipTypes,
+        min_age: userProfile.value.lookingFor.ageRange.min,
+        max_age: userProfile.value.lookingFor.ageRange.max,
+        max_distance: userProfile.value.lookingFor.maxDistance,
+        preferred_location: userProfile.value.lookingFor.location,
+      })
+      console.log('Looking for preferences saved')
+    } catch (err) {
+      console.warn('Could not save looking for preferences:', err.message)
+    }
+  }
+  
   navigateTo('discovery')
   
   // Fetch fresh discovery profiles based on new preferences
@@ -1256,28 +1337,42 @@ const goToDiscovery = async () => {
 }
 
 const passProfile = async () => {
-  // Record swipe in backend if authenticated
-  if (isAuthenticated.value && currentProfile.value) {
-    try {
-      // Use user_id for backend profiles, id for mock
-      const profileId = currentProfile.value.user_id || currentProfile.value.id
-      await matchingApi.swipe(profileId, 'pass')
-    } catch (err) {
-      console.warn('Could not record swipe:', err.message)
-    }
-  }
+  if (!currentProfile.value) return
   
+  const profile = { ...currentProfile.value }
+  const profileIndex = currentProfileIndex.value
+  
+  // Store action for undo
+  lastSwipeAction.value = { type: 'pass', profile, profileIndex }
+  showUndoToast.value = true
+  
+  // Move to next profile immediately (optimistic UI)
   const profiles = discoveryProfiles.value.length > 0 ? discoveryProfiles.value : mockProfiles
   if (currentProfileIndex.value < profiles.length - 1) {
     currentProfileIndex.value++
   } else {
-    // No more profiles
     noMoreProfiles.value = true
-    // Try to fetch more from backend
     if (isAuthenticated.value) {
       await fetchDiscoveryProfiles()
     }
   }
+  
+  // Delayed execution - can be undone during this time
+  if (undoTimeout) clearTimeout(undoTimeout)
+  undoTimeout = setTimeout(async () => {
+    showUndoToast.value = false
+    lastSwipeAction.value = null
+    
+    // Record swipe in backend
+    if (isAuthenticated.value) {
+      try {
+        const profileId = profile.user_id || profile.id
+        await matchingApi.swipe(profileId, 'pass')
+      } catch (err) {
+        console.warn('Could not record swipe:', err.message)
+      }
+    }
+  }, UNDO_DURATION)
 }
 
 const connectProfile = async () => {
@@ -1875,9 +1970,14 @@ const removeInterest = (index) => {
 }
 
 const saveProfile = async () => {
-  // Save profile to backend if authenticated
-  if (isAuthenticated.value) {
-    try {
+  // Prevent double-click
+  if (isSavingProfile.value) return
+  
+  isSavingProfile.value = true
+  
+  try {
+    // Save profile to backend if authenticated
+    if (isAuthenticated.value) {
       // Find tag IDs from codes
       const tagIds = backendTags.value
         .filter(t => selectedTags.value.includes(t.code))
@@ -1902,6 +2002,9 @@ const saveProfile = async () => {
       })
       
       // Save looking for preferences
+      // Normalize age range before saving (in case user didn't blur)
+      normalizeAgeRange()
+      
       const genders = normalizeGenderList(userProfile.value.lookingFor.genders)
       const relationshipTypes = normalizeRelationshipTypes(userProfile.value.lookingFor.relationshipTypes)
       await profileApi.updateLookingFor({
@@ -1917,19 +2020,27 @@ const saveProfile = async () => {
       await userApi.completeOnboarding()
       
       console.log('Profile saved to backend')
-    } catch (err) {
-      // Report profile save error (non-critical)
-      handleError(err, { source: 'completeOnboarding', action: 'saveProfile' })
     }
+    
+    // Always update local user state for navigation guard (even if API fails)
+    if (user.value) {
+      user.value.is_onboarded = true
+      localStorage.setItem('user_data', JSON.stringify(user.value))
+    }
+    
+    navigateTo('discovery')
+    
+    // Fetch fresh discovery profiles based on updated preferences
+    if (isAuthenticated.value) {
+      currentProfileIndex.value = 0
+      await fetchDiscoveryProfiles()
+    }
+  } catch (err) {
+    // Report profile save error (non-critical)
+    handleError(err, { source: 'completeOnboarding', action: 'saveProfile' })
+  } finally {
+    isSavingProfile.value = false
   }
-  
-  // Always update local user state for navigation guard (even if API fails)
-  if (user.value) {
-    user.value.is_onboarded = true
-    localStorage.setItem('user_data', JSON.stringify(user.value))
-  }
-  
-  navigateTo('discovery')
 }
 
 // Social login handler
@@ -3009,6 +3120,7 @@ const constellationPoints = computed(() => {
                   min="18"
                   max="99"
                   class="input-field text-center font-semibold text-lg"
+                  @blur="normalizeAgeRange"
                 />
               </div>
               <div class="text-text-muted text-2xl mt-5">–</div>
@@ -3021,6 +3133,7 @@ const constellationPoints = computed(() => {
                   min="18"
                   max="99"
                   class="input-field text-center font-semibold text-lg"
+                  @blur="normalizeAgeRange"
                 />
               </div>
             </div>
@@ -3152,10 +3265,16 @@ const constellationPoints = computed(() => {
             </button>
             <button
               @click="goToProfile"
-              class="btn-icon bg-background shadow-soft touch-manipulation"
+              class="btn-icon bg-background shadow-soft touch-manipulation overflow-hidden p-0"
               :aria-label="t('nav.profile')"
             >
-              <span class="text-lg">👤</span>
+              <img 
+                v-if="getPrimaryPhotoUrl()"
+                :src="getPrimaryPhotoUrl()"
+                :alt="t('nav.profile')"
+                class="w-full h-full object-cover"
+              />
+              <span v-else class="text-lg">👤</span>
             </button>
           </div>
         </div>
@@ -3167,17 +3286,22 @@ const constellationPoints = computed(() => {
         <Transition name="fade">
           <div 
             v-if="showSwipeHint"
-            class="absolute -top-1 -start-3 -end-3 xs:-start-4 xs:-end-4 sm:start-auto sm:end-auto sm:left-1/2 sm:-translate-x-1/2 z-[5] text-center text-text-deep text-xs bg-surface/95 backdrop-blur-sm px-4 py-2 rounded-none sm:rounded-full border-y sm:border border-primary/20 shadow-soft pointer-events-none"
-            role="status"
-            aria-live="polite"
+            class="absolute -top-1 inset-x-0 sm:inset-x-auto sm:left-0 sm:right-0 flex justify-center z-[5] pointer-events-none"
           >
-            <span class="font-medium">{{ t('discovery.accessibleHint') }}</span>
-            <span class="block text-[10px] text-text-muted mt-0.5">{{ t('discovery.keyboardHint') }}</span>
+            <div 
+              class="text-center text-text-deep text-xs bg-surface/95 backdrop-blur-sm px-4 sm:px-6 py-2 rounded-none sm:rounded-full border-y sm:border border-primary/20 shadow-soft w-full sm:w-auto sm:max-w-[90vw]"
+              role="status"
+              aria-live="polite"
+            >
+              <span class="font-medium">{{ t('discovery.accessibleHint') }}</span>
+              <span class="block text-[10px] text-text-muted mt-0.5">{{ t('discovery.keyboardHint') }}</span>
+            </div>
           </div>
         </Transition>
         
         <div 
           v-if="currentProfile"
+          :key="currentProfile.id || currentProfile.user_id || currentProfileIndex"
           class="card w-full max-w-sm relative swipeable no-context-menu select-none"
           :class="{ 'transition-none': isSwiping, 'transition-all duration-300': !isSwiping && !isAnimating }"
           :style="{ 
@@ -3214,14 +3338,54 @@ const constellationPoints = computed(() => {
             </div>
           </div>
 
-          <!-- Compatibility Badge -->
-          <div 
-            class="absolute top-4 end-4 z-10 flex items-center gap-1.5 xs:gap-2 px-2.5 xs:px-3 py-1 xs:py-1.5 bg-surface/90 backdrop-blur-sm rounded-full shadow-soft transition-opacity"
+          <!-- Compatibility Badge - Clickable for breakdown -->
+          <button 
+            @click.stop="showMatchBreakdown = !showMatchBreakdown"
+            class="absolute top-4 end-4 z-10 flex items-center gap-1.5 xs:gap-2 px-2.5 xs:px-3 py-1 xs:py-1.5 bg-surface/90 backdrop-blur-sm rounded-full shadow-soft transition-all hover:scale-105 active:scale-95"
             :class="swipeDirection ? 'opacity-0' : 'opacity-100'"
+            :aria-expanded="showMatchBreakdown"
+            :aria-label="t('discovery.compatibility') + ' ' + currentProfile.compatibility + '%'"
           >
             <span class="text-base xs:text-lg">💫</span>
             <span class="text-xs xs:text-sm font-semibold text-primary">{{ currentProfile.compatibility }}%</span>
-          </div>
+            <span class="text-[10px] text-text-muted">▾</span>
+          </button>
+          
+          <!-- Match Breakdown Popup -->
+          <Transition name="fade">
+            <div 
+              v-if="showMatchBreakdown"
+              class="absolute top-16 end-4 z-20 w-64 bg-surface rounded-xl shadow-lg border border-border p-4"
+              @click.stop
+            >
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-semibold text-text-deep">{{ t('discovery.whyMatch') }}</h4>
+                <button @click="showMatchBreakdown = false" class="text-text-muted hover:text-text-deep">✕</button>
+              </div>
+              
+              <ul class="space-y-2 text-xs">
+                <li v-if="sharedTags.length > 0" class="flex items-center gap-2">
+                  <span class="w-6 h-6 bg-primary-light rounded-full flex items-center justify-center">✨</span>
+                  <span class="flex-1">{{ sharedTags.length }} {{ t('discovery.sharedTags') }}</span>
+                  <span class="font-semibold text-primary">+20%</span>
+                </li>
+                <li v-if="currentProfile.distance" class="flex items-center gap-2">
+                  <span class="w-6 h-6 bg-emerald-light rounded-full flex items-center justify-center">📍</span>
+                  <span class="flex-1">{{ t('discovery.nearby') }}</span>
+                  <span class="font-semibold text-emerald">+15%</span>
+                </li>
+                <li class="flex items-center gap-2">
+                  <span class="w-6 h-6 bg-amber-light rounded-full flex items-center justify-center">🎯</span>
+                  <span class="flex-1">{{ t('discovery.sharedInterests') }}</span>
+                  <span class="font-semibold text-amber">+15%</span>
+                </li>
+              </ul>
+              
+              <p class="text-[10px] text-text-muted mt-3 pt-2 border-t border-border">
+                {{ t('discovery.matchDisclaimer') }}
+              </p>
+            </div>
+          </Transition>
 
           <!-- Shared Tags Sparkles -->
           <div 
@@ -3308,9 +3472,10 @@ const constellationPoints = computed(() => {
             </div>
           </div>
           
-          <!-- Bio & Prompt -->
+          <!-- Bio & Prompt - Progressive Disclosure -->
           <div class="p-4 xs:p-5">
-            <!-- Profile Prompt -->
+            <!-- LAYER 1: Essential - Always visible -->
+            <!-- Profile Prompt (headline/hook) -->
             <div class="bg-gradient-to-br from-primary-light via-peach/40 to-accent/20 rounded-xl p-3 xs:p-4 mb-3 xs:mb-4 border border-primary/25 shadow-sm">
               <p class="text-[10px] xs:text-xs font-bold text-primary uppercase tracking-wider mb-1.5">
                 {{ t(`profilePrompts.${currentProfile.promptId}`) }}
@@ -3320,78 +3485,106 @@ const constellationPoints = computed(() => {
               </p>
             </div>
 
-            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2">
-              {{ t('profile.about') }}
-            </h3>
-            <p class="text-sm xs:text-base text-text-deep leading-relaxed mb-3 xs:mb-4">
-              {{ getLocalized(currentProfile.bio) }}
-            </p>
+            <!-- LAYER 2: Curious - Expandable bio and interests -->
+            <Transition name="slide-fade">
+              <div v-if="profileRevealLevel !== 'essential'" class="animate-slide-up">
+                <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2">
+                  {{ t('profile.about') }}
+                </h3>
+                <p class="text-sm xs:text-base text-text-deep leading-relaxed mb-3 xs:mb-4">
+                  {{ getLocalized(currentProfile.bio) }}
+                </p>
             
             <!-- Interests -->
-            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2">
-              {{ t('profile.interests') }}
-            </h3>
-            <div class="flex flex-wrap gap-1.5 xs:gap-2">
-              <span 
-                v-for="(interest, idx) in getLocalized(currentProfile.interests, [])"
-                :key="interest"
-                :class="[
-                  'px-2.5 xs:px-3 py-1 xs:py-1.5 rounded-full text-xs xs:text-sm font-medium border transition-transform hover:scale-105',
-                  interestColorClasses[idx % interestColorClasses.length]
-                ]"
-              >
-                {{ translateInterest(interest) }}
-              </span>
-            </div>
-            
-            <!-- Ask Me About It - Celebration Prompt -->
-            <div v-if="currentProfile.askMeAnswer" class="mt-4 bg-gradient-to-br from-violet-light via-rose-light to-indigo-light rounded-xl p-3 xs:p-4 border border-violet/20 shadow-sm">
-              <p class="text-[10px] xs:text-xs font-bold text-violet uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <span class="text-sm">💜</span>
-                {{ t('askMeAboutIt.title') }}
-              </p>
-              <p class="text-[10px] xs:text-xs text-lavender mb-1.5 italic">
-                {{ t(`askMeAboutIt.prompts.${currentProfile.askMePromptId}`) }}
-              </p>
-              <p class="text-sm xs:text-base text-text-deep font-medium leading-relaxed">
-                "{{ currentProfile.askMeAnswer }}"
-              </p>
-            </div>
-            
-            <!-- Time Preferences -->
-            <div v-if="currentProfile.responsePace || currentProfile.datePace || (currentProfile.preferredTimes && currentProfile.preferredTimes.length > 0)" class="mt-4">
-              <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                <span class="text-sm">🕐</span>
-                {{ t('timePreferences.title') }}
-              </h3>
-              <div class="flex flex-wrap gap-1.5">
-                <!-- Preferred Times -->
-                <span 
-                  v-for="time in (currentProfile.preferredTimes || [])"
-                  :key="time"
-                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-light text-indigo border border-indigo/20 rounded-full text-xs font-medium"
-                >
-                  <span>{{ timeOptions.find(t => t.id === time)?.emoji }}</span>
-                  <span>{{ t(`timePreferences.times.${time}`) }}</span>
-                </span>
-                <!-- Response Pace -->
-                <span 
-                  v-if="currentProfile.responsePace"
-                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-light text-amber border border-amber/20 rounded-full text-xs font-medium"
-                >
-                  <span>{{ responsePaceOptions.find(p => p.id === currentProfile.responsePace)?.emoji }}</span>
-                  <span>{{ t(`timePreferences.responsePaceOptions.${currentProfile.responsePace}`) }}</span>
-                </span>
-                <!-- Date Pace -->
-                <span 
-                  v-if="currentProfile.datePace"
-                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-light text-emerald border border-emerald/20 rounded-full text-xs font-medium"
-                >
-                  <span>{{ datePaceOptions.find(p => p.id === currentProfile.datePace)?.emoji }}</span>
-                  <span>{{ t(`timePreferences.datePaceOptions.${currentProfile.datePace}`) }}</span>
-                </span>
+                <!-- Interests -->
+                <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2">
+                  {{ t('profile.interests') }}
+                </h3>
+                <div class="flex flex-wrap gap-1.5 xs:gap-2">
+                  <span 
+                    v-for="(interest, idx) in getLocalized(currentProfile.interests, [])"
+                    :key="interest"
+                    :class="[
+                      'px-2.5 xs:px-3 py-1 xs:py-1.5 rounded-full text-xs xs:text-sm font-medium border transition-transform hover:scale-105',
+                      interestColorClasses[idx % interestColorClasses.length]
+                    ]"
+                  >
+                    {{ translateInterest(interest) }}
+                  </span>
+                </div>
               </div>
-            </div>
+            </Transition>
+            
+            <!-- LAYER 3: Deep Dive - Ask Me About It & Time Preferences -->
+            <Transition name="slide-fade">
+              <div v-if="profileRevealLevel === 'deep-dive'" class="animate-slide-up">
+                <!-- Ask Me About It - Celebration Prompt -->
+                <div v-if="currentProfile.askMeAnswer" class="mt-4 bg-surface rounded-xl p-3 xs:p-4 border border-border shadow-sm">
+                  <p class="text-[10px] xs:text-xs font-bold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                    <span class="text-sm">💜</span>
+                    {{ t('askMeAboutIt.title') }}
+                  </p>
+                  <p class="text-[10px] xs:text-xs text-text-muted mb-1.5">
+                    {{ t(`askMeAboutIt.prompts.${currentProfile.askMePromptId}`) }}
+                  </p>
+                  <p class="text-sm xs:text-base text-text-deep font-medium leading-relaxed">
+                    "{{ currentProfile.askMeAnswer }}"
+                  </p>
+                </div>
+                
+                <!-- Time Preferences -->
+                <div v-if="currentProfile.responsePace || currentProfile.datePace || (currentProfile.preferredTimes && currentProfile.preferredTimes.length > 0)" class="mt-4">
+                  <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                    <span class="text-sm">🕐</span>
+                    {{ t('timePreferences.title') }}
+                  </h3>
+                  <div class="flex flex-wrap gap-1.5">
+                    <!-- Preferred Times -->
+                    <span 
+                      v-for="time in (currentProfile.preferredTimes || [])"
+                      :key="time"
+                      class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-light text-indigo border border-indigo/20 rounded-full text-xs font-medium"
+                    >
+                      <span>{{ timeOptions.find(t => t.id === time)?.emoji }}</span>
+                      <span>{{ t(`timePreferences.times.${time}`) }}</span>
+                    </span>
+                    <!-- Response Pace -->
+                    <span 
+                      v-if="currentProfile.responsePace"
+                      class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-light text-amber border border-amber/20 rounded-full text-xs font-medium"
+                    >
+                      <span>{{ responsePaceOptions.find(p => p.id === currentProfile.responsePace)?.emoji }}</span>
+                      <span>{{ t(`timePreferences.responsePaceOptions.${currentProfile.responsePace}`) }}</span>
+                    </span>
+                    <!-- Date Pace -->
+                    <span 
+                      v-if="currentProfile.datePace"
+                      class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-light text-emerald border border-emerald/20 rounded-full text-xs font-medium"
+                    >
+                      <span>{{ datePaceOptions.find(p => p.id === currentProfile.datePace)?.emoji }}</span>
+                      <span>{{ t(`timePreferences.datePaceOptions.${currentProfile.datePace}`) }}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Transition>
+            
+            <!-- Reveal More Button -->
+            <button
+              @click="cycleRevealLevel"
+              class="w-full mt-4 py-3 px-4 bg-background border-2 border-dashed border-border rounded-xl text-sm font-medium text-text-muted hover:border-primary hover:text-primary hover:bg-primary-light/30 transition-all active:scale-[0.98]"
+              :aria-expanded="profileRevealLevel !== 'essential'"
+            >
+              <span v-if="profileRevealLevel === 'essential'" class="flex items-center justify-center gap-2">
+                👀 {{ t('discovery.learnMore') }}
+              </span>
+              <span v-else-if="profileRevealLevel === 'curious'" class="flex items-center justify-center gap-2">
+                🔍 {{ t('discovery.deepDive') }}
+              </span>
+              <span v-else class="flex items-center justify-center gap-2">
+                📌 {{ t('discovery.showLess') }}
+              </span>
+            </button>
           </div>
         </div>
         
@@ -3453,6 +3646,33 @@ const constellationPoints = computed(() => {
           <span class="w-14 xs:w-16 text-center text-xs xs:text-sm text-text-muted">{{ t('discovery.passBtn') }}</span>
           <span class="w-16 xs:w-20 text-center text-xs xs:text-sm text-primary font-medium">{{ t('discovery.connectBtn') }}</span>
         </div>
+        
+        <!-- Undo Toast -->
+        <Transition name="slide-up">
+          <div 
+            v-if="showUndoToast && lastSwipeAction"
+            class="fixed bottom-28 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-4 py-3 bg-surface rounded-full shadow-lg border border-border"
+            role="alert"
+          >
+            <span class="text-sm text-text-deep">
+              {{ lastSwipeAction.type === 'pass' ? t('discovery.skipping') : t('discovery.connecting') }}
+              <strong>{{ lastSwipeAction.profile.name }}</strong>...
+            </span>
+            <button 
+              @click="undoSwipe"
+              class="px-3 py-1.5 bg-primary text-white text-xs font-semibold rounded-full hover:bg-primary-dark transition-colors"
+            >
+              ↩ {{ t('discovery.undo') }}
+            </button>
+            <!-- Progress bar -->
+            <div class="absolute bottom-0 left-4 right-4 h-0.5 bg-border rounded-full overflow-hidden">
+              <div 
+                class="h-full bg-primary animate-shrink-width"
+                :style="{ animationDuration: UNDO_DURATION + 'ms' }"
+              ></div>
+            </div>
+          </div>
+        </Transition>
       </div>
     </div>
 
@@ -3481,10 +3701,16 @@ const constellationPoints = computed(() => {
           
           <button
             @click="goToProfile"
-            class="btn-icon bg-background shadow-soft touch-manipulation"
+            class="btn-icon bg-background shadow-soft touch-manipulation overflow-hidden p-0"
             :aria-label="t('nav.profile')"
           >
-            <span class="text-lg">👤</span>
+            <img 
+              v-if="getPrimaryPhotoUrl()"
+              :src="getPrimaryPhotoUrl()"
+              :alt="t('nav.profile')"
+              class="w-full h-full object-cover"
+            />
+            <span v-else class="text-lg">👤</span>
           </button>
         </div>
       </header>
@@ -3535,10 +3761,6 @@ const constellationPoints = computed(() => {
               </div>
               <!-- Online indicator -->
               <div class="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-secondary rounded-full border-2 border-surface"></div>
-              <!-- View profile hint -->
-              <div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 hover:opacity-100 transition-opacity rounded-2xl">
-                <span class="text-white text-xs">👁️</span>
-              </div>
             </div>
             
             <!-- Info -->
@@ -3614,7 +3836,6 @@ const constellationPoints = computed(() => {
                 {{ t('chat.online') }}
               </p>
             </div>
-            <span class="text-text-muted text-xs">👁️</span>
           </div>
           
           <!-- Disconnect Button -->
@@ -3797,23 +4018,24 @@ const constellationPoints = computed(() => {
         </div>
       </main>
       
-      <!-- Icebreakers -->
+      <!-- Conversation Starters -->
       <Transition name="slide-up">
         <div 
           v-if="showIcebreakers"
           class="bg-surface border-t border-border p-3 xs:p-4"
         >
           <div class="max-w-lg mx-auto">
-            <h4 class="text-xs xs:text-sm font-semibold text-text-muted mb-2 xs:mb-3 flex items-center gap-2">
-              <span>🧊</span>
-              {{ t('chat.icebreakers') }}
+            <h4 class="text-xs xs:text-sm font-semibold text-text-deep mb-1 flex items-center gap-2">
+              <span>💡</span>
+              {{ t('chat.notSureWhatToSay') }}
             </h4>
+            <p class="text-[10px] xs:text-xs text-text-muted mb-3">{{ t('chat.starterHint') }}</p>
             <div class="flex flex-wrap gap-2">
               <button
                 v-for="prompt in icebreakers"
                 :key="prompt.id"
                 @click="sendIcebreaker(prompt)"
-                class="px-3 xs:px-4 py-2 bg-primary-light text-primary rounded-full text-xs xs:text-sm font-medium touch-manipulation active:scale-95"
+                class="px-3 xs:px-4 py-2 bg-gradient-to-r from-primary-light to-accent/20 hover:from-primary hover:to-accent hover:text-white text-primary border border-primary/20 rounded-full text-xs xs:text-sm font-medium touch-manipulation active:scale-95 transition-all"
               >
                 {{ prompt.text }}
               </button>
@@ -3866,15 +4088,17 @@ const constellationPoints = computed(() => {
         :class="{ 'pb-1': isKeyboardOpen }"
       >
         <div class="max-w-lg mx-auto flex items-end gap-2 xs:gap-3">
-          <!-- Icebreaker Toggle -->
+          <!-- Conversation Starter Help -->
           <button
             @click="showIcebreakers = !showIcebreakers"
             :class="[
               'w-10 h-10 xs:w-11 xs:h-11 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors',
               showIcebreakers ? 'bg-accent text-white' : 'bg-primary-light text-primary'
             ]"
+            :aria-expanded="showIcebreakers"
+            :aria-label="t('chat.needHelp')"
           >
-            <span class="text-lg xs:text-xl">🧊</span>
+            <span class="text-lg xs:text-xl">💡</span>
           </button>
 
           <!-- Voice Note Button -->
@@ -3963,12 +4187,17 @@ const constellationPoints = computed(() => {
           <!-- Prominent Save Button in Header -->
           <button
             @click="saveProfile"
-            class="bg-primary text-white font-medium px-4 py-2 rounded-full min-h-[44px] touch-manipulation active:scale-95 shadow-sm flex items-center gap-1.5"
+            :disabled="isSavingProfile"
+            class="bg-primary text-white font-medium px-4 py-2 rounded-full min-h-[44px] touch-manipulation active:scale-95 shadow-sm flex items-center gap-1.5 disabled:opacity-70 disabled:cursor-not-allowed"
             :aria-label="t('a11y.saveChanges')"
             :title="`${t('save')} (⌘S / Ctrl+S)`"
           >
-            <span>💾</span>
-            {{ t('save') }}
+            <svg v-if="isSavingProfile" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span v-else>💾</span>
+            {{ isSavingProfile ? t('saving') : t('save') }}
           </button>
         </div>
       </header>
@@ -4189,8 +4418,8 @@ const constellationPoints = computed(() => {
           </div>
 
           <!-- Ask Me About It - Celebration Prompt -->
-          <div class="card p-4 xs:p-5 animate-slide-up stagger-2 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-200 dark:border-purple-700">
-            <h3 class="text-xs xs:text-sm font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-wide mb-2 flex items-center gap-2">
+          <div class="card p-4 xs:p-5 animate-slide-up stagger-2">
+            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-2">
               <span>💜</span>
               {{ t('askMeAboutIt.title') }}
             </h3>
@@ -4206,8 +4435,8 @@ const constellationPoints = computed(() => {
                   :class="[
                     'px-4 py-3 rounded-xl text-xs xs:text-sm font-medium transition-all touch-manipulation active:scale-[0.98] text-start',
                     userProfile.askMePromptId === prompt.id 
-                      ? 'bg-purple-500 text-white shadow-md' 
-                      : 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300 border border-purple-200 hover:border-purple-400'
+                      ? 'bg-primary text-white shadow-md' 
+                      : 'bg-background text-text-deep border border-border hover:border-primary/50'
                   ]"
                 >
                   <span class="flex items-center gap-2">
@@ -4220,7 +4449,7 @@ const constellationPoints = computed(() => {
               
               <!-- Answer -->
               <div v-if="userProfile.askMePromptId">
-                <label class="block text-xs xs:text-sm font-medium text-purple-700 dark:text-purple-300 mb-1 xs:mb-1.5">
+                <label class="block text-xs xs:text-sm font-medium text-text-deep mb-1 xs:mb-1.5">
                   {{ t(`askMeAboutIt.prompts.${userProfile.askMePromptId}`) }}
                 </label>
                 <textarea 
@@ -4427,6 +4656,7 @@ const constellationPoints = computed(() => {
                     max="99"
                     class="input-field text-center text-sm"
                     :class="{ 'border-danger ring-danger/30': ageRangeError }"
+                    @blur="normalizeAgeRange"
                   />
                 </div>
                 <span class="text-text-muted mt-4">–</span>
@@ -4440,6 +4670,7 @@ const constellationPoints = computed(() => {
                     max="99"
                     class="input-field text-center text-sm"
                     :class="{ 'border-danger ring-danger/30': ageRangeError }"
+                    @blur="normalizeAgeRange"
                   />
                 </div>
               </div>
@@ -4578,9 +4809,14 @@ const constellationPoints = computed(() => {
           <!-- Save Button -->
           <button
             @click="saveProfile"
-            class="w-full bg-primary text-white text-base xs:text-lg py-3.5 xs:py-4 rounded-xl xs:rounded-2xl font-medium shadow-button touch-manipulation active:scale-[0.98] animate-slide-up stagger-7"
+            :disabled="isSavingProfile"
+            class="w-full bg-primary text-white text-base xs:text-lg py-3.5 xs:py-4 rounded-xl xs:rounded-2xl font-medium shadow-button touch-manipulation active:scale-[0.98] animate-slide-up stagger-7 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {{ t('profile.saveChanges') }}
+            <svg v-if="isSavingProfile" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isSavingProfile ? t('saving') : t('profile.saveChanges') }}
           </button>
           
           <!-- Cleanup Button -->
@@ -4616,11 +4852,17 @@ const constellationPoints = computed(() => {
       <!-- Floating Save Button (FAB) - Always visible for accessibility -->
       <button
         @click="saveProfile"
-        class="fixed bottom-6 end-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center touch-manipulation active:scale-90 z-30 animate-bounce-soft"
+        :disabled="isSavingProfile"
+        class="fixed bottom-6 end-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center touch-manipulation active:scale-90 z-30 disabled:opacity-70 disabled:cursor-not-allowed"
+        :class="{ 'animate-bounce-soft': !isSavingProfile }"
         :aria-label="t('a11y.saveChanges')"
         :title="`${t('save')} (⌘S / Ctrl+S)`"
       >
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg v-if="isSavingProfile" class="animate-spin h-6 w-6" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
         </svg>
       </button>
@@ -4727,13 +4969,13 @@ const constellationPoints = computed(() => {
             <!-- Ask Me About It -->
             <div 
               v-if="viewingProfileData.askMeAnswer" 
-              class="mb-4 bg-gradient-to-br from-violet-light via-rose-light to-indigo-light rounded-xl p-3 border border-violet/20 shadow-sm"
+              class="mb-4 bg-surface rounded-xl p-3 border border-border shadow-sm"
             >
-              <p class="text-xs font-bold text-violet uppercase tracking-wider mb-1 flex items-center gap-1.5">
+              <p class="text-xs font-bold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
                 <span class="text-sm">💜</span>
                 {{ t('askMeAboutIt.title') }}
               </p>
-              <p v-if="viewingProfileData.askMePromptId" class="text-xs text-lavender mb-1.5 italic">
+              <p v-if="viewingProfileData.askMePromptId" class="text-xs text-text-muted mb-1.5">
                 {{ t(`askMeAboutIt.prompts.${viewingProfileData.askMePromptId}`) }}
               </p>
               <p class="text-text-deep font-medium leading-relaxed">
@@ -4844,7 +5086,13 @@ const constellationPoints = computed(() => {
           <!-- Profile Photos -->
           <div class="flex items-center justify-center gap-3 xs:gap-4 mb-6 xs:mb-8">
             <div class="w-20 xs:w-28 h-20 xs:h-28 rounded-full border-4 border-white overflow-hidden shadow-xl animate-slide-in-left">
-              <div class="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-3xl xs:text-4xl">
+              <img 
+                v-if="getPrimaryPhotoUrl()"
+                :src="getPrimaryPhotoUrl()"
+                :alt="t('nav.profile')"
+                class="w-full h-full object-cover"
+              />
+              <div v-else class="w-full h-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-3xl xs:text-4xl">
                 👤
               </div>
             </div>

@@ -11,6 +11,7 @@ export default {
   skip: 'Omitir',
   done: 'Listo',
   save: 'Guardar',
+  saving: 'Guardando...',
   logout: 'Cerrar Sesión',
   cancel: 'Cancelar',
   edit: 'Editar',
@@ -74,6 +75,20 @@ export default {
     swipeHint: '← Desliza a la izquierda para pasar | Desliza a la derecha para gustar →',
     accessibleHint: 'Desliza, toca botones o usa las flechas',
     keyboardHint: '← Pasar | Gustar → | Espacio: Deshacer | Enter: Ver Perfil',
+    // Progressive disclosure
+    learnMore: 'Saber más',
+    deepDive: 'Ver todo',
+    showLess: 'Mostrar menos',
+    // Match breakdown
+    whyMatch: '¿Por qué esta coincidencia?',
+    sharedTags: 'etiquetas compartidas',
+    nearby: 'Cercano',
+    sharedInterests: 'Intereses compartidos',
+    matchDisclaimer: 'Las puntuaciones son sugerencias. ¡La conexión ocurre de formas inesperadas! 💫',
+    // Undo
+    skipping: 'Saltando',
+    connecting: 'Conectando con',
+    undo: 'Deshacer',
   },
   
   // Matches
@@ -126,6 +141,13 @@ export default {
     laughMost: 'Lo que más me hace reír es...',
     perfectSunday: 'Mi domingo perfecto se ve así...',
     convinced: 'Estoy convencido/a de que...',
+    // Additional prompts from Ask Me About It
+    coolestThing: 'Lo más genial de mi condición es...',
+    superpower: 'Mi superpoder por ser diferente es...',
+    wishPeopleKnew: 'Lo que desearía que la gente supiera es...',
+    proudOf: 'Algo de lo que estoy orgulloso/a es...',
+    dontLetStop: 'No dejo que nada me impida...',
+    loveAboutCommunity: 'Lo que me encanta de la comunidad de discapacidad es...',
   },
   
   // Profile

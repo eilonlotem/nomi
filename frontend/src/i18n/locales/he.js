@@ -11,6 +11,7 @@ export default {
   skip: 'דלג',
   done: 'סיום',
   save: 'שמור',
+  saving: 'שומר...',
   logout: 'התנתק',
   cancel: 'ביטול',
   edit: 'ערוך',
@@ -64,8 +65,8 @@ export default {
     noMoreProfiles: 'ראית את כולם לעת עתה!',
     checkBackLater: 'חזור מאוחר יותר לחיבורים חדשים',
     noMoreExplanation: 'צפית בכל הפרופילים הזמינים לפי ההעדפות שלך. בדוק מאוחר יותר לפרופילים חדשים או התאם את העדפות החיפוש.',
-    passBtn: 'דלג',
-    connectBtn: 'התחבר',
+    passBtn: 'לא עכשיו',
+    connectBtn: 'להגיד שלום',
     superBtn: 'סופר',
     age: 'בן/בת {age}',
     distance: '{km} ק״מ',
@@ -74,6 +75,20 @@ export default {
     swipeHint: 'החלק שמאלה לדלג ← | → החלק ימינה לחיבור',
     accessibleHint: 'החלק, לחץ על הכפתורים, או השתמש במקשי החצים',
     keyboardHint: '→ דלג | התחבר ← | רווח: בטל | Enter: צפה בפרופיל',
+    // Progressive disclosure
+    learnMore: 'גלה עוד',
+    deepDive: 'צלילה לעומק',
+    showLess: 'הראה פחות',
+    // Match breakdown
+    whyMatch: 'למה ההתאמה הזו?',
+    sharedTags: 'תגים משותפים',
+    nearby: 'קרוב אלייך',
+    sharedInterests: 'תחומי עניין משותפים',
+    matchDisclaimer: 'ציוני התאמה הם הצעות. חיבור קורה בדרכים לא צפויות! 💫',
+    // Undo
+    skipping: 'מדלג על',
+    connecting: 'מתחבר עם',
+    undo: 'בטל',
   },
   
   // Matches
@@ -100,7 +115,10 @@ export default {
     today: 'היום',
     yesterday: 'אתמול',
     icebreaker: 'שובר קרח',
-    icebreakers: 'שוברי קרח',
+    icebreakers: 'רעיונות לשיחה',
+    needHelp: 'צריך עזרה להתחיל?',
+    notSureWhatToSay: 'לא בטוח/ה מה לכתוב?',
+    starterHint: 'נסו אחד מאלה לשבור את הקרח:',
     disconnect: 'נתק',
     disconnectTitle: 'להתנתק מההתאמה?',
     disconnectMessage: 'פעולה זו תסיר את האדם הזה מההתאמות שלך ותמחק את כל ההודעות. לא ניתן לבטל פעולה זו.',
@@ -126,6 +144,13 @@ export default {
     laughMost: 'מה שגורם לי לצחוק הכי הרבה זה...',
     perfectSunday: 'יום ראשון מושלם נראה כמו...',
     convinced: 'אני משוכנע/ת ש...',
+    // Additional prompts from Ask Me About It
+    coolestThing: 'הדבר הכי מגניב במצב שלי זה...',
+    superpower: 'כוח העל שלי מלהיות שונה הוא...',
+    wishPeopleKnew: 'מה שהייתי רוצה שאנשים ידעו זה...',
+    proudOf: 'משהו שאני גאה שהתגברתי עליו זה...',
+    dontLetStop: 'אני לא נותן/ת לשום דבר לעצור אותי מ...',
+    loveAboutCommunity: 'מה שאני אוהב/ת בקהילת המוגבלות זה...',
   },
   
   // Ask Me About It - Celebration prompts
@@ -257,7 +282,7 @@ export default {
   
   // Accessibility
   a11y: {
-    title: 'הגדרות נגישות',
+    title: 'נגישות',
     switchLanguage: 'החלף שפה',
     goBack: 'חזור אחורה',
     toggleTag: 'הפעל/כבה תגית {tag}',

@@ -3906,32 +3906,32 @@ const constellationPoints = computed(() => {
     >
       <!-- Header -->
       <header class="sticky top-0 z-20 bg-surface/90 backdrop-blur-lg header-safe">
-        <div class="flex items-center justify-between px-2 xs:px-3 py-1.5 xs:py-2">
+        <div class="flex items-center justify-between px-2 xs:px-3 py-1 xs:py-1.5">
           <!-- Spacer for layout balance -->
-          <div class="w-9 xs:w-10"></div>
+          <div class="w-8 xs:w-9"></div>
           
           <div class="text-center">
-            <h1 class="text-sm xs:text-base font-semibold text-text-deep">{{ t('discovery.title') }}</h1>
-            <p class="text-[9px] xs:text-[10px] text-text-muted">{{ t('discovery.subtitle') }}</p>
+            <h1 class="text-xs xs:text-sm font-semibold text-text-deep">{{ t('discovery.title') }}</h1>
+            <p class="text-[8px] xs:text-[9px] text-text-muted">{{ t('discovery.subtitle') }}</p>
           </div>
           
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center gap-1">
             <button
               @click="goToMatches"
-              class="w-9 h-9 xs:w-10 xs:h-10 rounded-xl bg-background shadow-soft touch-manipulation relative flex items-center justify-center"
+              class="w-8 h-8 xs:w-9 xs:h-9 rounded-xl bg-background shadow-soft touch-manipulation relative flex items-center justify-center"
               :aria-label="t('matches.title')"
             >
-              <span class="text-base">💬</span>
+              <span class="text-sm xs:text-base">💬</span>
               <span 
                 v-if="matches.length > 0"
-                class="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-primary text-white text-[9px] rounded-full flex items-center justify-center font-semibold"
+                class="absolute -top-0.5 -right-0.5 w-3 h-3 xs:w-3.5 xs:h-3.5 bg-primary text-white text-[8px] xs:text-[9px] rounded-full flex items-center justify-center font-semibold"
               >
                 {{ matches.length > 9 ? '9+' : matches.length }}
               </span>
             </button>
             <button
               @click="goToProfile"
-              class="w-9 h-9 xs:w-10 xs:h-10 rounded-xl bg-background shadow-soft touch-manipulation overflow-hidden p-0"
+              class="w-8 h-8 xs:w-9 xs:h-9 rounded-xl bg-background shadow-soft touch-manipulation overflow-hidden p-0"
               :aria-label="t('nav.profile')"
             >
               <img 
@@ -3940,7 +3940,7 @@ const constellationPoints = computed(() => {
                 :alt="t('nav.profile')"
                 class="w-full h-full object-cover"
               />
-              <span v-else class="text-base">👤</span>
+              <span v-else class="text-sm xs:text-base">👤</span>
             </button>
           </div>
         </div>
@@ -4066,7 +4066,7 @@ const constellationPoints = computed(() => {
           <!-- Photo Carousel -->
           <div 
             ref="discoveryPhotoCarousel"
-            class="relative aspect-[4/3] xs:aspect-[3/2] sm:aspect-[5/4] overflow-hidden transition-all duration-300 ease-out"
+            class="relative aspect-[5/4] xs:aspect-[4/3] sm:aspect-[3/2] overflow-hidden transition-all duration-300 ease-out"
             :style="{ transform: `translateY(-${photoScrollOffset}px)` }"
           >
             <!-- Photo indicators -->
@@ -4121,26 +4121,26 @@ const constellationPoints = computed(() => {
             </div>
 
             <!-- Profile Info -->
-            <div class="absolute bottom-0 inset-x-0 p-4 xs:p-5 text-white">
-              <h2 class="text-xl xs:text-2xl font-bold mb-1 flex items-center gap-2">
+            <div class="absolute bottom-0 inset-x-0 p-3 xs:p-4 text-white">
+              <h2 class="text-lg xs:text-xl font-bold mb-0.5 flex items-center gap-2">
                 {{ currentProfile.name }}, {{ currentProfile.age }}
               </h2>
-              <p class="text-xs xs:text-sm text-white/80 mb-2 xs:mb-3">
+              <p class="text-[10px] xs:text-xs text-white/80 mb-1.5 xs:mb-2">
                 📍 {{ t('discovery.distance', { km: currentProfile.distance }) }}
               </p>
 
-              <div v-if="currentProfile.relationshipIntent" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/25 backdrop-blur-md text-white text-[10px] xs:text-xs font-semibold border border-white/30 mb-2 xs:mb-3">
+              <div v-if="currentProfile.relationshipIntent" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/25 backdrop-blur-md text-white text-[10px] xs:text-xs font-semibold border border-white/30 mb-1.5 xs:mb-2">
                 <span>🎯</span>
                 <span>{{ t(`intent.options.${currentProfile.relationshipIntent}`) }}</span>
               </div>
               
               <!-- Tags -->
-              <div class="flex flex-wrap gap-1.5 xs:gap-2">
+              <div class="flex flex-wrap gap-1 xs:gap-1.5">
                 <span 
                   v-for="tagId in currentProfile.tags" 
                   :key="tagId"
                   :class="[
-                    'inline-flex items-center gap-1 xs:gap-1.5 px-2.5 xs:px-3 py-1 xs:py-1.5 rounded-full text-[10px] xs:text-xs font-semibold transition-all',
+                    'inline-flex items-center gap-1 xs:gap-1.5 px-2 xs:px-2.5 py-0.5 xs:py-1 rounded-full text-[10px] xs:text-xs font-semibold transition-all',
                     sharedTags.includes(tagId) 
                       ? 'bg-primary text-white shadow-md' 
                       : 'bg-white/25 backdrop-blur-md text-white border border-white/30'
@@ -4156,7 +4156,7 @@ const constellationPoints = computed(() => {
           <!-- Bio & Prompt - Progressive Disclosure -->
           <div 
             ref="discoveryDetailsScroll"
-            class="p-4 xs:p-5 sm:p-6 pb-20 xs:pb-24 flex-1 min-h-0 overflow-y-auto momentum-scroll space-y-3 xs:space-y-4"
+            class="p-3 xs:p-4 sm:p-5 pb-16 xs:pb-20 flex-1 min-h-0 overflow-y-auto momentum-scroll space-y-2.5 xs:space-y-3"
             @scroll="handleDiscoveryScroll"
           >
             <!-- LAYER 1: Essential - Always visible -->
@@ -4261,16 +4261,16 @@ const constellationPoints = computed(() => {
       <!-- Action Buttons -->
       <div 
         v-if="currentProfile"
-        class="sticky bottom-0 bg-surface/90 backdrop-blur-lg p-1.5 xs:p-2 bottom-bar-safe"
+        class="sticky bottom-0 bg-surface/90 backdrop-blur-lg p-1 xs:p-1.5 bottom-bar-safe"
       >
-        <div class="flex items-center justify-center gap-2 xs:gap-3">
+        <div class="flex items-center justify-center gap-2 xs:gap-2.5">
           <!-- Pass Button -->
           <button
             @click="passProfile"
-            class="w-9 h-9 xs:w-10 xs:h-10 bg-surface rounded-full shadow-card border-2 border-danger/20 flex items-center justify-center touch-manipulation active:scale-90 active:border-danger"
+            class="w-8 h-8 xs:w-9 xs:h-9 bg-surface rounded-full shadow-card border-2 border-danger/20 flex items-center justify-center touch-manipulation active:scale-90 active:border-danger"
             :aria-label="t('a11y.passProfile')"
           >
-            <svg class="w-4 h-4 xs:w-5 xs:h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5 xs:w-4 xs:h-4 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
@@ -4278,10 +4278,10 @@ const constellationPoints = computed(() => {
           <!-- Connect Button -->
           <button
             @click="connectProfile"
-            class="w-11 h-11 xs:w-12 xs:h-12 bg-primary rounded-full shadow-button flex items-center justify-center touch-manipulation active:scale-90"
+            class="w-10 h-10 xs:w-11 xs:h-11 bg-primary rounded-full shadow-button flex items-center justify-center touch-manipulation active:scale-90"
             :aria-label="t('a11y.connectProfile')"
           >
-            <svg class="w-5 h-5 xs:w-6 xs:h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4.5 h-4.5 xs:w-5 xs:h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>
           </button>

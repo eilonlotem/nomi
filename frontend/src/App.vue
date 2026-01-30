@@ -517,41 +517,18 @@ const cycleRevealLevel = () => {
 // Reset reveal level when moving to next profile
 watch(currentProfileIndex, () => {
   profileRevealLevel.value = 'essential'
-  // Reset photo scroll offset when changing profiles
-  photoScrollOffset.value = 0
   // Reset scroll position
   if (discoveryDetailsScroll.value) {
     discoveryDetailsScroll.value.scrollTop = 0
   }
 })
 
-// Handle discovery page scroll to hide photo
-const handleDiscoveryScroll = () => {
-  if (!discoveryDetailsScroll.value || !discoveryPhotoCarousel.value) return
-  
-  const scrollTop = discoveryDetailsScroll.value.scrollTop
-  const scrollHeight = discoveryDetailsScroll.value.scrollHeight
-  const clientHeight = discoveryDetailsScroll.value.clientHeight
-  
-  // Calculate scroll percentage (0 to 1)
-  const maxScroll = Math.max(1, scrollHeight - clientHeight)
-  const scrollPercent = Math.min(scrollTop / maxScroll, 1)
-  
-  // Get photo carousel height
-  const photoHeight = discoveryPhotoCarousel.value.offsetHeight
-  
-  // Hide up to 70% of the photo (max offset is 70% of photo height) for more detail space
-  const maxOffset = photoHeight * 0.7
-  photoScrollOffset.value = scrollPercent * maxOffset
-}
-
 // Match breakdown visibility
 const showMatchBreakdown = ref(false)
 
-// Discovery page scroll tracking for photo hiding
+// Discovery page scroll tracking
 const discoveryDetailsScroll = ref(null)
 const discoveryPhotoCarousel = ref(null)
-const photoScrollOffset = ref(0)
 
 // Undo functionality for swipes
 const lastSwipeAction = ref(null)
@@ -4832,7 +4809,7 @@ const constellationPoints = computed(() => {
               </div>
               <div v-else-if="aiSuggestions.length" class="flex flex-wrap gap-2">
                 <button
-                  v-for="suggestion in aiSuggestions"
+                  v-for="suggestion in aiSuggestions.slice(0, 2)"
                   :key="suggestion"
                   @click="sendSuggestedMessage(suggestion)"
                   class="px-3 xs:px-4 py-2 bg-surface border border-border text-text-deep hover:border-primary/50 rounded-full text-xs xs:text-sm font-medium touch-manipulation active:scale-95 transition-colors min-h-[44px]"

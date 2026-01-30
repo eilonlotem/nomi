@@ -2992,6 +2992,39 @@ onMounted(async () => {
     // Critical error during mount - report and redirect to login
     handleCriticalError(err, { source: 'onMounted', action: 'initialization' }, true)
   }
+  
+  // Start periodic auth health check (every 5 minutes)
+  startAuthHealthCheck()
+})
+
+// Periodic health check to validate auth token
+let healthCheckInterval = null
+const startAuthHealthCheck = () => {
+  // Clear any existing interval
+  if (healthCheckInterval) {
+    clearInterval(healthCheckInterval)
+  }
+  
+  // Check every 5 minutes (300000ms)
+  healthCheckInterval = setInterval(async () => {
+    // Only check if user is authenticated and not on login page
+    if (isAuthenticated.value && currentView.value !== 'login') {
+      const isValid = await validateToken()
+      if (!isValid) {
+        // Token is invalid, redirect to login
+        console.log('Auth health check failed, redirecting to login')
+        currentView.value = 'login'
+        loginError.value = t('auth.sessionExpired') || 'Your session has expired. Please log in again.'
+      }
+    }
+  }, 5 * 60 * 1000) // 5 minutes
+}
+
+// Cleanup on unmount
+onUnmounted(() => {
+  if (healthCheckInterval) {
+    clearInterval(healthCheckInterval)
+  }
 })
 
 // Generate constellation points for match animation

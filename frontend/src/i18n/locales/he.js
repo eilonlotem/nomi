@@ -440,6 +440,7 @@ export default {
     privacyPolicy: 'מדיניות הפרטיות',
     devMode: 'מצב פיתוח (התחברות מדומה)',
     aboutUs: 'עלינו',
+    sessionExpired: 'תוקף ההתחברות פג. אנא התחבר/י שוב.',
   },
   
   // Invite Friends

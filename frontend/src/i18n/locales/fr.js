@@ -370,6 +370,7 @@ export default {
     privacyPolicy: 'Politique de Confidentialité',
     devMode: 'Mode Développement',
     aboutUs: 'À Propos',
+    sessionExpired: 'Votre session a expiré. Veuillez vous reconnecter.',
   },
   
   // Invite Friends

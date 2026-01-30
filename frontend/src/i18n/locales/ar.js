@@ -370,6 +370,7 @@ export default {
     privacyPolicy: 'سياسة الخصوصية',
     devMode: 'وضع التطوير',
     aboutUs: 'معلومات عنا',
+    sessionExpired: 'انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.',
   },
   
   // Invite Friends

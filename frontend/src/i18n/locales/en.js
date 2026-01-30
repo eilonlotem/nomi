@@ -441,6 +441,7 @@ export default {
     privacyPolicy: 'Privacy Policy',
     devMode: 'Dev Mode (Mock Login)',
     aboutUs: 'About Us',
+    sessionExpired: 'Your session has expired. Please log in again.',
   },
   
   // Invite Friends

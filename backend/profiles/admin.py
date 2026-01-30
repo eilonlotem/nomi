@@ -2,14 +2,29 @@ from __future__ import annotations
 
 from django.contrib import admin
 
-from .models import DisabilityTag, Interest, LookingFor, Profile, ProfilePhoto
+from .models import (
+    DisabilityTag,
+    Interest,
+    LookingFor,
+    Profile,
+    ProfileDisabilityTagVisibility,
+    ProfilePhoto,
+)
 
 
 @admin.register(DisabilityTag)
 class DisabilityTagAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
-    list_display = ["code", "name_en", "icon", "is_active", "order"]
+    list_display = [
+        "code",
+        "name_en",
+        "icon",
+        "category",
+        "disclosure_level",
+        "is_active",
+        "order",
+    ]
     list_editable = ["is_active", "order"]
-    search_fields = ["code", "name_en"]
+    search_fields = ["code", "name_en", "category"]
     ordering = ["order"]
 
 
@@ -57,7 +72,14 @@ class ProfileAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         (None, {"fields": ("user", "display_name", "bio")}),
         ("Personal", {"fields": ("gender", "date_of_birth")}),
         ("Location", {"fields": ("city", "country", "latitude", "longitude")}),
-        ("Identity", {"fields": ("disability_tags", "interests", "current_mood")}),
+        (
+            "Identity",
+            {"fields": ("disability_tags", "interests", "current_mood")},
+        ),
+        (
+            "Intent",
+            {"fields": ("relationship_intent", "openness_tags")},
+        ),
         ("Prompt", {"fields": ("prompt_id", "prompt_answer")}),
         ("Ask Me About It", {"fields": ("ask_me_prompt_id", "ask_me_answer")}),
         ("Time Preferences", {"fields": ("preferred_times", "response_pace", "date_pace", "time_notes")}),
@@ -74,3 +96,10 @@ class ProfilePhotoAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
     list_display = ["profile", "is_primary", "order", "uploaded_at"]
     list_filter = ["is_primary"]
     search_fields = ["profile__display_name"]
+
+
+@admin.register(ProfileDisabilityTagVisibility)
+class ProfileDisabilityTagVisibilityAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
+    list_display = ["profile", "tag", "visibility", "updated_at"]
+    list_filter = ["visibility"]
+    search_fields = ["profile__display_name", "tag__code", "tag__name_en"]

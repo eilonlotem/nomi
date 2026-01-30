@@ -18,6 +18,13 @@ export default {
   delete: 'Delete',
   confirm: 'Confirm',
   
+  // Bot indicator
+  bot: {
+    badge: 'Bot',
+    label: 'Bot',
+    status: 'Bot',
+  },
+  
   // Language Selection
   languageSelection: {
     title: 'Choose Your Language',
@@ -32,6 +39,57 @@ export default {
     selectedCount: '{count} selected',
     continueBtn: 'Continue to Discovery',
     moodQuestion: 'How are you feeling today?',
+    functionalTagsTitle: 'Everyday experience',
+    functionalTagsHint: 'Describe how it shows up day to day.',
+  },
+
+  // Tag categories
+  tagCategories: {
+    vision: 'Vision',
+    hearing: 'Hearing',
+    mobility: 'Mobility',
+    communication: 'Communication',
+    cognitive_emotional: 'Cognitive / emotional',
+  },
+
+  // Tag visibility
+  tagVisibility: {
+    title: 'Visibility & privacy',
+    subtitle: 'Choose who can see each tag.',
+    public: 'Visible to everyone',
+    matches: 'Matches only',
+    specific: 'Specific people',
+    hidden: 'Hidden',
+    choosePeople: 'Choose specific people',
+    noMatches: 'No matches yet.',
+    selectAria: 'Visibility for {tag}',
+    noneSelected: 'Select at least one tag to set visibility.',
+  },
+
+  // Intent & openness
+  intent: {
+    title: "What I'm looking for",
+    subtitle: 'Make your intentions clear early on.',
+    options: {
+      relationship: 'Looking for a relationship',
+      friendship: 'Looking for friendship',
+      open: 'Open to anything',
+      slow: 'Prefer a calm introduction',
+      unsure: 'Not sure yet',
+    },
+  },
+  openness: {
+    title: 'Open to',
+    subtitle: 'Select all that apply.',
+    options: {
+      openToCaregiver: 'Open to a relationship with a caregiver',
+      openToMobility: 'Open to someone with mobility differences',
+      openToMentalHealth: 'Open to someone navigating mental health',
+      openToAll: 'Open to everyone',
+      notSure: "I'm not sure",
+      meetThenDecide: 'Prefer to meet and decide',
+      understandsDisability: 'Looking for someone who understands disability from within',
+    },
   },
   
   // Moods
@@ -113,6 +171,19 @@ export default {
     online: 'Online',
     offline: 'Offline',
     typing: 'typing...',
+    conversations: 'Conversations',
+    showSidebar: 'Show conversations',
+    hideSidebar: 'Hide conversations',
+    smartSuggestions: 'Suggested replies',
+    loadingSuggestions: 'Loading suggestions...',
+    refreshSuggestions: 'Refresh',
+    showSuggestions: 'Show',
+    hideSuggestions: 'Hide',
+    noSuggestions: 'No suggestions yet.',
+    summaryAction: 'Summarize',
+    summaryTitle: 'Conversation summary',
+    summaryLoading: 'Creating summary...',
+    summaryUnavailable: 'Summary is unavailable right now.',
     today: 'Today',
     yesterday: 'Yesterday',
     icebreaker: 'Icebreaker',
@@ -131,6 +202,43 @@ export default {
     playVoice: 'Play voice message',
     pauseVoice: 'Pause voice message',
     voiceMessage: 'Voice message',
+  },
+
+  // Shortcuts
+  shortcuts: {
+    title: 'Shortcuts',
+    helper: 'Tap a saved shortcut to add it to your message.',
+    savedTitle: 'Your shortcuts',
+    createTitle: 'Create a shortcut',
+    suggestedTitle: 'Suggested responses',
+    empty: 'No shortcuts saved yet.',
+    add: 'Save',
+    remove: 'Remove',
+    saved: 'Saved',
+    useDraft: 'Use draft',
+    toggle: 'Toggle shortcuts',
+    loadError: 'Could not load shortcuts.',
+    saveError: 'Could not save shortcut.',
+    removeError: 'Could not remove shortcut.',
+    validationError: 'Title and message are required.',
+    titleLabel: 'Title',
+    titlePlaceholder: 'e.g. Phone number',
+    contentLabel: 'Message',
+    contentPlaceholder: 'Type the message to insert...',
+    untitled: 'Untitled',
+    ariaSave: 'Save shortcut: {label}',
+    ariaRemove: 'Remove shortcut: {label}',
+    ariaUse: 'Use shortcut: {label}',
+    labels: {
+      phoneNumber: 'Phone number',
+      funnySentence: 'Funny sentence',
+      weeklyPlans: 'Weekly plans',
+    },
+    responses: {
+      phoneNumber: 'Here is my phone number: ',
+      funnySentence: 'Quick funny thought: I tried to be a morning person, and my coffee filed a complaint.',
+      weeklyPlans: 'My plans this week: ',
+    },
   },
   
   // Icebreaker prompts
@@ -239,7 +347,6 @@ export default {
     subtitle: 'Who catches your eye?',
     description: 'Tell us what you\'re looking for so we can find your perfect matches.',
     interestedIn: 'I\'m interested in...',
-    whatSeeking: 'What are you looking for?',
     ageRange: 'Age Range',
     minAge: 'Min',
     maxAge: 'Max',
@@ -256,12 +363,6 @@ export default {
       female: 'Women',
       nonbinary: 'Non-binary',
       everyone: 'Everyone',
-    },
-    types: {
-      casual: 'Casual Dating',
-      serious: 'Serious Relationship',
-      friends: 'Just Friends',
-      activity: 'Activity Partners',
     },
   },
   
@@ -295,6 +396,8 @@ export default {
     textSize: 'Text Size',
     highContrast: 'High Contrast',
     highContrastDesc: 'Increase color contrast',
+    darkMode: 'Dark Mode',
+    darkModeDesc: 'Use a darker color palette',
     reducedMotion: 'Reduced Motion',
     reducedMotionDesc: 'Disable animations',
     screenReaderMode: 'Screen Reader Mode',

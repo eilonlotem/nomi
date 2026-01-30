@@ -18,6 +18,13 @@ export default {
   delete: 'حذف',
   confirm: 'تأكيد',
   
+  // Bot indicator
+  bot: {
+    badge: 'بوت',
+    label: 'بوت',
+    status: 'بوت',
+  },
+  
   // Language Selection
   languageSelection: {
     title: 'اختر لغتك',
@@ -32,6 +39,57 @@ export default {
     selectedCount: '{count} محدد',
     continueBtn: 'المتابعة للاكتشاف',
     moodQuestion: 'كيف تشعر اليوم؟',
+    functionalTagsTitle: 'تجربة يومية',
+    functionalTagsHint: 'صف كيف يظهر ذلك يوميًا.',
+  },
+
+  // Tag categories
+  tagCategories: {
+    vision: 'الرؤية',
+    hearing: 'السمع',
+    mobility: 'الحركة',
+    communication: 'التواصل',
+    cognitive_emotional: 'معرفي / عاطفي',
+  },
+
+  // Tag visibility
+  tagVisibility: {
+    title: 'الخصوصية ومستوى الظهور',
+    subtitle: 'اختر من يمكنه رؤية كل وسم.',
+    public: 'مرئي للجميع',
+    matches: 'للمطابقات فقط',
+    specific: 'أشخاص محددون',
+    hidden: 'مخفي',
+    choosePeople: 'اختر أشخاصًا محددين',
+    noMatches: 'لا توجد مطابقات بعد.',
+    selectAria: 'إظهار {tag}',
+    noneSelected: 'اختر وسمًا واحدًا على الأقل لضبط الظهور.',
+  },
+
+  // Intent & openness
+  intent: {
+    title: 'ماذا أبحث عنه',
+    subtitle: 'وضّح نواياك من البداية.',
+    options: {
+      relationship: 'أبحث عن علاقة',
+      friendship: 'أبحث عن صداقة',
+      open: 'منفتح/ة على أي شيء',
+      slow: 'أفضل تعارفًا هادئًا',
+      unsure: 'لست متأكدًا بعد',
+    },
+  },
+  openness: {
+    title: 'منفتح/ة على',
+    subtitle: 'اختر كل ما ينطبق.',
+    options: {
+      openToCaregiver: 'منفتح/ة على علاقة مع مرافق/ة',
+      openToMobility: 'منفتح/ة على شخص لديه صعوبات في الحركة',
+      openToMentalHealth: 'منفتح/ة على شخص يتعامل مع الصحة النفسية',
+      openToAll: 'منفتح/ة على الجميع',
+      notSure: 'لست متأكدًا/ة',
+      meetThenDecide: 'أفضل التعارف ثم القرار',
+      understandsDisability: 'أبحث عن شخص يفهم الإعاقة من الداخل',
+    },
   },
   
   // Moods
@@ -112,6 +170,19 @@ export default {
     online: 'متصل',
     offline: 'غير متصل',
     typing: 'يكتب...',
+    conversations: 'المحادثات',
+    showSidebar: 'إظهار المحادثات',
+    hideSidebar: 'إخفاء المحادثات',
+    smartSuggestions: 'ردود مقترحة',
+    loadingSuggestions: 'جارٍ تحميل الاقتراحات...',
+    refreshSuggestions: 'تحديث',
+    showSuggestions: 'إظهار',
+    hideSuggestions: 'إخفاء',
+    noSuggestions: 'لا توجد اقتراحات بعد.',
+    summaryAction: 'تلخيص',
+    summaryTitle: 'ملخص المحادثة',
+    summaryLoading: 'جارٍ إنشاء الملخص...',
+    summaryUnavailable: 'الملخص غير متاح حالياً.',
     today: 'اليوم',
     yesterday: 'أمس',
     icebreaker: 'كسر الجليد',
@@ -127,6 +198,43 @@ export default {
     playVoice: 'تشغيل الرسالة الصوتية',
     pauseVoice: 'إيقاف الرسالة الصوتية مؤقتاً',
     voiceMessage: 'رسالة صوتية',
+  },
+
+  // Shortcuts
+  shortcuts: {
+    title: 'اختصارات',
+    helper: 'اضغط على اختصار محفوظ لإضافته إلى رسالتك.',
+    savedTitle: 'اختصاراتي',
+    createTitle: 'إنشاء اختصار',
+    suggestedTitle: 'ردود مقترحة',
+    empty: 'لا توجد اختصارات محفوظة بعد.',
+    add: 'حفظ',
+    remove: 'إزالة',
+    saved: 'تم الحفظ',
+    useDraft: 'استخدم المسودة',
+    toggle: 'فتح الاختصارات',
+    loadError: 'تعذر تحميل الاختصارات.',
+    saveError: 'تعذر حفظ الاختصار.',
+    removeError: 'تعذر إزالة الاختصار.',
+    validationError: 'العنوان والرسالة مطلوبان.',
+    titleLabel: 'العنوان',
+    titlePlaceholder: 'مثال: رقم الهاتف',
+    contentLabel: 'الرسالة',
+    contentPlaceholder: 'اكتب الرسالة التي تريد إدراجها...',
+    untitled: 'بدون عنوان',
+    ariaSave: 'حفظ الاختصار: {label}',
+    ariaRemove: 'إزالة الاختصار: {label}',
+    ariaUse: 'استخدام الاختصار: {label}',
+    labels: {
+      phoneNumber: 'رقم الهاتف',
+      funnySentence: 'جملة مضحكة',
+      weeklyPlans: 'خطط الأسبوع',
+    },
+    responses: {
+      phoneNumber: 'هذا هو رقم هاتفي: ',
+      funnySentence: 'فكرة مضحكة سريعة: حاولت أن أكون شخصًا صباحيًا وقدّم قهوتي شكوى.',
+      weeklyPlans: 'خططي هذا الأسبوع: ',
+    },
   },
   
   // Icebreaker prompts
@@ -187,7 +295,6 @@ export default {
     subtitle: 'من يلفت انتباهك؟',
     description: 'أخبرنا ما تبحث عنه لنتمكن من إيجاد التطابقات المثالية.',
     interestedIn: 'أنا مهتم/ة بـ...',
-    whatSeeking: 'ماذا تبحث عن؟',
     ageRange: 'نطاق العمر',
     minAge: 'الحد الأدنى',
     maxAge: 'الحد الأقصى',
@@ -204,12 +311,6 @@ export default {
       female: 'نساء',
       nonbinary: 'غير ثنائي',
       everyone: 'الجميع',
-    },
-    types: {
-      casual: 'مواعدة خفيفة',
-      serious: 'علاقة جدية',
-      friends: 'أصدقاء فقط',
-      activity: 'شركاء نشاط',
     },
   },
   
@@ -242,6 +343,8 @@ export default {
     recordVoice: 'تسجيل رسالة صوتية',
     textSize: 'حجم النص',
     highContrast: 'تباين عالي',
+    darkMode: 'الوضع الداكن',
+    darkModeDesc: 'استخدام لوحة ألوان داكنة',
     reducedMotion: 'حركة مخففة',
   },
   

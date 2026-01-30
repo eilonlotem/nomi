@@ -18,6 +18,13 @@ export default {
   delete: 'Supprimer',
   confirm: 'Confirmer',
   
+  // Bot indicator
+  bot: {
+    badge: 'Bot',
+    label: 'Bot',
+    status: 'Bot',
+  },
+  
   // Language Selection
   languageSelection: {
     title: 'Choisissez Votre Langue',
@@ -32,6 +39,57 @@ export default {
     selectedCount: '{count} sélectionnés',
     continueBtn: 'Continuer vers Découverte',
     moodQuestion: "Comment vous sentez-vous aujourd'hui?",
+    functionalTagsTitle: 'Expérience au quotidien',
+    functionalTagsHint: 'Décrivez comment cela se manifeste au quotidien.',
+  },
+
+  // Tag categories
+  tagCategories: {
+    vision: 'Vision',
+    hearing: 'Audition',
+    mobility: 'Mobilité',
+    communication: 'Communication',
+    cognitive_emotional: 'Cognitif / émotionnel',
+  },
+
+  // Tag visibility
+  tagVisibility: {
+    title: 'Visibilité et confidentialité',
+    subtitle: 'Choisissez qui peut voir chaque étiquette.',
+    public: 'Visible par tout le monde',
+    matches: 'Seulement les matchs',
+    specific: 'Personnes spécifiques',
+    hidden: 'Masqué',
+    choosePeople: 'Choisissez des personnes spécifiques',
+    noMatches: 'Pas encore de matchs.',
+    selectAria: 'Visibilité pour {tag}',
+    noneSelected: 'Sélectionnez au moins une étiquette pour définir la visibilité.',
+  },
+
+  // Intent & openness
+  intent: {
+    title: 'Ce que je recherche',
+    subtitle: 'Rendez vos intentions claires dès le départ.',
+    options: {
+      relationship: 'Je cherche une relation',
+      friendship: 'Je cherche une amitié',
+      open: 'Ouvert·e à tout',
+      slow: 'Je préfère une approche calme',
+      unsure: 'Je ne suis pas encore sûr·e',
+    },
+  },
+  openness: {
+    title: 'Ouvert·e à',
+    subtitle: "Sélectionnez tout ce qui s'applique.",
+    options: {
+      openToCaregiver: 'Ouvert·e à une relation avec un·e aidant·e',
+      openToMobility: "Ouvert·e à quelqu'un avec une mobilité réduite",
+      openToMentalHealth: "Ouvert·e à quelqu'un qui vit avec la santé mentale",
+      openToAll: 'Ouvert·e à tout le monde',
+      notSure: 'Je ne sais pas',
+      meetThenDecide: 'Préférer rencontrer puis décider',
+      understandsDisability: "Je cherche quelqu'un qui comprend le handicap de l'intérieur",
+    },
   },
   
   // Moods
@@ -112,6 +170,19 @@ export default {
     online: 'En ligne',
     offline: 'Hors ligne',
     typing: 'écrit...',
+    conversations: 'Conversations',
+    showSidebar: 'Afficher les conversations',
+    hideSidebar: 'Masquer les conversations',
+    smartSuggestions: 'Réponses suggérées',
+    loadingSuggestions: 'Chargement des suggestions...',
+    refreshSuggestions: 'Actualiser',
+    showSuggestions: 'Afficher',
+    hideSuggestions: 'Masquer',
+    noSuggestions: 'Pas encore de suggestions.',
+    summaryAction: 'Résumer',
+    summaryTitle: 'Résumé de la conversation',
+    summaryLoading: 'Création du résumé...',
+    summaryUnavailable: 'Le résumé est indisponible pour le moment.',
     today: "Aujourd'hui",
     yesterday: 'Hier',
     icebreaker: 'Brise-glace',
@@ -127,6 +198,43 @@ export default {
     playVoice: 'Lire le message vocal',
     pauseVoice: 'Mettre en pause le message vocal',
     voiceMessage: 'Message vocal',
+  },
+
+  // Shortcuts
+  shortcuts: {
+    title: 'Raccourcis',
+    helper: 'Touchez un raccourci enregistré pour l\'ajouter à votre message.',
+    savedTitle: 'Vos raccourcis',
+    createTitle: 'Créer un raccourci',
+    suggestedTitle: 'Réponses suggérées',
+    empty: 'Aucun raccourci enregistré pour l\'instant.',
+    add: 'Enregistrer',
+    remove: 'Supprimer',
+    saved: 'Enregistré',
+    useDraft: 'Utiliser le brouillon',
+    toggle: 'Ouvrir les raccourcis',
+    loadError: 'Impossible de charger les raccourcis.',
+    saveError: 'Impossible d\'enregistrer le raccourci.',
+    removeError: 'Impossible de supprimer le raccourci.',
+    validationError: 'Le titre et le message sont requis.',
+    titleLabel: 'Titre',
+    titlePlaceholder: 'ex. Numéro de téléphone',
+    contentLabel: 'Message',
+    contentPlaceholder: 'Saisissez le message à insérer...',
+    untitled: 'Sans titre',
+    ariaSave: 'Enregistrer le raccourci : {label}',
+    ariaRemove: 'Supprimer le raccourci : {label}',
+    ariaUse: 'Utiliser le raccourci : {label}',
+    labels: {
+      phoneNumber: 'Numéro de téléphone',
+      funnySentence: 'Phrase drôle',
+      weeklyPlans: 'Plans de la semaine',
+    },
+    responses: {
+      phoneNumber: 'Voici mon numéro de téléphone : ',
+      funnySentence: 'Petite pensée drôle : j\'ai essayé d\'être du matin et mon café a porté plainte.',
+      weeklyPlans: 'Mes plans cette semaine : ',
+    },
   },
   
   // Icebreaker prompts
@@ -187,7 +295,6 @@ export default {
     subtitle: 'Qui attire votre attention?',
     description: 'Dites-nous ce que vous recherchez pour trouver vos matchs parfaits.',
     interestedIn: 'Je suis intéressé(e) par...',
-    whatSeeking: 'Que recherchez-vous?',
     ageRange: 'Tranche d\'âge',
     minAge: 'Min',
     maxAge: 'Max',
@@ -204,12 +311,6 @@ export default {
       female: 'Femmes',
       nonbinary: 'Non-binaire',
       everyone: 'Tout le monde',
-    },
-    types: {
-      casual: 'Rencontres décontractées',
-      serious: 'Relation sérieuse',
-      friends: 'Juste amis',
-      activity: 'Partenaires d\'activités',
     },
   },
   
@@ -242,6 +343,8 @@ export default {
     recordVoice: 'Enregistrer message vocal',
     textSize: 'Taille du Texte',
     highContrast: 'Contraste Élevé',
+    darkMode: 'Mode Sombre',
+    darkModeDesc: 'Utiliser une palette de couleurs sombre',
     reducedMotion: 'Mouvement Réduit',
   },
   

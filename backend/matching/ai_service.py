@@ -4,7 +4,9 @@ Uses Pydantic for type-safe data models.
 """
 from __future__ import annotations
 
+import json
 import logging
+import re
 from typing import Any, Literal, Optional
 
 from django.conf import settings
@@ -21,8 +23,6 @@ class ProfileSummary(BaseModel):
     gender: str = ""
     tags: str = "none specified"
     interests: str = "various things"
-    mood: str = "friendly"
-    ask_me: str = ""
     response_pace: str = ""
     location: str = ""
     
@@ -37,15 +37,6 @@ class ProfileSummary(BaseModel):
         interests = list(profile.interests.values_list("name", flat=True))
         interests_str = ", ".join(interests) if interests else "various things"
         
-        # Get mood
-        mood_map = {
-            "lowEnergy": "feeling low energy today",
-            "open": "feeling open and friendly",
-            "chatty": "feeling chatty",
-            "adventurous": "feeling adventurous",
-        }
-        mood = mood_map.get(profile.current_mood or "", "friendly")
-        
         # Get location
         location = profile.city or ""
         
@@ -55,8 +46,6 @@ class ProfileSummary(BaseModel):
             gender=profile.gender or "",
             tags=tags_str,
             interests=interests_str,
-            mood=mood,
-            ask_me=profile.ask_me_answer or "",
             response_pace=profile.response_pace or "",
             location=location,
         )
@@ -101,11 +90,7 @@ YOUR PROFILE:
 - Bio: {self.mock.bio or "You haven't written much about yourself yet"}
 - Identity/Disability tags: {self.mock.tags}
 - Interests: {self.mock.interests}
-- Current mood: {self.mock.mood}
 - Location: {self.mock.location or "Not specified"}"""
-
-        if self.mock.ask_me:
-            prompt += f"\n- Something you're proud to share: {self.mock.ask_me}"
 
         # Add context about the person you're chatting with
         if self.user:
@@ -115,11 +100,7 @@ THE PERSON YOU'RE CHATTING WITH:
 - Name: {self.user.name}
 - Bio: {self.user.bio or 'Not much shared yet'}
 - Their interests: {self.user.interests}
-- Their mood: {self.user.mood}
 - Their location: {self.user.location or 'Not specified'}"""
-            
-            if self.user.ask_me:
-                prompt += f"\n- Something they shared: {self.user.ask_me}"
             
             prompt += "\n\nUse this context to ask relevant questions and show genuine interest in them."
 
@@ -323,3 +304,134 @@ def get_greeting_message(profile: Any) -> Optional[str]:
     profile_summary = ProfileSummary.from_django_profile(profile)
     generator = AIResponseGenerator()
     return generator.generate_greeting(profile_summary)
+
+
+def _extract_json_list(text: str) -> Optional[list[str]]:
+    """Extract a JSON list of strings from text."""
+    if not text:
+        return None
+    match = re.search(r"\[[\s\S]*\]", text)
+    if not match:
+        return None
+    try:
+        data = json.loads(match.group(0))
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(data, list):
+        return None
+    return [str(item).strip() for item in data if str(item).strip()]
+
+
+def _language_name(language_code: str) -> str:
+    mapping = {
+        "en": "English",
+        "he": "Hebrew",
+        "es": "Spanish",
+        "fr": "French",
+        "ar": "Arabic",
+    }
+    return mapping.get(language_code, "English")
+
+
+def generate_message_suggestions(
+    conversation_history: list[dict[str, str]],
+    user_profile: Any,
+    other_profile: Any,
+    language_code: str = "en",
+    max_suggestions: int = 3,
+) -> Optional[list[str]]:
+    """
+    Generate short reply suggestions for the current user.
+    """
+    try:
+        user_summary = ProfileSummary.from_django_profile(user_profile)
+        other_summary = ProfileSummary.from_django_profile(other_profile)
+
+        language_name = _language_name(language_code)
+        system_prompt = f"""You are a helpful assistant helping {user_summary.name} reply in a dating app conversation.
+Keep suggestions friendly, inclusive, and respectful. Avoid assumptions about disability unless it was explicitly mentioned.
+Use simple, warm language and keep each suggestion under 120 characters.
+Respond in {language_name}."""
+
+        transcript_lines: list[str] = []
+        for msg in conversation_history:
+            role = msg.get("role")
+            content = (msg.get("content") or "").strip()
+            if not content:
+                continue
+            speaker = user_summary.name if role == "user" else other_summary.name
+            transcript_lines.append(f"{speaker}: {content}")
+
+        transcript = "\n".join(transcript_lines)
+        if len(transcript) > 1500:
+            transcript = transcript[-1500:]
+
+        recent_messages = f"- Recent messages:\n{transcript}" if transcript else ""
+        context_prompt = f"""
+CONTEXT:
+- {user_summary.name}'s interests: {user_summary.interests}
+- {other_summary.name}'s interests: {other_summary.interests}
+{recent_messages}
+
+TASK:
+Return {max_suggestions} short reply suggestions as a JSON array of strings in {language_name}. No extra text."""
+
+        messages = [{"role": "system", "content": system_prompt}]
+        messages.extend(conversation_history)
+        messages.append({"role": "user", "content": context_prompt})
+
+        generator = AIResponseGenerator(AIConfig(max_tokens=120, temperature=0.6))
+        response = generator.client.chat.completions.create(
+            model=generator.config.model,
+            messages=messages,  # type: ignore
+            max_tokens=generator.config.max_tokens,
+            temperature=generator.config.temperature,
+        )
+        content = response.choices[0].message.content or ""
+        suggestions = _extract_json_list(content)
+        if suggestions:
+            return suggestions[:max_suggestions]
+        return None
+    except Exception as exc:
+        logger.warning(f"Failed to generate suggestions: {exc}")
+        return None
+
+
+def generate_conversation_summary(
+    conversation_history: list[dict[str, str]],
+    user_profile: Any,
+    other_profile: Any,
+    language_code: str = "en",
+) -> Optional[str]:
+    """
+    Generate a short summary of the conversation for the current user.
+    """
+    try:
+        user_summary = ProfileSummary.from_django_profile(user_profile)
+        other_summary = ProfileSummary.from_django_profile(other_profile)
+
+        language_name = _language_name(language_code)
+        system_prompt = f"""You are summarizing a conversation for {user_summary.name} in a dating app.
+Keep it concise (2-3 sentences), positive, and avoid sensitive details unless explicitly discussed.
+Respond in {language_name}."""
+
+        context_prompt = f"""
+Summarize the conversation between {user_summary.name} and {other_summary.name} in 2-3 sentences.
+Return plain text only in {language_name}."""
+
+        messages = [{"role": "system", "content": system_prompt}]
+        messages.extend(conversation_history)
+        messages.append({"role": "user", "content": context_prompt})
+
+        generator = AIResponseGenerator(AIConfig(max_tokens=150, temperature=0.4))
+        response = generator.client.chat.completions.create(
+            model=generator.config.model,
+            messages=messages,  # type: ignore
+            max_tokens=generator.config.max_tokens,
+            temperature=generator.config.temperature,
+        )
+        content = response.choices[0].message.content
+        return content.strip() if content else None
+    except Exception as exc:
+        logger.warning(f"Failed to generate summary: {exc}")
+        return None

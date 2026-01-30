@@ -366,37 +366,40 @@ class MatchingAlgorithm:
         candidate_profile: Profile,
         breakdown: CompatibilityBreakdown,
     ) -> None:
-        """Calculate score based on relationship type preferences."""
-        user_types: list[str] = []
-        candidate_types: list[str] = []
+        """Calculate score based on relationship intent compatibility."""
+        user_intent = user_profile.relationship_intent or ""
+        candidate_intent = candidate_profile.relationship_intent or ""
         
-        try:
-            if hasattr(user_profile, "looking_for") and user_profile.looking_for:
-                user_types = user_profile.looking_for.relationship_types or []
-        except Exception:
-            pass
-        
-        try:
-            if hasattr(candidate_profile, "looking_for") and candidate_profile.looking_for:
-                candidate_types = candidate_profile.looking_for.relationship_types or []
-        except Exception:
-            pass
-        
-        if not user_types or not candidate_types:
+        if not user_intent or not candidate_intent:
             # One or both haven't specified - neutral
             breakdown.relationship_type_score = 50.0
             return
         
-        # Check for overlap in relationship types
-        shared_types = set(user_types) & set(candidate_types)
+        # Same intent - perfect match
+        if user_intent == candidate_intent:
+            breakdown.relationship_type_score = 100.0
+            return
         
-        if shared_types:
-            # Calculate score based on overlap ratio
-            overlap_ratio = len(shared_types) / max(len(user_types), len(candidate_types))
-            breakdown.relationship_type_score = 60 + (overlap_ratio * 40)
-        else:
-            # No overlap - low score but not zero (people can be flexible)
-            breakdown.relationship_type_score = 25.0
+        # Define compatibility between different intents
+        # 'open' and 'unsure' are compatible with everything
+        flexible_intents = {"open", "unsure"}
+        
+        if user_intent in flexible_intents or candidate_intent in flexible_intents:
+            breakdown.relationship_type_score = 75.0
+            return
+        
+        # 'slow' is compatible with most intents
+        if user_intent == "slow" or candidate_intent == "slow":
+            breakdown.relationship_type_score = 60.0
+            return
+        
+        # 'relationship' and 'friendship' are somewhat compatible (friends can become more)
+        if {user_intent, candidate_intent} == {"relationship", "friendship"}:
+            breakdown.relationship_type_score = 40.0
+            return
+        
+        # Other combinations - lower score but not zero
+        breakdown.relationship_type_score = 25.0
     
     def _calculate_mood_compatibility(
         self,

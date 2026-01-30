@@ -17,10 +17,32 @@ urlpatterns: list[URLPattern] = [
     path(
         "conversations/", views.ConversationListView.as_view(), name="conversations-list"
     ),
+    # Shortcuts
+    path("shortcuts/", views.ShortcutListCreateView.as_view(), name="shortcuts-list"),
+    path(
+        "shortcuts/<int:shortcut_id>/",
+        views.ShortcutDeleteView.as_view(),
+        name="shortcuts-delete",
+    ),
     path(
         "conversations/<int:conversation_id>/messages/",
         views.ConversationMessagesView.as_view(),
         name="conversation-messages",
+    ),
+    path(
+        "conversations/<int:conversation_id>/suggestions/",
+        views.ConversationSuggestionsView.as_view(),
+        name="conversation-suggestions",
+    ),
+    path(
+        "conversations/<int:conversation_id>/summary/",
+        views.ConversationSummaryView.as_view(),
+        name="conversation-summary",
+    ),
+    path(
+        "conversations/<int:conversation_id>/typing/",
+        views.ConversationTypingView.as_view(),
+        name="conversation-typing",
     ),
     path(
         "conversations/<int:conversation_id>/voice/",

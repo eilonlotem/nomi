@@ -18,6 +18,13 @@ export default {
   delete: 'Eliminar',
   confirm: 'Confirmar',
   
+  // Bot indicator
+  bot: {
+    badge: 'Bot',
+    label: 'Bot',
+    status: 'Bot',
+  },
+  
   // Language Selection
   languageSelection: {
     title: 'Elige tu Idioma',
@@ -32,6 +39,57 @@ export default {
     selectedCount: '{count} seleccionados',
     continueBtn: 'Continuar a Descubrir',
     moodQuestion: '¿Cómo te sientes hoy?',
+    functionalTagsTitle: 'Experiencia diaria',
+    functionalTagsHint: 'Describe cómo se manifiesta en el día a día.',
+  },
+
+  // Tag categories
+  tagCategories: {
+    vision: 'Visión',
+    hearing: 'Audición',
+    mobility: 'Movilidad',
+    communication: 'Comunicación',
+    cognitive_emotional: 'Cognitivo / emocional',
+  },
+
+  // Tag visibility
+  tagVisibility: {
+    title: 'Visibilidad y privacidad',
+    subtitle: 'Elige quién puede ver cada etiqueta.',
+    public: 'Visible para todos',
+    matches: 'Solo coincidencias',
+    specific: 'Personas específicas',
+    hidden: 'Oculto',
+    choosePeople: 'Elige personas específicas',
+    noMatches: 'Aún no hay coincidencias.',
+    selectAria: 'Visibilidad de {tag}',
+    noneSelected: 'Selecciona al menos una etiqueta para definir visibilidad.',
+  },
+
+  // Intent & openness
+  intent: {
+    title: 'Qué busco',
+    subtitle: 'Aclara tus intenciones desde el principio.',
+    options: {
+      relationship: 'Busco una relación',
+      friendship: 'Busco amistad',
+      open: 'Abierto/a a todo',
+      slow: 'Busco algo tranquilo',
+      unsure: 'Aún no estoy seguro/a',
+    },
+  },
+  openness: {
+    title: 'Abierto/a a',
+    subtitle: 'Elige todo lo que aplique.',
+    options: {
+      openToCaregiver: 'Abierto/a a una relación con un/a cuidador/a',
+      openToMobility: 'Abierto/a a alguien con movilidad reducida',
+      openToMentalHealth: 'Abierto/a a alguien que vive con salud mental',
+      openToAll: 'Abierto/a a todos',
+      notSure: 'No estoy seguro/a',
+      meetThenDecide: 'Prefiero conocer y decidir',
+      understandsDisability: 'Busco a alguien que entienda la discapacidad desde dentro',
+    },
   },
   
   // Moods
@@ -112,6 +170,19 @@ export default {
     online: 'En línea',
     offline: 'Desconectado',
     typing: 'escribiendo...',
+    conversations: 'Conversaciones',
+    showSidebar: 'Mostrar conversaciones',
+    hideSidebar: 'Ocultar conversaciones',
+    smartSuggestions: 'Respuestas sugeridas',
+    loadingSuggestions: 'Cargando sugerencias...',
+    refreshSuggestions: 'Actualizar',
+    showSuggestions: 'Mostrar',
+    hideSuggestions: 'Ocultar',
+    noSuggestions: 'Aún no hay sugerencias.',
+    summaryAction: 'Resumir',
+    summaryTitle: 'Resumen de la conversación',
+    summaryLoading: 'Creando resumen...',
+    summaryUnavailable: 'El resumen no está disponible ahora.',
     today: 'Hoy',
     yesterday: 'Ayer',
     icebreaker: 'Rompehielos',
@@ -127,6 +198,43 @@ export default {
     playVoice: 'Reproducir mensaje de voz',
     pauseVoice: 'Pausar mensaje de voz',
     voiceMessage: 'Mensaje de voz',
+  },
+
+  // Shortcuts
+  shortcuts: {
+    title: 'Atajos',
+    helper: 'Toca un atajo guardado para añadirlo a tu mensaje.',
+    savedTitle: 'Tus atajos',
+    createTitle: 'Crear un atajo',
+    suggestedTitle: 'Respuestas sugeridas',
+    empty: 'Aún no tienes atajos guardados.',
+    add: 'Guardar',
+    remove: 'Quitar',
+    saved: 'Guardado',
+    useDraft: 'Usar borrador',
+    toggle: 'Abrir atajos',
+    loadError: 'No se pudieron cargar los atajos.',
+    saveError: 'No se pudo guardar el atajo.',
+    removeError: 'No se pudo quitar el atajo.',
+    validationError: 'Se requieren título y mensaje.',
+    titleLabel: 'Título',
+    titlePlaceholder: 'p. ej., Número de teléfono',
+    contentLabel: 'Mensaje',
+    contentPlaceholder: 'Escribe el mensaje a insertar...',
+    untitled: 'Sin título',
+    ariaSave: 'Guardar atajo: {label}',
+    ariaRemove: 'Quitar atajo: {label}',
+    ariaUse: 'Usar atajo: {label}',
+    labels: {
+      phoneNumber: 'Número de teléfono',
+      funnySentence: 'Frase divertida',
+      weeklyPlans: 'Planes de la semana',
+    },
+    responses: {
+      phoneNumber: 'Aquí está mi número de teléfono: ',
+      funnySentence: 'Pensamiento divertido rápido: intenté ser persona de mañana y mi café puso una queja.',
+      weeklyPlans: 'Mis planes esta semana: ',
+    },
   },
   
   // Icebreaker prompts
@@ -187,7 +295,6 @@ export default {
     subtitle: '¿Quién te llama la atención?',
     description: 'Cuéntanos qué buscas para encontrar tus coincidencias perfectas.',
     interestedIn: 'Me interesan...',
-    whatSeeking: '¿Qué buscas?',
     ageRange: 'Rango de edad',
     minAge: 'Mín',
     maxAge: 'Máx',
@@ -204,12 +311,6 @@ export default {
       female: 'Mujeres',
       nonbinary: 'No binario',
       everyone: 'Todos',
-    },
-    types: {
-      casual: 'Citas casuales',
-      serious: 'Relación seria',
-      friends: 'Solo amigos',
-      activity: 'Compañeros de actividades',
     },
   },
   
@@ -242,6 +343,8 @@ export default {
     recordVoice: 'Grabar mensaje de voz',
     textSize: 'Tamaño de Texto',
     highContrast: 'Alto Contraste',
+    darkMode: 'Modo Oscuro',
+    darkModeDesc: 'Usar una paleta de colores oscura',
     reducedMotion: 'Movimiento Reducido',
   },
   

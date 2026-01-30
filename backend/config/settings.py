@@ -19,20 +19,15 @@ load_dotenv()
 # =============================================================================
 # Sentry Error Tracking
 # =============================================================================
-SENTRY_DSN: str = os.getenv("SENTRY_DSN", "")
-
-if SENTRY_DSN:
-    sentry_sdk.init(
-        dsn=SENTRY_DSN,
-        # Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring
-        traces_sample_rate=0.2 if not os.getenv("DEBUG", "True").lower() == "true" else 1.0,
-        # Set profiles_sample_rate to 1.0 to profile 100% of sampled transactions
-        profiles_sample_rate=0.1,
-        # Send PII (personally identifiable information) like user IDs
-        send_default_pii=True,
-        # Environment
-        environment="production" if not os.getenv("DEBUG", "True").lower() == "true" else "development",
-    )
+sentry_sdk.init(
+    dsn="https://97dd454e9a747db005673d5087e1f4e5@o4510767142076416.ingest.us.sentry.io/4510767151382528",
+    # Add data like request headers and IP for users
+    send_default_pii=True,
+    # Set traces_sample_rate for performance monitoring
+    traces_sample_rate=0.2 if os.getenv("DEBUG", "True").lower() != "true" else 1.0,
+    # Environment
+    environment="production" if os.getenv("DEBUG", "True").lower() != "true" else "development",
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR: Path = Path(__file__).resolve().parent.parent
@@ -162,6 +157,11 @@ USE_TZ: bool = True
 
 STATIC_URL: str = "static/"
 STATIC_ROOT: Path = BASE_DIR / "staticfiles"
+
+# Additional static file directories (for generated avatars, etc.)
+STATICFILES_DIRS: list[Path] = [
+    BASE_DIR / "static",
+]
 
 # WhiteNoise for serving static files in production
 STATICFILES_STORAGE: str = "whitenoise.storage.CompressedManifestStaticFilesStorage"
@@ -320,3 +320,41 @@ CLOUDINARY_STORAGE: dict[str, str] = {
 # Use Cloudinary for media files in production
 if os.getenv("CLOUDINARY_CLOUD_NAME"):
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+
+# =============================================================================
+# Logging Configuration
+# =============================================================================
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}

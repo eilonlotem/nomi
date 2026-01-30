@@ -9,6 +9,11 @@ from django.db import models
 class DisabilityTag(models.Model):
     """Predefined disability/identity tags users can select."""
 
+    DISCLOSURE_LEVEL_CHOICES: list[tuple[str, str]] = [
+        ("functional", "Functional Description"),
+        ("diagnosis", "Diagnosis/Condition"),
+    ]
+
     code = models.CharField(max_length=50, unique=True)
     name_en = models.CharField(max_length=100)
     name_he = models.CharField(max_length=100, blank=True)
@@ -16,6 +21,12 @@ class DisabilityTag(models.Model):
     name_fr = models.CharField(max_length=100, blank=True)
     name_ar = models.CharField(max_length=100, blank=True)
     icon = models.CharField(max_length=10)
+    category = models.CharField(max_length=50, blank=True)
+    disclosure_level = models.CharField(
+        max_length=20,
+        choices=DISCLOSURE_LEVEL_CHOICES,
+        default="functional",
+    )
     is_active = models.BooleanField(default=True)
     order = models.PositiveIntegerField(default=0)
 
@@ -86,6 +97,23 @@ class Profile(models.Model):
     disability_tags = models.ManyToManyField(
         DisabilityTag, blank=True, related_name="profiles"
     )
+
+    # Relationship intent (what I'm looking for)
+    RELATIONSHIP_INTENT_CHOICES: list[tuple[str, str]] = [
+        ("relationship", "Looking for a relationship"),
+        ("friendship", "Looking for friends"),
+        ("open", "Open to anything"),
+        ("slow", "Prefer a calm introduction"),
+        ("unsure", "Not sure yet"),
+    ]
+    relationship_intent = models.CharField(
+        max_length=30,
+        choices=RELATIONSHIP_INTENT_CHOICES,
+        blank=True,
+    )
+
+    # Openness tags (who I'm open to connect with)
+    openness_tags = models.JSONField(default=list)
 
     # Interests
     interests = models.ManyToManyField(Interest, blank=True, related_name="profiles")
@@ -208,6 +236,47 @@ class ProfilePhoto(models.Model):
         super().save(*args, **kwargs)
 
 
+class ProfileDisabilityTagVisibility(models.Model):
+    """Visibility controls for disability tags per profile."""
+
+    VISIBILITY_CHOICES: list[tuple[str, str]] = [
+        ("public", "Visible to everyone"),
+        ("matches", "Visible to matches only"),
+        ("specific", "Visible to specific users"),
+        ("hidden", "Hidden"),
+    ]
+
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="tag_visibilities",
+    )
+    tag = models.ForeignKey(
+        DisabilityTag,
+        on_delete=models.CASCADE,
+        related_name="profile_visibilities",
+    )
+    visibility = models.CharField(
+        max_length=20,
+        choices=VISIBILITY_CHOICES,
+        default="public",
+    )
+    allowed_viewers = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="visible_disability_tags",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ["profile", "tag"]
+        ordering = ["-updated_at"]
+
+    def __str__(self) -> str:
+        return f"{self.profile.display_name}: {self.tag.code} ({self.visibility})"
+
+
 class LookingFor(models.Model):
     """User's dating preferences."""
 
@@ -225,15 +294,6 @@ class LookingFor(models.Model):
         ("everyone", "Everyone"),
     ]
     genders = models.JSONField(default=list)  # List of gender codes
-
-    # Relationship type
-    RELATIONSHIP_CHOICES: list[tuple[str, str]] = [
-        ("casual", "Casual Dating"),
-        ("serious", "Serious Relationship"),
-        ("friends", "Just Friends"),
-        ("activity", "Activity Partners"),
-    ]
-    relationship_types = models.JSONField(default=list)  # List of relationship codes
 
     # Age range
     min_age = models.PositiveIntegerField(default=18)

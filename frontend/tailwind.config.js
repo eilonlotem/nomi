@@ -7,72 +7,72 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Rich, warm palette - vibrant and distinctive
-        primary: '#D96852',        // Rich terracotta - bolder
-        'primary-hover': '#C45A45',
-        'primary-light': '#FFE8E3',
-        'primary-dark': '#B84D39',
-        
-        secondary: '#4AA488',      // Deep sage - richer green
-        'secondary-light': '#D5EFE6',
-        
-        accent: '#E8A848',         // Rich golden amber
-        'accent-dark': '#C78B2D',
-        
-        coral: '#FF7B6B',          // Vibrant coral
-        lavender: '#9B8DC2',       // Rich lavender
-        peach: '#FFB896',          // Warm peach
-        
-        // Extended palette for variety
-        teal: '#32A89C',           // Ocean teal
-        'teal-light': '#D8F3F0',
-        rose: '#E85A7A',           // Rose pink
-        'rose-light': '#FFEAEF',
-        indigo: '#6366F1',         // Electric indigo
-        'indigo-light': '#EEF0FF',
-        amber: '#F59E0B',          // Warm amber
+        // Clean, ChatGPT-inspired palette
+        primary: '#10A37F',        // ChatGPT green
+        'primary-hover': '#0F8A6C',
+        'primary-light': '#E6F6F1',
+        'primary-dark': '#0F6F55',
+
+        secondary: '#0F766E',      // Deep teal
+        'secondary-light': '#E6F6F4',
+
+        accent: '#1F2937',         // Slate for emphasis
+        'accent-dark': '#111827',
+
+        coral: '#14B8A6',          // Teal (used in gradients)
+        lavender: '#94A3B8',       // Slate
+        peach: '#CBD5E1',          // Light slate
+
+        // Extended palette (toned down)
+        teal: '#0F766E',
+        'teal-light': '#E6F6F4',
+        rose: '#F43F5E',
+        'rose-light': '#FFE4E6',
+        indigo: '#6366F1',
+        'indigo-light': '#EEF2FF',
+        amber: '#F59E0B',
         'amber-light': '#FEF3C7',
-        emerald: '#059669',        // Deep emerald
+        emerald: '#059669',
         'emerald-light': '#D1FAE5',
-        violet: '#8B5CF6',         // Rich violet
+        violet: '#8B5CF6',
         'violet-light': '#EDE9FE',
-        
-        background: '#FDF8F3',     // Warm cream
-        'background-alt': '#F5EDE6',
+
+        background: '#F7F7F8',
+        'background-alt': '#F1F5F9',
         surface: '#FFFFFF',
-        'surface-warm': '#FFFAF7',
-        
-        'text-deep': '#1F2937',
-        'text-muted': '#6B7280',
-        'text-light': '#9CA3AF',
-        
-        border: '#E8DED5',
-        'border-light': '#F3EDE7',
-        
-        success: '#059669',
+        'surface-warm': '#FFFFFF',
+
+        'text-deep': '#0F172A',
+        'text-muted': '#475569',
+        'text-light': '#94A3B8',
+
+        border: '#E2E8F0',
+        'border-light': '#F1F5F9',
+
+        success: '#16A34A',
         danger: '#DC2626',
         warning: '#F59E0B',
       },
       fontFamily: {
-        display: ['Fraunces', 'Georgia', 'serif'],
-        sans: ['Heebo', 'DM Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         hebrew: ['Heebo', 'Arial', 'sans-serif'],
       },
       borderRadius: {
         'blob': '60% 40% 30% 70% / 60% 30% 70% 40%',
         'blob-2': '30% 70% 70% 30% / 30% 52% 48% 70%',
         'organic': '20px 60px 40px 80px',
-        '4xl': '2rem',
-        '5xl': '2.5rem',
+        '4xl': '1.5rem',
+        '5xl': '2rem',
       },
       boxShadow: {
-        'card': '0 8px 32px -8px rgba(224, 122, 95, 0.15)',
-        'card-hover': '0 12px 40px -8px rgba(224, 122, 95, 0.25)',
-        'button': '0 4px 16px -2px rgba(224, 122, 95, 0.4)',
-        'soft': '0 4px 20px -4px rgba(0, 0, 0, 0.08)',
-        'glow': '0 0 40px rgba(224, 122, 95, 0.3)',
-        'glow-secondary': '0 0 40px rgba(129, 178, 154, 0.3)',
-        'inner-glow': 'inset 0 2px 20px rgba(255, 255, 255, 0.5)',
+        'card': '0 1px 2px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(15, 23, 42, 0.06)',
+        'card-hover': '0 2px 6px rgba(15, 23, 42, 0.08), 0 12px 30px rgba(15, 23, 42, 0.08)',
+        'button': '0 1px 2px rgba(15, 23, 42, 0.12)',
+        'soft': '0 1px 3px rgba(15, 23, 42, 0.08)',
+        'glow': '0 0 24px rgba(16, 163, 127, 0.2)',
+        'glow-secondary': '0 0 24px rgba(15, 118, 110, 0.2)',
+        'inner-glow': 'inset 0 1px 8px rgba(255, 255, 255, 0.4)',
       },
       screens: {
         'xs': '375px',
@@ -189,10 +189,10 @@ export default {
         },
       },
       backgroundImage: {
-        'gradient-warm': 'linear-gradient(135deg, #E07A5F 0%, #F2CC8F 50%, #81B29A 100%)',
-        'gradient-sunset': 'linear-gradient(135deg, #F4978E 0%, #E07A5F 50%, #F2CC8F 100%)',
-        'gradient-ocean': 'linear-gradient(135deg, #81B29A 0%, #B8A9C9 100%)',
-        'gradient-mesh': 'radial-gradient(at 40% 20%, #FAE5E0 0px, transparent 50%), radial-gradient(at 80% 0%, #D8EBE2 0px, transparent 50%), radial-gradient(at 0% 50%, #F2CC8F33 0px, transparent 50%)',
+        'gradient-warm': 'linear-gradient(135deg, #10A37F 0%, #0F766E 100%)',
+        'gradient-sunset': 'linear-gradient(135deg, #0F766E 0%, #10A37F 100%)',
+        'gradient-ocean': 'linear-gradient(135deg, #0F766E 0%, #14B8A6 100%)',
+        'gradient-mesh': 'radial-gradient(at 40% 20%, #E6F6F1 0px, transparent 50%), radial-gradient(at 80% 0%, #E6F6F4 0px, transparent 50%), radial-gradient(at 0% 50%, #F1F5F9 0px, transparent 50%)',
       },
     },
   },

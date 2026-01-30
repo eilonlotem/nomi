@@ -13,7 +13,6 @@ class MockLookingFor:
     def __init__(self, genders=None, min_age=18, max_age=99, max_distance=50):
         self.genders = genders or []
         self.min_age, self.max_age, self.max_distance = min_age, max_age, max_distance
-        self.relationship_types = []
 
 
 class MockProfile:

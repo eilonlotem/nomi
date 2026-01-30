@@ -57,16 +57,22 @@ class FacebookAuthView(APIView):
 
     def post(self, request: Request) -> Response:
         import os
+        import logging
+        logger = logging.getLogger(__name__)
         
         access_token: Optional[str] = request.data.get("access_token")
         code: Optional[str] = request.data.get("code")
         redirect_uri: Optional[str] = request.data.get("redirect_uri")
+        
+        logger.info(f"Facebook auth request: code={bool(code)}, redirect_uri={redirect_uri}, access_token={bool(access_token)}")
 
         # If authorization code is provided, exchange it for access token
         if code and redirect_uri:
             try:
                 app_id = os.environ.get("FACEBOOK_APP_ID", "")
                 app_secret = os.environ.get("FACEBOOK_APP_SECRET", "")
+                
+                logger.info(f"Facebook credentials: app_id={bool(app_id)}, app_secret={bool(app_secret)}")
                 
                 if not app_id or not app_secret:
                     return Response(

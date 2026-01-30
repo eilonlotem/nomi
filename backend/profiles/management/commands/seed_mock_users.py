@@ -7,7 +7,9 @@ Run on every deploy to ensure mock users exist.
 """
 from __future__ import annotations
 
+import os
 from datetime import date, timedelta
+from pathlib import Path
 from typing import Any
 
 from django.conf import settings
@@ -23,6 +25,25 @@ User = get_user_model()
 
 # Unique identifier prefix for mock users - used to identify and protect them
 MOCK_USER_PREFIX = "mock_"
+
+
+def get_local_avatar_url(username: str) -> str | None:
+    """
+    Get the URL for a locally generated avatar if it exists.
+    Returns None if no local avatar is available.
+    Always returns absolute URL when BACKEND_URL is set, otherwise relative URL.
+    """
+    avatar_path = Path(settings.BASE_DIR) / "static" / "painted_avatars" / username / "avatar_1.png"
+    if avatar_path.exists():
+        # Get the backend URL from environment
+        backend_url = os.getenv("BACKEND_URL", "").rstrip("/")
+        if backend_url:
+            # Return absolute URL
+            return f"{backend_url}/static/painted_avatars/{username}/avatar_1.png"
+        # For local development, return relative URL
+        # Frontend will prepend the backend URL from API_URL env var
+        return f"/static/painted_avatars/{username}/avatar_1.png"
+    return None
 
 # Mock users data - these are immutable seed users
 # All 20 profiles are from Israel with diverse cities, backgrounds, and accessibility needs
@@ -620,8 +641,11 @@ class Command(BaseCommand):
 
     def _create_profile(self, user: Any, user_data: dict[str, Any]) -> None:
         """Create the initial profile for a new mock user."""
-        # Use the Unsplash URLs directly from user_data
-        # (Local image generation via OpenAI is optional - set use_local_images=True if images exist)
+        username = user_data["username"]
+        
+        # Check for local generated avatar first, fallback to Unsplash
+        local_avatar = get_local_avatar_url(username)
+        picture_url = local_avatar or user_data.get("picture_url", "")
         
         profile = Profile.objects.create(
             user=user,
@@ -630,7 +654,7 @@ class Command(BaseCommand):
             current_mood=user_data["mood"],
             gender=user_data["gender"],
             city=user_data.get("city", "Tel Aviv"),
-            picture_url=user_data.get("picture_url", ""),
+            picture_url=picture_url,
             prompt_id=user_data.get("prompt_id", "laughMost"),
             prompt_answer=user_data.get("prompt_answer", ""),
             # Ask Me About It
@@ -670,20 +694,20 @@ class Command(BaseCommand):
             max_age=50,
             max_distance=100,
             genders=genders,
-            relationship_types=user_data.get("relationship_types", ["serious"]),
         )
         
         # Create profile photos
-        # Primary photo from picture_url
-        if user_data.get("picture_url"):
+        # Use local avatar if available, otherwise fallback to Unsplash
+        primary_photo_url = local_avatar or user_data.get("picture_url")
+        if primary_photo_url:
             ProfilePhoto.objects.create(
                 profile=profile,
-                url=user_data["picture_url"],
+                url=primary_photo_url,
                 is_primary=True,
                 order=0,
             )
         
-        # Additional photos
+        # Additional photos (use Unsplash for now, could generate more local ones later)
         for i, photo_url in enumerate(user_data.get("additional_photos", []), start=1):
             ProfilePhoto.objects.create(
                 profile=profile,
@@ -698,13 +722,16 @@ class Command(BaseCommand):
             return
         
         profile = user.profile
+        username = user_data["username"]
         
         # Check if profile already has photos
         if profile.photos.exists():
             return
         
-        # Create primary photo from picture_url
-        picture_url = user_data.get("picture_url")
+        # Use local avatar if available, otherwise fallback to Unsplash
+        local_avatar = get_local_avatar_url(username)
+        picture_url = local_avatar or user_data.get("picture_url")
+        
         if picture_url:
             ProfilePhoto.objects.create(
                 profile=profile,

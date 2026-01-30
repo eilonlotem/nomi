@@ -8,7 +8,7 @@ from profiles.serializers import ProfileCardSerializer
 from users.models import User
 from users.serializers import UserSerializer
 
-from .models import Block, Conversation, Match, Message, Swipe
+from .models import Block, Conversation, Match, Message, ShortcutResponse, Swipe
 
 
 class SwipeSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
@@ -51,7 +51,7 @@ class MatchSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
         request_user: User = self.context["request"].user
         other: User = obj.user2 if obj.user1 == request_user else obj.user1
         if hasattr(other, "profile"):
-            return dict(ProfileCardSerializer(other.profile).data)
+            return dict(ProfileCardSerializer(other.profile, context=self.context).data)
         return None
 
     def get_conversation_id(self, obj: Match) -> Optional[int]:
@@ -128,6 +128,25 @@ class VoiceMessageSerializer(serializers.Serializer):  # type: ignore[type-arg]
                 f"Unsupported audio format: {content_type}. Allowed: webm, ogg, mp4, mpeg, wav"
             )
 
+        return value
+
+
+class ShortcutSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
+    """Serializer for saved shortcuts."""
+
+    class Meta:
+        model = ShortcutResponse
+        fields: list[str] = ["id", "title", "content", "created_at"]
+        read_only_fields: list[str] = ["id", "created_at"]
+
+    def validate_title(self, value: str) -> str:
+        if not value.strip():
+            raise serializers.ValidationError("Title is required.")
+        return value.strip()
+
+    def validate_content(self, value: str) -> str:
+        if not value.strip():
+            raise serializers.ValidationError("Content is required.")
         return value
 
 

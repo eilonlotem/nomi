@@ -1,48 +1,154 @@
 # Page snapshot
 
 ```yaml
-- generic [ref=e3]:
-  - button "Accessibility" [ref=e4] [cursor=pointer]:
-    - generic [ref=e5]: ⚙️
-  - generic [ref=e6]:
-    - banner [ref=e7]:
-      - generic [ref=e8]:
-        - button "Go back" [ref=e9] [cursor=pointer]:
-          - img [ref=e10]
-        - heading "Choose Your Language" [level=1] [ref=e12]
-    - main [ref=e13]:
-      - generic [ref=e14]:
-        - generic [ref=e15]:
-          - img [ref=e17]
-          - generic [ref=e19]: Connected
-          - generic [ref=e20]: ✓
-        - generic [ref=e24]: 🌍
-        - heading "Choose Your Language" [level=2] [ref=e25]
-        - paragraph [ref=e26]: Select your preferred language
-        - generic [ref=e27]:
-          - button "Switch language - English" [ref=e28] [cursor=pointer]:
-            - generic [ref=e29]:
-              - generic [ref=e30]: 🇬🇧
-              - generic [ref=e31]: English
-            - img [ref=e33]
-          - button "Switch language - Hebrew" [ref=e35] [cursor=pointer]:
-            - generic [ref=e36]:
-              - generic [ref=e37]: 🇮🇱
-              - generic [ref=e38]: עברית
-            - img [ref=e40]
-          - button "Switch language - Spanish" [ref=e42] [cursor=pointer]:
-            - generic [ref=e43]:
-              - generic [ref=e44]: 🇪🇸
-              - generic [ref=e45]: Español
-            - img [ref=e47]
-          - button "Switch language - French" [ref=e49] [cursor=pointer]:
-            - generic [ref=e50]:
-              - generic [ref=e51]: 🇫🇷
-              - generic [ref=e52]: Français
-            - img [ref=e54]
-          - button "Switch language - Arabic" [ref=e56] [cursor=pointer]:
-            - generic [ref=e57]:
-              - generic [ref=e58]: 🇸🇦
-              - generic [ref=e59]: العربية
-            - img [ref=e61]
+- generic [ref=e2]:
+  - generic [ref=e5]:
+    - heading "Facebook" [level=1] [ref=e9]:
+      - link "Facebook" [ref=e10] [cursor=pointer]:
+        - /url: https://www.facebook.com/
+        - generic [ref=e12]: Facebook
+    - button "Create new account" [ref=e13] [cursor=pointer]
+  - generic [ref=e14]:
+    - main [ref=e15]:
+      - generic [ref=e17]:
+        - generic [ref=e20]: Log Into Facebook
+        - generic [ref=e23]:
+          - alert [ref=e24]:
+            - generic [ref=e25]: URL Blocked
+            - generic [ref=e26]: This redirect failed because the redirect URI is not whitelisted in the app’s Client OAuth Settings. Make sure Client and Web OAuth Login are on and add all your app domains as Valid OAuth Redirect URIs.
+          - generic [ref=e27]:
+            - textbox "Email or phone number" [active] [ref=e29]
+            - textbox "Password" [ref=e31]
+            - button "Log In" [ref=e33] [cursor=pointer]
+            - link "Forgot password?" [ref=e36] [cursor=pointer]:
+              - /url: https://www.facebook.com/recover/initiate/?ars=facebook_login&cancel_lara_pswd=0&next=https%3A%2F%2Fwww.facebook.com%2Fv18.0%2Fdialog%2Foauth%3Fclient_id%3D874193302252979%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A5173%252Fauth%252Ffacebook%252Fcallback%26scope%3Demail%252Cpublic_profile%252Cuser_birthday%252Cuser_gender%252Cuser_friends%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%26response_type%3Dcode%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D13436704-39c6-4c88-badd-8d1224adbc59%26tp%3Dunspecified
+    - generic [ref=e39]:
+      - list [ref=e40]:
+        - listitem [ref=e41]: English (US)
+        - listitem [ref=e42]:
+          - link "עברית" [ref=e43] [cursor=pointer]:
+            - /url: https://www.facebook.com/login.php?skip_api_login=1&api_key=874193302252979&kid_directed_site=0&app_id=874193302252979&signed_next=1&next=https%3A%2F%2Fwww.facebook.com%2Fv18.0%2Fdialog%2Foauth%3Fclient_id%3D874193302252979%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A5173%252Fauth%252Ffacebook%252Fcallback%26scope%3Demail%252Cpublic_profile%252Cuser_birthday%252Cuser_gender%252Cuser_friends%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%26response_type%3Dcode%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D13436704-39c6-4c88-badd-8d1224adbc59%26tp%3Dunspecified&cancel_url=https%3A%2F%2Flocalhost%3A5173%2Fauth%2Ffacebook%2Fcallback%3Ferror%3Daccess_denied%26error_code%3D200%26error_description%3DPermissions%2Berror%26error_reason%3Duser_denied%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%23_%3D_&display=page&locale=en_US&pl_dbl=0
+        - listitem [ref=e44]:
+          - link "العربية" [ref=e45] [cursor=pointer]:
+            - /url: https://he-il.facebook.com/login.php?skip_api_login=1&api_key=874193302252979&kid_directed_site=0&app_id=874193302252979&signed_next=1&next=https%3A%2F%2Fwww.facebook.com%2Fv18.0%2Fdialog%2Foauth%3Fclient_id%3D874193302252979%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A5173%252Fauth%252Ffacebook%252Fcallback%26scope%3Demail%252Cpublic_profile%252Cuser_birthday%252Cuser_gender%252Cuser_friends%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%26response_type%3Dcode%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D13436704-39c6-4c88-badd-8d1224adbc59%26tp%3Dunspecified&cancel_url=https%3A%2F%2Flocalhost%3A5173%2Fauth%2Ffacebook%2Fcallback%3Ferror%3Daccess_denied%26error_code%3D200%26error_description%3DPermissions%2Berror%26error_reason%3Duser_denied%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%23_%3D_&display=page&locale=he_IL&pl_dbl=0
+        - listitem [ref=e46]:
+          - link "Русский" [ref=e47] [cursor=pointer]:
+            - /url: https://ar-ar.facebook.com/login.php?skip_api_login=1&api_key=874193302252979&kid_directed_site=0&app_id=874193302252979&signed_next=1&next=https%3A%2F%2Fwww.facebook.com%2Fv18.0%2Fdialog%2Foauth%3Fclient_id%3D874193302252979%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A5173%252Fauth%252Ffacebook%252Fcallback%26scope%3Demail%252Cpublic_profile%252Cuser_birthday%252Cuser_gender%252Cuser_friends%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%26response_type%3Dcode%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D13436704-39c6-4c88-badd-8d1224adbc59%26tp%3Dunspecified&cancel_url=https%3A%2F%2Flocalhost%3A5173%2Fauth%2Ffacebook%2Fcallback%3Ferror%3Daccess_denied%26error_code%3D200%26error_description%3DPermissions%2Berror%26error_reason%3Duser_denied%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%23_%3D_&display=page&locale=ar_AR&pl_dbl=0
+        - listitem [ref=e48]:
+          - link "Français (France)" [ref=e49] [cursor=pointer]:
+            - /url: https://ru-ru.facebook.com/login.php?skip_api_login=1&api_key=874193302252979&kid_directed_site=0&app_id=874193302252979&signed_next=1&next=https%3A%2F%2Fwww.facebook.com%2Fv18.0%2Fdialog%2Foauth%3Fclient_id%3D874193302252979%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A5173%252Fauth%252Ffacebook%252Fcallback%26scope%3Demail%252Cpublic_profile%252Cuser_birthday%252Cuser_gender%252Cuser_friends%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%26response_type%3Dcode%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D13436704-39c6-4c88-badd-8d1224adbc59%26tp%3Dunspecified&cancel_url=https%3A%2F%2Flocalhost%3A5173%2Fauth%2Ffacebook%2Fcallback%3Ferror%3Daccess_denied%26error_code%3D200%26error_description%3DPermissions%2Berror%26error_reason%3Duser_denied%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%23_%3D_&display=page&locale=ru_RU&pl_dbl=0
+        - listitem [ref=e50]:
+          - link "Español" [ref=e51] [cursor=pointer]:
+            - /url: https://fr-fr.facebook.com/login.php?skip_api_login=1&api_key=874193302252979&kid_directed_site=0&app_id=874193302252979&signed_next=1&next=https%3A%2F%2Fwww.facebook.com%2Fv18.0%2Fdialog%2Foauth%3Fclient_id%3D874193302252979%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A5173%252Fauth%252Ffacebook%252Fcallback%26scope%3Demail%252Cpublic_profile%252Cuser_birthday%252Cuser_gender%252Cuser_friends%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%26response_type%3Dcode%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D13436704-39c6-4c88-badd-8d1224adbc59%26tp%3Dunspecified&cancel_url=https%3A%2F%2Flocalhost%3A5173%2Fauth%2Ffacebook%2Fcallback%3Ferror%3Daccess_denied%26error_code%3D200%26error_description%3DPermissions%2Berror%26error_reason%3Duser_denied%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%23_%3D_&display=page&locale=fr_FR&pl_dbl=0
+        - listitem [ref=e52]:
+          - link "ภาษาไทย" [ref=e53] [cursor=pointer]:
+            - /url: https://es-la.facebook.com/login.php?skip_api_login=1&api_key=874193302252979&kid_directed_site=0&app_id=874193302252979&signed_next=1&next=https%3A%2F%2Fwww.facebook.com%2Fv18.0%2Fdialog%2Foauth%3Fclient_id%3D874193302252979%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A5173%252Fauth%252Ffacebook%252Fcallback%26scope%3Demail%252Cpublic_profile%252Cuser_birthday%252Cuser_gender%252Cuser_friends%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%26response_type%3Dcode%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D13436704-39c6-4c88-badd-8d1224adbc59%26tp%3Dunspecified&cancel_url=https%3A%2F%2Flocalhost%3A5173%2Fauth%2Ffacebook%2Fcallback%3Ferror%3Daccess_denied%26error_code%3D200%26error_description%3DPermissions%2Berror%26error_reason%3Duser_denied%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%23_%3D_&display=page&locale=es_LA&pl_dbl=0
+        - listitem [ref=e54]:
+          - link "Deutsch" [ref=e55] [cursor=pointer]:
+            - /url: https://th-th.facebook.com/login.php?skip_api_login=1&api_key=874193302252979&kid_directed_site=0&app_id=874193302252979&signed_next=1&next=https%3A%2F%2Fwww.facebook.com%2Fv18.0%2Fdialog%2Foauth%3Fclient_id%3D874193302252979%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A5173%252Fauth%252Ffacebook%252Fcallback%26scope%3Demail%252Cpublic_profile%252Cuser_birthday%252Cuser_gender%252Cuser_friends%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%26response_type%3Dcode%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D13436704-39c6-4c88-badd-8d1224adbc59%26tp%3Dunspecified&cancel_url=https%3A%2F%2Flocalhost%3A5173%2Fauth%2Ffacebook%2Fcallback%3Ferror%3Daccess_denied%26error_code%3D200%26error_description%3DPermissions%2Berror%26error_reason%3Duser_denied%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%23_%3D_&display=page&locale=th_TH&pl_dbl=0
+        - listitem [ref=e56]:
+          - link "Português (Brasil)" [ref=e57] [cursor=pointer]:
+            - /url: https://de-de.facebook.com/login.php?skip_api_login=1&api_key=874193302252979&kid_directed_site=0&app_id=874193302252979&signed_next=1&next=https%3A%2F%2Fwww.facebook.com%2Fv18.0%2Fdialog%2Foauth%3Fclient_id%3D874193302252979%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A5173%252Fauth%252Ffacebook%252Fcallback%26scope%3Demail%252Cpublic_profile%252Cuser_birthday%252Cuser_gender%252Cuser_friends%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%26response_type%3Dcode%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D13436704-39c6-4c88-badd-8d1224adbc59%26tp%3Dunspecified&cancel_url=https%3A%2F%2Flocalhost%3A5173%2Fauth%2Ffacebook%2Fcallback%3Ferror%3Daccess_denied%26error_code%3D200%26error_description%3DPermissions%2Berror%26error_reason%3Duser_denied%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%23_%3D_&display=page&locale=de_DE&pl_dbl=0
+        - listitem [ref=e58]:
+          - link "Italiano" [ref=e59] [cursor=pointer]:
+            - /url: https://pt-br.facebook.com/login.php?skip_api_login=1&api_key=874193302252979&kid_directed_site=0&app_id=874193302252979&signed_next=1&next=https%3A%2F%2Fwww.facebook.com%2Fv18.0%2Fdialog%2Foauth%3Fclient_id%3D874193302252979%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A5173%252Fauth%252Ffacebook%252Fcallback%26scope%3Demail%252Cpublic_profile%252Cuser_birthday%252Cuser_gender%252Cuser_friends%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%26response_type%3Dcode%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D13436704-39c6-4c88-badd-8d1224adbc59%26tp%3Dunspecified&cancel_url=https%3A%2F%2Flocalhost%3A5173%2Fauth%2Ffacebook%2Fcallback%3Ferror%3Daccess_denied%26error_code%3D200%26error_description%3DPermissions%2Berror%26error_reason%3Duser_denied%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%23_%3D_&display=page&locale=pt_BR&pl_dbl=0
+        - listitem [ref=e60]:
+          - link "हिन्दी" [ref=e61] [cursor=pointer]:
+            - /url: https://it-it.facebook.com/login.php?skip_api_login=1&api_key=874193302252979&kid_directed_site=0&app_id=874193302252979&signed_next=1&next=https%3A%2F%2Fwww.facebook.com%2Fv18.0%2Fdialog%2Foauth%3Fclient_id%3D874193302252979%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%253A5173%252Fauth%252Ffacebook%252Fcallback%26scope%3Demail%252Cpublic_profile%252Cuser_birthday%252Cuser_gender%252Cuser_friends%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%26response_type%3Dcode%26ret%3Dlogin%26fbapp_pres%3D0%26logger_id%3D13436704-39c6-4c88-badd-8d1224adbc59%26tp%3Dunspecified&cancel_url=https%3A%2F%2Flocalhost%3A5173%2Fauth%2Ffacebook%2Fcallback%3Ferror%3Daccess_denied%26error_code%3D200%26error_description%3DPermissions%2Berror%26error_reason%3Duser_denied%26state%3D%257B%2522returnUrl%2522%253A%2522%252F%2522%252C%2522timestamp%2522%253A1769780466818%257D%23_%3D_&display=page&locale=it_IT&pl_dbl=0
+        - listitem [ref=e62]:
+          - button "Show more languages" [ref=e63] [cursor=pointer]
+      - contentinfo "Facebook site links" [ref=e66]:
+        - list [ref=e67]:
+          - listitem [ref=e68]:
+            - link "Sign Up" [ref=e69] [cursor=pointer]:
+              - /url: /reg/
+          - listitem [ref=e70]:
+            - link "Log In" [ref=e71] [cursor=pointer]:
+              - /url: /login/
+          - listitem [ref=e72]:
+            - link "Messenger" [ref=e73] [cursor=pointer]:
+              - /url: https://messenger.com/
+          - listitem [ref=e74]:
+            - link "Facebook Lite" [ref=e75] [cursor=pointer]:
+              - /url: /lite/
+          - listitem [ref=e76]:
+            - link "Video" [ref=e77] [cursor=pointer]:
+              - /url: https://www.facebook.com/watch/
+          - listitem [ref=e78]:
+            - link "Meta Pay" [ref=e79] [cursor=pointer]:
+              - /url: https://about.meta.com/technologies/meta-pay
+          - listitem [ref=e80]:
+            - link "Meta Store" [ref=e81] [cursor=pointer]:
+              - /url: https://www.meta.com/
+          - listitem [ref=e82]:
+            - link "Meta Quest" [ref=e83] [cursor=pointer]:
+              - /url: https://www.meta.com/quest/
+          - listitem [ref=e84]:
+            - link "Ray-Ban Meta" [ref=e85] [cursor=pointer]:
+              - /url: https://www.meta.com/smart-glasses/
+          - listitem [ref=e86]:
+            - link "Meta AI" [ref=e87] [cursor=pointer]:
+              - /url: https://www.meta.ai/
+          - listitem [ref=e88]:
+            - link "Meta AI more content" [ref=e89] [cursor=pointer]:
+              - /url: https://www.meta.ai/pages/uppababy-strollers-best-models-reviews/?utm_source=foa_web_footer
+          - listitem [ref=e90]:
+            - link "Instagram" [ref=e91] [cursor=pointer]:
+              - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fwww.instagram.com%2F&h=AT31eLCP4pl1CKnYx04tugIfBILuoxdIqxDOijZkCwJfyDjJVg-lLfnP_eg_dSFNqE1TpY7f9FfnM_mq1mwQlK2O7BR3iC042MeedvzDsCqBpoUL9BUc93hWWK4-wd-1nH15UTPmCf2aVOaIUdyi9A
+          - listitem [ref=e92]:
+            - link "Threads" [ref=e93] [cursor=pointer]:
+              - /url: https://www.threads.com/
+          - listitem [ref=e94]:
+            - link "Voting Information Center" [ref=e95] [cursor=pointer]:
+              - /url: /votinginformationcenter/?entry_point=c2l0ZQ%3D%3D
+          - listitem [ref=e96]:
+            - link "Privacy Policy" [ref=e97] [cursor=pointer]:
+              - /url: /privacy/policy/?entry_point=facebook_page_footer
+          - listitem [ref=e98]:
+            - link "Privacy Center" [ref=e99] [cursor=pointer]:
+              - /url: /privacy/center/?entry_point=facebook_page_footer
+          - listitem [ref=e100]:
+            - link "Settlement Agreements" [ref=e101] [cursor=pointer]:
+              - /url: https://www.facebook.com/legal/legal-notices-israel
+          - listitem [ref=e102]:
+            - link "הודעות משפטיות" [ref=e103] [cursor=pointer]:
+              - /url: https://www.facebook.com/legal/legal-notices-israel-2025
+          - listitem [ref=e104]:
+            - link "About" [ref=e105] [cursor=pointer]:
+              - /url: https://about.meta.com/
+          - listitem [ref=e106]:
+            - link "Create ad" [ref=e107] [cursor=pointer]:
+              - /url: /ad_campaign/landing.php?placement=pflo&campaign_id=402047449186&nav_source=unknown&extra_1=auto
+          - listitem [ref=e108]:
+            - link "Create Page" [ref=e109] [cursor=pointer]:
+              - /url: /pages/create/?ref_type=site_footer
+          - listitem [ref=e110]:
+            - link "Developers" [ref=e111] [cursor=pointer]:
+              - /url: https://developers.facebook.com/?ref=pf
+          - listitem [ref=e112]:
+            - link "Careers" [ref=e113] [cursor=pointer]:
+              - /url: /careers/?ref=pf
+          - listitem [ref=e114]:
+            - link "Cookies" [ref=e115] [cursor=pointer]:
+              - /url: /policies/cookies/
+          - listitem [ref=e116]:
+            - link "Ad choices" [ref=e117] [cursor=pointer]:
+              - /url: https://www.facebook.com/help/568137493302217
+              - text: Ad choices
+          - listitem [ref=e119]:
+            - link "Terms" [ref=e120] [cursor=pointer]:
+              - /url: /policies?ref=pf
+          - listitem [ref=e121]:
+            - link "Help" [ref=e122] [cursor=pointer]:
+              - /url: /help/?ref=pf
+          - listitem [ref=e123]:
+            - link "Contact Uploading & Non-Users" [ref=e124] [cursor=pointer]:
+              - /url: https://www.facebook.com/help/637205020878504
+          - listitem:
+            - link "Settings" [ref=e125] [cursor=pointer]:
+              - /url: /settings
+          - listitem:
+            - link "Activity log" [ref=e126] [cursor=pointer]:
+              - /url: /allactivity?privacy_source=activity_log_top_menu
+      - generic [ref=e128]: Meta © 2026
 ```

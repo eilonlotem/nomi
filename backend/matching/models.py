@@ -163,6 +163,26 @@ class Message(models.Model):
             self.save()
 
 
+class ShortcutResponse(models.Model):
+    """Saved chat responses for a user."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="chat_shortcuts",
+    )
+    title = models.CharField(max_length=80)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["user", "title"]
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.user} shortcut: {self.title}"
+
+
 class Block(models.Model):
     """Block/report functionality."""
 

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional, cast
+from typing import Any, Iterable, Optional, cast
 
+from django.core.cache import cache
 from django.db.models import Q, QuerySet
 from rest_framework import generics, permissions, status
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -15,17 +16,59 @@ from profiles.serializers import ProfileCardSerializer
 from users.models import User
 
 from .algorithm import ProfileRanker
-from .models import Block, Conversation, Match, Message, Swipe
+from .ai_service import generate_conversation_summary, generate_message_suggestions
+from .models import Block, Conversation, Match, Message, ShortcutResponse, Swipe
 from .serializers import (
     BlockSerializer,
     ConversationSerializer,
     MatchSerializer,
     MessageSerializer,
+    ShortcutSerializer,
     SwipeSerializer,
     VoiceMessageSerializer,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _get_conversation_for_user(
+    user: User, conversation_id: int
+) -> Optional[Conversation]:
+    return (
+        Conversation.objects.filter(id=conversation_id)
+        .filter(Q(match__user1=user) | Q(match__user2=user))
+        .select_related(
+            "match",
+            "match__user1",
+            "match__user2",
+            "match__user1__profile",
+            "match__user2__profile",
+        )
+        .first()
+    )
+
+
+def _build_conversation_history(
+    messages: Iterable[Message], user: User
+) -> list[dict[str, str]]:
+    history: list[dict[str, str]] = []
+    for msg in messages:
+        role = "user" if msg.sender_id == user.id else "assistant"
+        content = msg.content or ""
+        if msg.message_type == "voice":
+            content = "[Voice message]"
+        history.append({"role": role, "content": content})
+    return history
+
+
+def _get_request_language(request: Request) -> str:
+    language = request.query_params.get("lang")
+    if not language:
+        accept_language = request.headers.get("Accept-Language", "")
+        language = accept_language.split(",")[0].split("-")[0].strip()
+    if language not in {"en", "he", "es", "fr", "ar"}:
+        return "en"
+    return language
 
 
 class DiscoveryView(APIView):
@@ -57,7 +100,13 @@ class DiscoveryView(APIView):
             Profile.objects.filter(is_visible=True)
             .exclude(user_id__in=exclude_ids)
             .select_related("user", "looking_for")
-            .prefetch_related("disability_tags", "interests", "photos")
+            .prefetch_related(
+                "disability_tags",
+                "interests",
+                "photos",
+                "tag_visibilities",
+                "tag_visibilities__allowed_viewers",
+            )
         )
 
         # Ensure user's profile has looking_for loaded for filtering
@@ -83,7 +132,9 @@ class DiscoveryView(APIView):
         # Build response with compatibility data
         results: list[dict[str, Any]] = []
         for profile, breakdown in ranked_profiles:
-            data: dict[str, Any] = ProfileCardSerializer(profile).data
+            data: dict[str, Any] = ProfileCardSerializer(
+                profile, context={"request": request}
+            ).data
             data["compatibility"] = breakdown.total_score
             data["shared_tags_count"] = breakdown.shared_tags_count
             data["shared_interests_count"] = breakdown.shared_interests_count
@@ -222,6 +273,37 @@ class ConversationListView(generics.ListAPIView):  # type: ignore[type-arg]
         ).select_related("match")
 
 
+class ShortcutListCreateView(generics.ListCreateAPIView):  # type: ignore[type-arg]
+    """List or save built-in chat shortcuts for the current user."""
+
+    serializer_class = ShortcutSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self) -> QuerySet[ShortcutResponse]:
+        user = cast(User, self.request.user)
+        return ShortcutResponse.objects.filter(user=user)
+
+    def perform_create(self, serializer: ShortcutSerializer) -> None:
+        serializer.save(user=self.request.user)
+
+
+class ShortcutDeleteView(APIView):
+    """Remove a saved shortcut for the current user."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request: Request, shortcut_id: int) -> Response:
+        user = cast(User, request.user)
+        shortcut = ShortcutResponse.objects.filter(user=user, id=shortcut_id).first()
+        if not shortcut:
+            return Response(
+                {"error": "Shortcut not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        shortcut.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class ConversationMessagesView(generics.ListCreateAPIView):  # type: ignore[type-arg]
     """Get messages or send a message in a conversation."""
 
@@ -350,6 +432,148 @@ class ConversationMessagesView(generics.ListCreateAPIView):  # type: ignore[type
             # Update conversation timestamp
             conversation.save()
 
+
+class ConversationSuggestionsView(APIView):
+    """Generate AI reply suggestions for a conversation."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request, conversation_id: int) -> Response:
+        user = cast(User, request.user)
+        conversation = _get_conversation_for_user(user, conversation_id)
+        if not conversation:
+            return Response(
+                {"error": "Conversation not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not hasattr(user, "profile") or not user.profile:
+            return Response(
+                {"error": "Profile not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        other_user = (
+            conversation.match.user2
+            if conversation.match.user1_id == user.id
+            else conversation.match.user1
+        )
+        if not hasattr(other_user, "profile") or not other_user.profile:
+            return Response(
+                {"error": "Match profile not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Use the last 20 messages for richer suggestions
+        messages = list(
+            Message.objects.filter(conversation=conversation)
+            .order_by("-sent_at")[:20]
+        )
+        history = _build_conversation_history(reversed(messages), user)
+
+        suggestions = generate_message_suggestions(
+            conversation_history=history,
+            user_profile=user.profile,
+            other_profile=other_user.profile,
+            language_code=_get_request_language(request),
+        )
+
+        if not suggestions:
+            suggestions = []
+
+        return Response({"suggestions": suggestions})
+
+
+class ConversationSummaryView(APIView):
+    """Generate AI summary for a conversation."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request, conversation_id: int) -> Response:
+        user = cast(User, request.user)
+        conversation = _get_conversation_for_user(user, conversation_id)
+        if not conversation:
+            return Response(
+                {"error": "Conversation not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not hasattr(user, "profile") or not user.profile:
+            return Response(
+                {"error": "Profile not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        other_user = (
+            conversation.match.user2
+            if conversation.match.user1_id == user.id
+            else conversation.match.user1
+        )
+        if not hasattr(other_user, "profile") or not other_user.profile:
+            return Response(
+                {"error": "Match profile not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        messages = list(
+            Message.objects.filter(conversation=conversation)
+            .order_by("-sent_at")[:30]
+        )
+        history = _build_conversation_history(reversed(messages), user)
+
+        summary = generate_conversation_summary(
+            conversation_history=history,
+            user_profile=user.profile,
+            other_profile=other_user.profile,
+            language_code=_get_request_language(request),
+        )
+        if not summary:
+            summary = ""
+
+        return Response({"summary": summary})
+
+
+class ConversationTypingView(APIView):
+    """Typing indicator endpoint."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request: Request, conversation_id: int) -> Response:
+        user = cast(User, request.user)
+        conversation = _get_conversation_for_user(user, conversation_id)
+        if not conversation:
+            return Response(
+                {"error": "Conversation not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        other_user = (
+            conversation.match.user2
+            if conversation.match.user1_id == user.id
+            else conversation.match.user1
+        )
+        key = f"typing:{conversation_id}:{other_user.id}"
+        is_typing = bool(cache.get(key))
+        return Response({"is_typing": is_typing, "user_id": other_user.id})
+
+    def post(self, request: Request, conversation_id: int) -> Response:
+        user = cast(User, request.user)
+        conversation = _get_conversation_for_user(user, conversation_id)
+        if not conversation:
+            return Response(
+                {"error": "Conversation not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        is_typing = bool(request.data.get("is_typing", True))
+        key = f"typing:{conversation_id}:{user.id}"
+
+        if is_typing:
+            cache.set(key, True, timeout=8)
+        else:
+            cache.delete(key)
+
+        return Response({"ok": True, "is_typing": is_typing})
 
 class VoiceMessageUploadView(APIView):
     """Upload voice message for a conversation."""

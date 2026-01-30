@@ -18,6 +18,13 @@ export default {
   delete: 'מחק',
   confirm: 'אישור',
   
+  // Bot indicator
+  bot: {
+    badge: 'בוט',
+    label: 'בוט',
+    status: 'בוט',
+  },
+  
   // Language Selection
   languageSelection: {
     title: 'בחר את השפה שלך',
@@ -32,6 +39,57 @@ export default {
     selectedCount: '{count} נבחרו',
     continueBtn: 'המשך לגילוי',
     moodQuestion: 'איך את/ה מרגיש היום?',
+    functionalTagsTitle: 'תיאור יומיומי',
+    functionalTagsHint: 'איך זה בא לידי ביטוי ביום־יום.',
+  },
+
+  // Tag categories
+  tagCategories: {
+    vision: 'ראייה',
+    hearing: 'שמיעה',
+    mobility: 'ניידות',
+    communication: 'תקשורת ודיבור',
+    cognitive_emotional: 'קוגניטיבי / רגשי',
+  },
+
+  // Tag visibility
+  tagVisibility: {
+    title: 'חשיפה ופרטיות',
+    subtitle: 'בחרו מי יראה כל תגית.',
+    public: 'גלוי לכולם',
+    matches: 'גלוי למאצ׳ים בלבד',
+    specific: 'גלוי לאנשים ספציפיים',
+    hidden: 'מוסתר',
+    choosePeople: 'בחרו אנשים ספציפיים',
+    noMatches: 'עדיין אין מאצ׳ים.',
+    selectAria: 'חשיפה עבור {tag}',
+    noneSelected: 'בחרו לפחות תגית אחת כדי להגדיר חשיפה.',
+  },
+
+  // Intent & openness
+  intent: {
+    title: 'מה אני מחפש/ת',
+    subtitle: 'כדאי להבהיר כוונה כבר מההתחלה.',
+    options: {
+      relationship: 'מחפש/ת קשר זוגי',
+      friendship: 'מחפש/ת חברות',
+      open: 'פתוח/ה להכל',
+      slow: 'מחפש/ת היכרות רגועה',
+      unsure: 'לא בטוח/ה עדיין',
+    },
+  },
+  openness: {
+    title: 'פתוח/ה ל',
+    subtitle: 'אפשר לבחור כמה.',
+    options: {
+      openToCaregiver: 'פתוח/ה לקשר עם מלווה',
+      openToMobility: 'פתוח/ה לקשר עם אדם עם מגבלת ניידות',
+      openToMentalHealth: 'פתוח/ה לקשר עם מתמודד/ת נפש',
+      openToAll: 'פתוח/ה להכל',
+      notSure: 'לא יודע/ת',
+      meetThenDecide: 'רוצה להכיר ואז להחליט',
+      understandsDisability: 'מחפש/ת מישהו שמבין מוגבלות מבפנים',
+    },
   },
   
   // Moods
@@ -112,6 +170,19 @@ export default {
     online: 'מחובר',
     offline: 'לא מחובר',
     typing: 'מקליד...',
+    conversations: 'שיחות',
+    showSidebar: 'הצג שיחות',
+    hideSidebar: 'הסתר שיחות',
+    smartSuggestions: 'הצעות תשובה',
+    loadingSuggestions: 'טוען הצעות...',
+    refreshSuggestions: 'רענון',
+    showSuggestions: 'הצג',
+    hideSuggestions: 'הסתר',
+    noSuggestions: 'אין הצעות כרגע.',
+    summaryAction: 'סיכום',
+    summaryTitle: 'סיכום שיחה',
+    summaryLoading: 'יוצר סיכום...',
+    summaryUnavailable: 'הסיכום לא זמין כרגע.',
     today: 'היום',
     yesterday: 'אתמול',
     icebreaker: 'שובר קרח',
@@ -130,6 +201,43 @@ export default {
     playVoice: 'נגן הודעה קולית',
     pauseVoice: 'השהה הודעה קולית',
     voiceMessage: 'הודעה קולית',
+  },
+
+  // Shortcuts
+  shortcuts: {
+    title: 'קיצורים',
+    helper: 'הקישו על קיצור שמור כדי להוסיף אותו להודעה.',
+    savedTitle: 'הקיצורים שלי',
+    createTitle: 'יצירת קיצור',
+    suggestedTitle: 'תגובות לדוגמה',
+    empty: 'עדיין אין קיצורים שמורים.',
+    add: 'שמירה',
+    remove: 'הסרה',
+    saved: 'נשמר',
+    useDraft: 'השתמשו בטיוטה',
+    toggle: 'פתיחת קיצורים',
+    loadError: 'לא ניתן לטעון קיצורים.',
+    saveError: 'לא ניתן לשמור קיצור.',
+    removeError: 'לא ניתן להסיר קיצור.',
+    validationError: 'נדרש כותרת והודעה.',
+    titleLabel: 'כותרת',
+    titlePlaceholder: 'לדוגמה: מספר טלפון',
+    contentLabel: 'הודעה',
+    contentPlaceholder: 'כתבו את ההודעה להוספה...',
+    untitled: 'ללא כותרת',
+    ariaSave: 'שמירת קיצור: {label}',
+    ariaRemove: 'הסרת קיצור: {label}',
+    ariaUse: 'שימוש בקיצור: {label}',
+    labels: {
+      phoneNumber: 'מספר טלפון',
+      funnySentence: 'משפט מצחיק',
+      weeklyPlans: 'תוכניות השבוע',
+    },
+    responses: {
+      phoneNumber: 'הנה מספר הטלפון שלי: ',
+      funnySentence: 'מחשבה מצחיקה קצרה: ניסיתי להיות בן/בת בוקר והקפה שלי הגיש תלונה.',
+      weeklyPlans: 'התוכניות שלי השבוע: ',
+    },
   },
   
   // Icebreaker prompts
@@ -238,7 +346,6 @@ export default {
     subtitle: 'מי תופס את העין שלך?',
     description: 'ספר לנו מה את/ה מחפש/ת כדי שנוכל למצוא את ההתאמות המושלמות.',
     interestedIn: 'מתעניין/ת ב...',
-    whatSeeking: 'מה את/ה מחפש/ת?',
     ageRange: 'טווח גילאים',
     minAge: 'מינימום',
     maxAge: 'מקסימום',
@@ -255,12 +362,6 @@ export default {
       female: 'נשים',
       nonbinary: 'לא-בינארי',
       everyone: 'כולם',
-    },
-    types: {
-      casual: 'היכרויות קלילות',
-      serious: 'קשר רציני',
-      friends: 'רק חברות',
-      activity: 'שותפים לפעילות',
     },
   },
   
@@ -294,6 +395,8 @@ export default {
     textSize: 'גודל טקסט',
     highContrast: 'ניגודיות גבוהה',
     highContrastDesc: 'הגבר ניגודיות צבעים',
+    darkMode: 'מצב כהה',
+    darkModeDesc: 'השתמש בפלטת צבעים כהה',
     reducedMotion: 'הפחתת תנועה',
     reducedMotionDesc: 'בטל אנימציות',
     screenReaderMode: 'מצב קורא מסך',

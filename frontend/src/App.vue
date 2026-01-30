@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ROUTES } from './router'
 import { useI18n } from './composables/useI18n'
@@ -91,6 +91,7 @@ const a11ySettings = ref({
   textSize: 'normal', // 'normal', 'large', 'xl'
   reducedMotion: false,
   highContrast: false,
+  darkMode: true, // Dark mode enabled by default
   screenReaderMode: false, // Optimizes for screen readers
   showEmojis: true, // Toggle emoji visibility
 })
@@ -146,7 +147,10 @@ const userProfile = ref({
   photos: [], // Array of uploaded photos { id, image, is_primary, order }
   bio: '',
   tags: [],
+  tagVisibilities: {},
   interests: ['Music', 'Reading', 'Hiking'],
+  relationshipIntent: '',
+  opennessTags: [],
   promptId: 'laughMost',
   promptAnswer: '',
   // Ask Me About It - celebration prompt
@@ -159,7 +163,6 @@ const userProfile = ref({
   timeNotes: '',
   lookingFor: {
     genders: [], // 'male', 'female', 'nonbinary', 'everyone'
-    relationshipTypes: [], // 'casual', 'serious', 'friends', 'activity'
     ageRange: { min: 18, max: 50 },
     maxDistance: 50, // km
     location: '', // City/area
@@ -313,11 +316,22 @@ const genderOptions = [
   { id: 'everyone', emoji: '💫' },
 ]
 
-const relationshipOptions = [
-  { id: 'casual', emoji: '💕', gradient: 'from-pink-400 to-rose-500' },
-  { id: 'serious', emoji: '💍', gradient: 'from-violet-400 to-purple-500' },
-  { id: 'friends', emoji: '🤝', gradient: 'from-cyan-400 to-blue-500' },
-  { id: 'activity', emoji: '🎯', gradient: 'from-amber-400 to-orange-500' },
+const relationshipIntentOptions = [
+  { id: 'relationship', emoji: '💞' },
+  { id: 'friendship', emoji: '🤝' },
+  { id: 'open', emoji: '🌈' },
+  { id: 'slow', emoji: '🌿' },
+  { id: 'unsure', emoji: '🤔' },
+]
+
+const opennessOptions = [
+  { id: 'openToCaregiver', emoji: '🤝' },
+  { id: 'openToMobility', emoji: '🦽' },
+  { id: 'openToMentalHealth', emoji: '💚' },
+  { id: 'openToAll', emoji: '🌍' },
+  { id: 'notSure', emoji: '❓' },
+  { id: 'meetThenDecide', emoji: '💬' },
+  { id: 'understandsDisability', emoji: '🫶' },
 ]
 
 // Ask Me About It prompts
@@ -376,10 +390,6 @@ const normalizeGenderList = (genders = []) => {
   return [...new Set(normalized)]
 }
 
-const normalizeRelationshipTypes = (types = []) => {
-  const map = { dating: 'casual' }
-  return [...new Set((types || []).map(t => map[t] || t).filter(Boolean))]
-}
 
 // Age range validation
 const ageRangeError = ref('')
@@ -434,14 +444,31 @@ const toggleGender = (genderId) => {
   }
 }
 
-const toggleRelationship = (relId) => {
-  const rels = userProfile.value.lookingFor.relationshipTypes
-  const index = rels.indexOf(relId)
-  if (index > -1) {
-    rels.splice(index, 1)
-  } else {
-    rels.push(relId)
+const setRelationshipIntent = (intentId) => {
+  userProfile.value.relationshipIntent = intentId
+}
+
+const toggleOpennessTag = (tagId) => {
+  const tags = userProfile.value.opennessTags || []
+
+  if (tagId === 'openToAll') {
+    userProfile.value.opennessTags = ['openToAll']
+    return
   }
+
+  if (tagId === 'notSure') {
+    userProfile.value.opennessTags = ['notSure']
+    return
+  }
+
+  const filtered = tags.filter(t => t !== 'openToAll' && t !== 'notSure')
+  const index = filtered.indexOf(tagId)
+  if (index > -1) {
+    filtered.splice(index, 1)
+  } else {
+    filtered.push(tagId)
+  }
+  userProfile.value.opennessTags = filtered
 }
 
 // Available profile prompts
@@ -490,10 +517,41 @@ const cycleRevealLevel = () => {
 // Reset reveal level when moving to next profile
 watch(currentProfileIndex, () => {
   profileRevealLevel.value = 'essential'
+  // Reset photo scroll offset when changing profiles
+  photoScrollOffset.value = 0
+  // Reset scroll position
+  if (discoveryDetailsScroll.value) {
+    discoveryDetailsScroll.value.scrollTop = 0
+  }
 })
+
+// Handle discovery page scroll to hide photo
+const handleDiscoveryScroll = () => {
+  if (!discoveryDetailsScroll.value || !discoveryPhotoCarousel.value) return
+  
+  const scrollTop = discoveryDetailsScroll.value.scrollTop
+  const scrollHeight = discoveryDetailsScroll.value.scrollHeight
+  const clientHeight = discoveryDetailsScroll.value.clientHeight
+  
+  // Calculate scroll percentage (0 to 1)
+  const maxScroll = Math.max(1, scrollHeight - clientHeight)
+  const scrollPercent = Math.min(scrollTop / maxScroll, 1)
+  
+  // Get photo carousel height
+  const photoHeight = discoveryPhotoCarousel.value.offsetHeight
+  
+  // Hide up to 70% of the photo (max offset is 70% of photo height) for more detail space
+  const maxOffset = photoHeight * 0.7
+  photoScrollOffset.value = scrollPercent * maxOffset
+}
 
 // Match breakdown visibility
 const showMatchBreakdown = ref(false)
+
+// Discovery page scroll tracking for photo hiding
+const discoveryDetailsScroll = ref(null)
+const discoveryPhotoCarousel = ref(null)
+const photoScrollOffset = ref(0)
 
 // Undo functionality for swipes
 const lastSwipeAction = ref(null)
@@ -550,6 +608,8 @@ const currentProfile = computed(() => {
     compatibility: profile.compatibility || 75,
     promptId: profile.prompt_id || 'laughMost',
     promptAnswer: profile.prompt_answer || '',
+    relationshipIntent: profile.relationship_intent || '',
+    opennessTags: profile.openness_tags || [],
     // Ask Me About It
     askMePromptId: profile.ask_me_prompt_id || '',
     askMeAnswer: profile.ask_me_answer || '',
@@ -557,6 +617,8 @@ const currentProfile = computed(() => {
     preferredTimes: profile.preferred_times || [],
     responsePace: profile.response_pace || '',
     datePace: profile.date_pace || '',
+    // Bot indicator
+    isBot: profile.is_bot || false,
   }
 })
 
@@ -623,6 +685,8 @@ const viewingProfileData = computed(() => {
     askMeAnswer: profile.askMeAnswer || profile.ask_me_answer || '',
     tags: profile.tags || profile.disability_tags || [],
     interests: profile.interests || [],
+    relationshipIntent: profile.relationshipIntent || profile.relationship_intent || '',
+    opennessTags: profile.opennessTags || profile.openness_tags || [],
     responsePace: profile.responsePace || profile.response_pace || '',
     datePace: profile.datePace || profile.date_pace || '',
   }
@@ -669,11 +733,67 @@ const invitationStats = ref({ total_sent: 0, accepted: 0, pending: 0 })
 // Chat state
 const currentConversation = ref(null)
 const chatMessages = ref([])
+const showChatSidebar = ref(true)
+
+const aiSuggestions = ref([])
+const isLoadingSuggestions = ref(false)
+const aiSummary = ref('')
+const showSummaryModal = ref(false)
+const isLoadingSummary = ref(false)
+const showSuggestions = ref(false)
+const chatScrollContainer = ref(null)
+
+const saveChatSettings = () => {
+  localStorage.setItem(
+    'nomi-chat-settings',
+    JSON.stringify({ showSuggestions: showSuggestions.value })
+  )
+}
+
+const loadChatSettings = () => {
+  const saved = localStorage.getItem('nomi-chat-settings')
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved)
+      if (typeof parsed.showSuggestions === 'boolean') {
+        showSuggestions.value = parsed.showSuggestions
+      }
+    } catch (error) {
+      console.warn('Failed to load chat settings:', error)
+    }
+  }
+}
+
+watch(showSuggestions, saveChatSettings)
+
+watch(currentView, async (view) => {
+  if (view !== 'chat') return
+  await scrollChatToBottom()
+})
+
+const scrollChatToBottom = async (behavior = 'auto') => {
+  await nextTick()
+  const container = chatScrollContainer.value
+  if (!container) return
+  const top = container.scrollHeight
+  if (behavior === 'smooth') {
+    container.scrollTo({ top, behavior })
+    return
+  }
+  container.scrollTop = top
+}
+
+const isChatNearBottom = (threshold = 120) => {
+  const container = chatScrollContainer.value
+  if (!container) return true
+  return container.scrollHeight - container.scrollTop - container.clientHeight < threshold
+}
 
 const chatPartner = ref({
   name: '',
   photo: '',
   isOnline: true,
+  isBot: false,
 })
 
 // Legacy mockChat for compatibility (will be replaced with chatMessages)
@@ -681,11 +801,13 @@ const mockChat = computed(() => ({
   matchName: chatPartner.value.name,
   matchPhoto: chatPartner.value.photo,
   isOnline: chatPartner.value.isOnline,
+  isBot: chatPartner.value.isBot,
   messages: chatMessages.value.map(msg => ({
     id: msg.id,
     sender: msg.is_mine ? 'me' : 'them',
     text: { en: msg.content, he: msg.content, es: msg.content, fr: msg.content, ar: msg.content },
     time: new Date(msg.sent_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+    sentAtMs: msg.sent_at ? new Date(msg.sent_at).getTime() : null,
     reaction: null,
     isRead: msg.is_read,
     // Voice message fields
@@ -695,6 +817,36 @@ const mockChat = computed(() => ({
     isUploading: msg._uploading || false,
   })),
 }))
+
+const TIMESTAMP_GAP_MINUTES = 15
+
+const shouldShowTimestamp = (index) => {
+  const messages = mockChat.value.messages
+  if (index === 0) return false
+  const current = messages[index]
+  const previous = messages[index - 1]
+  if (!current?.sentAtMs || !previous?.sentAtMs) return false
+  return (current.sentAtMs - previous.sentAtMs) > TIMESTAMP_GAP_MINUTES * 60 * 1000
+}
+
+const getMessageBubbleClasses = (message) => {
+  const base = 'relative max-w-[85%] rounded-2xl px-4 py-3 shadow-soft'
+  const isMine = message.sender === 'me'
+  if (message.messageType === 'voice') {
+    return [
+      base,
+      isMine
+        ? 'bg-primary/10 text-text-deep border border-primary/20 rounded-br-sm'
+        : 'bg-surface text-text-deep border border-border rounded-bl-sm',
+    ]
+  }
+  return [
+    base,
+    isMine
+      ? 'bg-primary text-white rounded-br-sm'
+      : 'bg-surface text-text-deep border border-border rounded-bl-sm',
+  ]
+}
 
 // Voice playback state
 const playingAudioId = ref(null)
@@ -936,6 +1088,7 @@ const uploadVoiceMessage = async (audioBlob, duration) => {
     _uploading: true,
   }
   chatMessages.value = [...chatMessages.value, optimisticMsg]
+  await scrollChatToBottom('smooth')
   
   try {
     const serverMsg = await chatApi.sendVoiceMessage(currentConversation.value, audioBlob, duration)
@@ -972,21 +1125,184 @@ const reactions = [
   { emoji: '🌟', label: 'Shine' },
 ]
 
-// Tag definitions with gradient colors
-const disabilityTags = [
-  { id: 'wheelchairUser', icon: '🦽', gradient: 'from-blue-500 to-cyan-400' },
-  { id: 'neurodivergent', icon: '🧠', gradient: 'from-purple-500 to-pink-400' },
-  { id: 'deafHoh', icon: '🦻', gradient: 'from-amber-500 to-orange-400' },
-  { id: 'blindLowVision', icon: '👁️', gradient: 'from-emerald-500 to-teal-400' },
-  { id: 'chronicIllness', icon: '💊', gradient: 'from-rose-500 to-pink-400' },
-  { id: 'mentalHealth', icon: '💚', gradient: 'from-green-500 to-emerald-400' },
-  { id: 'mobility', icon: '🚶', gradient: 'from-indigo-500 to-blue-400' },
-  { id: 'cognitive', icon: '💭', gradient: 'from-violet-500 to-purple-400' },
-  { id: 'invisible', icon: '🔮', gradient: 'from-fuchsia-500 to-pink-400' },
-  { id: 'acquired', icon: '⭐', gradient: 'from-yellow-500 to-amber-400' },
-  { id: 'caregiver', icon: '🤝', gradient: 'from-sky-500 to-blue-400' },
-  { id: 'autism', icon: '♾️', gradient: 'from-red-500 to-orange-400' },
+// Tag definitions with gradient colors (fallback when backend is unavailable)
+const tagGradients = {
+  difficultySeeing: 'from-emerald-500 to-teal-400',
+  partialVision: 'from-emerald-500 to-teal-400',
+  visionAids: 'from-emerald-500 to-teal-400',
+  lightSensitivity: 'from-emerald-500 to-teal-400',
+  difficultyHearing: 'from-amber-500 to-orange-400',
+  partialHearing: 'from-amber-500 to-orange-400',
+  hearingAids: 'from-amber-500 to-orange-400',
+  noisyConversations: 'from-amber-500 to-orange-400',
+  mobilityDifficulty: 'from-indigo-500 to-blue-400',
+  wheelchairUser: 'from-indigo-500 to-blue-400',
+  shortDistances: 'from-indigo-500 to-blue-400',
+  needsAccessibility: 'from-indigo-500 to-blue-400',
+  speechDifficulty: 'from-purple-500 to-pink-400',
+  alternativeCommunication: 'from-purple-500 to-pink-400',
+  needsTimeToSpeak: 'from-purple-500 to-pink-400',
+  processingDifficulty: 'from-violet-500 to-purple-400',
+  sensoryOverload: 'from-violet-500 to-purple-400',
+  slowClearPace: 'from-violet-500 to-purple-400',
+  calmSafeSpace: 'from-violet-500 to-purple-400',
+}
+
+const fallbackDisabilityTags = [
+  {
+    code: 'difficultySeeing',
+    icon: '👁️',
+    name_en: 'Difficulty seeing',
+    name_he: 'מתקשה לראות',
+    disclosure_level: 'functional',
+    category: 'vision',
+  },
+  {
+    code: 'partialVision',
+    icon: '👓',
+    name_en: 'Partial vision',
+    name_he: 'רואה באופן חלקי',
+    disclosure_level: 'functional',
+    category: 'vision',
+  },
+  {
+    code: 'visionAids',
+    icon: '🦯',
+    name_en: 'Use vision aids',
+    name_he: 'נעזר/ת בעזרים לראייה',
+    disclosure_level: 'functional',
+    category: 'vision',
+  },
+  {
+    code: 'lightSensitivity',
+    icon: '🌞',
+    name_en: 'Light sensitivity',
+    name_he: 'רגישות לאור',
+    disclosure_level: 'functional',
+    category: 'vision',
+  },
+  {
+    code: 'difficultyHearing',
+    icon: '🦻',
+    name_en: 'Difficulty hearing',
+    name_he: 'מתקשה לשמוע',
+    disclosure_level: 'functional',
+    category: 'hearing',
+  },
+  {
+    code: 'partialHearing',
+    icon: '👂',
+    name_en: 'Partial hearing',
+    name_he: 'שומע/ת באופן חלקי',
+    disclosure_level: 'functional',
+    category: 'hearing',
+  },
+  {
+    code: 'hearingAids',
+    icon: '🎧',
+    name_en: 'Use hearing aids',
+    name_he: 'נעזר/ת בעזרים לשמיעה',
+    disclosure_level: 'functional',
+    category: 'hearing',
+  },
+  {
+    code: 'noisyConversations',
+    icon: '💬',
+    name_en: 'Hard to follow group conversations',
+    name_he: 'מתקשה בשיחות עם הרבה אנשים',
+    disclosure_level: 'functional',
+    category: 'hearing',
+  },
+  {
+    code: 'mobilityDifficulty',
+    icon: '🚶',
+    name_en: 'Mobility challenges',
+    name_he: 'קושי בהתניידות',
+    disclosure_level: 'functional',
+    category: 'mobility',
+  },
+  {
+    code: 'wheelchairUser',
+    icon: '♿',
+    name_en: 'Wheelchair user',
+    name_he: 'מתנייד/ת בכיסא גלגלים',
+    disclosure_level: 'functional',
+    category: 'mobility',
+  },
+  {
+    code: 'shortDistances',
+    icon: '👣',
+    name_en: 'Can walk short distances',
+    name_he: 'הולך/ת למרחקים קצרים',
+    disclosure_level: 'functional',
+    category: 'mobility',
+  },
+  {
+    code: 'needsAccessibility',
+    icon: '🧩',
+    name_en: 'Need physical accommodations',
+    name_he: 'זקוק/ה להתאמות פיזיות',
+    disclosure_level: 'functional',
+    category: 'mobility',
+  },
+  {
+    code: 'speechDifficulty',
+    icon: '🗣️',
+    name_en: 'Speech difficulties',
+    name_he: 'קושי בדיבור',
+    disclosure_level: 'functional',
+    category: 'communication',
+  },
+  {
+    code: 'alternativeCommunication',
+    icon: '🤟',
+    name_en: 'Use alternative communication',
+    name_he: 'מתקשר/ת בדרכים חלופיות',
+    disclosure_level: 'functional',
+    category: 'communication',
+  },
+  {
+    code: 'needsTimeToSpeak',
+    icon: '⏳',
+    name_en: 'Need extra time to express myself',
+    name_he: 'צריך/ה זמן להתנסח',
+    disclosure_level: 'functional',
+    category: 'communication',
+  },
+  {
+    code: 'processingDifficulty',
+    icon: '🧠',
+    name_en: 'Info processing challenges',
+    name_he: 'קושי בעיבוד מידע',
+    disclosure_level: 'functional',
+    category: 'cognitive_emotional',
+  },
+  {
+    code: 'sensoryOverload',
+    icon: '🌊',
+    name_en: 'Sensitive to overload/stimuli',
+    name_he: 'רגישות לעומס או גירויים',
+    disclosure_level: 'functional',
+    category: 'cognitive_emotional',
+  },
+  {
+    code: 'slowClearPace',
+    icon: '🐢',
+    name_en: 'Need a slow, clear pace',
+    name_he: 'זקוק/ה לקצב איטי וברור',
+    disclosure_level: 'functional',
+    category: 'cognitive_emotional',
+  },
+  {
+    code: 'calmSafeSpace',
+    icon: '🌿',
+    name_en: 'Need a calm, safe space',
+    name_he: 'צריך/ה מרחב רגוע ובטוח',
+    disclosure_level: 'functional',
+    category: 'cognitive_emotional',
+  },
 ]
+
 
 // Icebreaker prompts
 const icebreakers = computed(() => [
@@ -996,6 +1312,20 @@ const icebreakers = computed(() => [
 ])
 
 const showIcebreakers = ref(false)
+
+const showShortcuts = ref(false)
+const savedShortcuts = ref([])
+const isLoadingShortcuts = ref(false)
+const shortcutsError = ref(null)
+const shortcutsLoaded = ref(false)
+const newShortcutTitle = ref('')
+const newShortcutContent = ref('')
+
+const savedShortcutItems = computed(() => savedShortcuts.value.map((shortcut) => ({
+  ...shortcut,
+  title: shortcut.title || t('shortcuts.untitled'),
+  content: shortcut.content || '',
+})))
 
 // Text size class based on settings
 const textSizeClass = computed(() => {
@@ -1034,7 +1364,10 @@ const getProfilePhotoAlt = (profile, photoIndex, totalPhotos) => {
   const distance = profile.distance ? `${profile.distance} ${t('discovery.distance', { km: '' }).trim()}` : ''
   
   // Get translated disability tags for screen readers
-  const tags = (profile.tags || []).map(tagId => t(`tags.${tagId}`)).filter(tag => !tag.startsWith('tags.')).join(', ')
+  const tags = (profile.tags || [])
+    .map(tagId => getTagLabel(tagId))
+    .filter(tag => tag)
+    .join(', ')
   
   // Format: "Name, Age, Distance. Photo X of Y. Tags"
   let alt = `${name}, ${age}`
@@ -1065,6 +1398,13 @@ onMounted(() => {
     window.removeEventListener('resize', handleResize)
     document.removeEventListener('keydown', handleKeyboardNavigation)
   })
+})
+
+watch(isKeyboardOpen, (isOpen) => {
+  if (isOpen) {
+    showIcebreakers.value = false
+    showShortcuts.value = false
+  }
 })
 
 // Swipe gestures for discovery
@@ -1271,60 +1611,33 @@ const selectLanguage = async (lang) => {
   navigateTo('onboarding')
 }
 
-const toggleTag = (tagId) => {
-  const index = selectedTags.value.indexOf(tagId)
+const toggleTag = (tagCode) => {
+  const index = selectedTags.value.indexOf(tagCode)
   if (index === -1) {
-    selectedTags.value.push(tagId)
+    selectedTags.value.push(tagCode)
+    ensureTagVisibility(tagCode)
   } else {
     selectedTags.value.splice(index, 1)
+    delete userProfile.value.tagVisibilities[tagCode]
   }
 }
 
-const toggleProfileTag = (tagId) => {
-  const index = userProfile.value.tags.indexOf(tagId)
+const toggleProfileTag = (tagCode) => {
+  const index = userProfile.value.tags.indexOf(tagCode)
   if (index === -1) {
-    userProfile.value.tags.push(tagId)
+    userProfile.value.tags.push(tagCode)
+    ensureTagVisibility(tagCode)
   } else {
     userProfile.value.tags.splice(index, 1)
+    delete userProfile.value.tagVisibilities[tagCode]
   }
+  selectedTags.value = [...userProfile.value.tags]
 }
 
 const goToDiscovery = async () => {
   userProfile.value.tags = [...selectedTags.value]
-  // Mark onboarding as complete BEFORE navigating (so navigation guard allows discovery)
-  if (user.value && !user.value.is_onboarded) {
-    user.value.is_onboarded = true
-    localStorage.setItem('user_data', JSON.stringify(user.value))
-    
-    // Also update backend
-    try {
-      await userApi.completeOnboarding()
-      console.log('Onboarding marked as complete')
-    } catch (err) {
-      console.warn('Could not mark onboarding complete:', err.message)
-    }
-  }
-  
-  // Save looking for preferences (including age range) to backend
   if (isAuthenticated.value) {
-    try {
-      // Normalize age range before saving (in case user didn't blur)
-      normalizeAgeRange()
-      
-      const genders = normalizeGenderList(userProfile.value.lookingFor.genders)
-      const relationshipTypes = normalizeRelationshipTypes(userProfile.value.lookingFor.relationshipTypes)
-      await profileApi.updateLookingFor({
-        genders: genders.length ? genders : ['everyone'],
-        relationship_types: relationshipTypes,
-        min_age: userProfile.value.lookingFor.ageRange.min,
-        max_age: userProfile.value.lookingFor.ageRange.max,
-        max_distance: userProfile.value.lookingFor.maxDistance,
-        preferred_location: userProfile.value.lookingFor.location,
-      })
-      console.log('Looking for preferences saved')
-    } catch (err) {
-      console.warn('Could not save looking for preferences:', err.message)
-    }
+    await saveProfile()
   }
   
   navigateTo('discovery')
@@ -1340,13 +1653,18 @@ const passProfile = async () => {
   if (!currentProfile.value) return
   
   const profile = { ...currentProfile.value }
-  const profileIndex = currentProfileIndex.value
   
-  // Store action for undo
-  lastSwipeAction.value = { type: 'pass', profile, profileIndex }
-  showUndoToast.value = true
+  // Record swipe in backend immediately (no delay - fixes swipes not being saved)
+  if (isAuthenticated.value) {
+    try {
+      const profileId = profile.user_id || profile.id
+      await matchingApi.swipe(profileId, 'pass')
+    } catch (err) {
+      console.warn('Could not record swipe:', err.message)
+    }
+  }
   
-  // Move to next profile immediately (optimistic UI)
+  // Move to next profile
   const profiles = discoveryProfiles.value.length > 0 ? discoveryProfiles.value : mockProfiles
   if (currentProfileIndex.value < profiles.length - 1) {
     currentProfileIndex.value++
@@ -1356,23 +1674,6 @@ const passProfile = async () => {
       await fetchDiscoveryProfiles()
     }
   }
-  
-  // Delayed execution - can be undone during this time
-  if (undoTimeout) clearTimeout(undoTimeout)
-  undoTimeout = setTimeout(async () => {
-    showUndoToast.value = false
-    lastSwipeAction.value = null
-    
-    // Record swipe in backend
-    if (isAuthenticated.value) {
-      try {
-        const profileId = profile.user_id || profile.id
-        await matchingApi.swipe(profileId, 'pass')
-      } catch (err) {
-        console.warn('Could not record swipe:', err.message)
-      }
-    }
-  }, UNDO_DURATION)
 }
 
 const connectProfile = async () => {
@@ -1510,6 +1811,30 @@ const fetchConversations = async () => {
   }
 }
 
+const fetchShortcuts = async () => {
+  if (!isAuthenticated.value) return
+  isLoadingShortcuts.value = true
+  shortcutsError.value = null
+  
+  try {
+    const result = await chatApi.getShortcuts()
+    savedShortcuts.value = result?.results || result || []
+  } catch (err) {
+    console.error('Failed to fetch shortcuts:', err)
+    shortcutsError.value = t('shortcuts.loadError')
+    savedShortcuts.value = []
+  } finally {
+    shortcutsLoaded.value = true
+    isLoadingShortcuts.value = false
+  }
+}
+
+const ensureShortcutsLoaded = async () => {
+  if (!isAuthenticated.value) return
+  if (shortcutsLoaded.value || isLoadingShortcuts.value) return
+  await fetchShortcuts()
+}
+
 const closeMatchAndChat = async () => {
   showMatchAnimation.value = false
   
@@ -1525,6 +1850,7 @@ const closeMatchAndChat = async () => {
     name: profile.name || profile.display_name || 'Match',
     photo: profile.photo || profile.picture_url || '',
     isOnline: true,
+    isBot: profile.isBot || profile.is_bot || false,
   }
   
   // Get conversation ID from the match data
@@ -1545,8 +1871,10 @@ const closeMatchAndChat = async () => {
   if (currentConversation.value) {
     await refreshMessages()
   }
+  await ensureShortcutsLoaded()
   
   navigateTo('chat')
+  await scrollChatToBottom()
 }
 
 const keepDiscovering = async () => {
@@ -1599,6 +1927,9 @@ const handleLogout = async () => {
   matches.value = []
   conversations.value = []
   chatMessages.value = []
+  savedShortcuts.value = []
+  shortcutsLoaded.value = false
+  showShortcuts.value = false
   discoveryProfiles.value = []
   currentProfileIndex.value = 0
 }
@@ -1764,12 +2095,16 @@ const openChat = async (match) => {
   const profile = getMatchProfile(match)
   selectedMatch.value = match
   matchedProfile.value = profile
+  aiSuggestions.value = []
+  aiSummary.value = ''
+  showSummaryModal.value = false
   
   // Set up chat partner info
   chatPartner.value = {
     name: profile.name || profile.display_name || profile.first_name || 'Unknown',
     photo: profile.picture_url || '',
     isOnline: true,
+    isBot: profile.is_bot || false,
   }
   
   // Get conversation ID from match
@@ -1777,12 +2112,19 @@ const openChat = async (match) => {
   chatMessages.value = []
   lastSeenMessageId.value = 0
   
+  navigateTo('chat')
+
   // Load messages
   if (currentConversation.value && isAuthenticated.value) {
     await refreshMessages()
+    await scrollChatToBottom()
+  }
+
+  if (currentConversation.value) {
+    fetchSuggestions()
   }
   
-  navigateTo('chat')
+  await ensureShortcutsLoaded()
 }
 
 // =============================================================================
@@ -1821,6 +2163,9 @@ const refreshMessages = async () => {
     // Track the latest message ID
     const maxId = Math.max(...messages.map(m => m.id || 0))
     lastSeenMessageId.value = maxId
+    if (currentView.value === 'chat') {
+      await scrollChatToBottom()
+    }
   }
 }
 
@@ -1828,6 +2173,7 @@ const refreshMessages = async () => {
 const checkForNewMessages = async () => {
   if (!currentConversation.value) return
   
+  const shouldAutoScroll = isChatNearBottom()
   const messages = await loadMessages()
   if (messages.length === 0) return
   
@@ -1840,6 +2186,10 @@ const checkForNewMessages = async () => {
     // Update last seen
     const maxId = Math.max(...newMessages.map(m => m.id))
     lastSeenMessageId.value = maxId
+    fetchSuggestions()
+    if (shouldAutoScroll) {
+      await scrollChatToBottom('smooth')
+    }
   }
 }
 
@@ -1858,9 +2208,54 @@ const stopPolling = () => {
   }
 }
 
+
+const fetchSuggestions = async (forceRefresh = false) => {
+  if (!currentConversation.value) return
+  isLoadingSuggestions.value = true
+  try {
+    const response = await chatApi.getSuggestions(
+      currentConversation.value,
+      locale.value,
+      forceRefresh
+    )
+    aiSuggestions.value = response?.suggestions || []
+  } catch (error) {
+    aiSuggestions.value = []
+  } finally {
+    isLoadingSuggestions.value = false
+  }
+}
+
+const fetchSummary = async () => {
+  if (!currentConversation.value) return
+  isLoadingSummary.value = true
+  try {
+    const response = await chatApi.getSummary(currentConversation.value, locale.value)
+    aiSummary.value = response?.summary ? response.summary : t('chat.summaryUnavailable')
+  } catch (error) {
+    aiSummary.value = t('chat.summaryUnavailable')
+  } finally {
+    isLoadingSummary.value = false
+  }
+}
+
+const openSummary = async () => {
+  showSummaryModal.value = true
+  await fetchSummary()
+}
+
+const sendSuggestedMessage = async (text) => {
+  if (!text) return
+  newMessage.value = text
+  await sendMessage(text)
+}
+
 // Send a message
-const sendMessage = async () => {
-  const text = newMessage.value.trim()
+const sendMessage = async (overrideText = null) => {
+  const rawText = (typeof overrideText === 'string' || typeof overrideText === 'number')
+    ? String(overrideText)
+    : newMessage.value
+  const text = rawText.trim()
   if (!text || !currentConversation.value) return
   
   // Clear input immediately
@@ -1876,6 +2271,7 @@ const sendMessage = async () => {
     is_read: false,
   }
   chatMessages.value = [...chatMessages.value, optimisticMsg]
+  await scrollChatToBottom('smooth')
   
   try {
     // Send to server
@@ -1893,6 +2289,7 @@ const sendMessage = async () => {
     
     // Check for AI response after a short delay
     setTimeout(checkForNewMessages, 2000)
+    fetchSuggestions()
     
   } catch (error) {
     console.error('Failed to send:', error)
@@ -1928,11 +2325,83 @@ const sendIcebreaker = async (prompt) => {
       lastSeenMessageId.value = serverMsg.id
     }
     setTimeout(checkForNewMessages, 2000)
+    fetchSuggestions()
   } catch (error) {
     console.error('Failed to send icebreaker:', error)
     chatMessages.value = chatMessages.value.map(m => 
       m.id === tempId ? { ...m, _failed: true } : m
     )
+  }
+}
+
+const useShortcut = (content) => {
+  if (!content) return
+  const separator = newMessage.value.trim().length ? '\n' : ''
+  newMessage.value = `${newMessage.value}${separator}${content}`
+  showShortcuts.value = false
+}
+
+const saveShortcut = async (title, content) => {
+  if (!isAuthenticated.value) return
+  shortcutsError.value = null
+
+  const normalizedTitle = (title || '').trim()
+  const normalizedContent = (content || '').trim()
+  if (!normalizedTitle || !normalizedContent) {
+    shortcutsError.value = t('shortcuts.validationError')
+    return
+  }
+
+  try {
+    const created = await chatApi.saveShortcut({
+      title: normalizedTitle,
+      content: normalizedContent,
+    })
+    savedShortcuts.value = [created, ...savedShortcuts.value]
+    newShortcutTitle.value = ''
+    newShortcutContent.value = ''
+  } catch (error) {
+    console.error('Failed to save shortcut:', error)
+    shortcutsError.value = t('shortcuts.saveError')
+  }
+}
+
+const removeShortcut = async (shortcutId) => {
+  if (!isAuthenticated.value) return
+  shortcutsError.value = null
+  
+  try {
+    await chatApi.deleteShortcut(shortcutId)
+    savedShortcuts.value = savedShortcuts.value.filter(s => s.id !== shortcutId)
+  } catch (error) {
+    console.error('Failed to remove shortcut:', error)
+    shortcutsError.value = t('shortcuts.removeError')
+  }
+}
+
+const toggleIcebreakers = () => {
+  showIcebreakers.value = !showIcebreakers.value
+  if (showIcebreakers.value) {
+    showShortcuts.value = false
+    showSuggestions.value = false
+  }
+}
+
+const toggleShortcuts = async () => {
+  showShortcuts.value = !showShortcuts.value
+  if (showShortcuts.value) {
+    showIcebreakers.value = false
+    showSuggestions.value = false
+    await ensureShortcutsLoaded()
+  }
+}
+
+const toggleSuggestions = () => {
+  showSuggestions.value = !showSuggestions.value
+  if (showSuggestions.value) {
+    showIcebreakers.value = false
+    showShortcuts.value = false
+    fetchSuggestions()
   }
 }
 
@@ -1982,23 +2451,34 @@ const saveProfile = async () => {
       const tagIds = backendTags.value
         .filter(t => selectedTags.value.includes(t.code))
         .map(t => t.id)
+
+      const tagVisibilityPayload = Object.entries(userProfile.value.tagVisibilities)
+        .map(([code, data]) => {
+          const tag = availableTagByCode.value[code]
+          if (!tag?.id) return null
+          return {
+            tag_id: tag.id,
+            visibility: data.visibility,
+            allowed_viewer_ids: data.allowedViewerIds || [],
+          }
+        })
+        .filter(Boolean)
       
       await profileApi.updateProfile({
         display_name: userProfile.value.name,
         bio: userProfile.value.bio,
         city: userProfile.value.location,
         disability_tag_ids: tagIds,
-        current_mood: currentMood.value,
+        disability_tag_visibilities: tagVisibilityPayload,
         prompt_id: userProfile.value.promptId,
         prompt_answer: userProfile.value.promptAnswer,
-        // Ask Me About It
-        ask_me_prompt_id: userProfile.value.askMePromptId,
-        ask_me_answer: userProfile.value.askMeAnswer,
         // Time Preferences
         preferred_times: userProfile.value.preferredTimes || [],
         response_pace: userProfile.value.responsePace,
         date_pace: userProfile.value.datePace,
         time_notes: userProfile.value.timeNotes,
+        relationship_intent: userProfile.value.relationshipIntent || '',
+        openness_tags: userProfile.value.opennessTags || [],
       })
       
       // Save looking for preferences
@@ -2006,10 +2486,8 @@ const saveProfile = async () => {
       normalizeAgeRange()
       
       const genders = normalizeGenderList(userProfile.value.lookingFor.genders)
-      const relationshipTypes = normalizeRelationshipTypes(userProfile.value.lookingFor.relationshipTypes)
       await profileApi.updateLookingFor({
         genders: genders.length ? genders : ['everyone'],
-        relationship_types: relationshipTypes,
         min_age: userProfile.value.lookingFor.ageRange.min,
         max_age: userProfile.value.lookingFor.ageRange.max,
         max_distance: userProfile.value.lookingFor.maxDistance,
@@ -2073,6 +2551,7 @@ const handleSocialLogin = async (provider) => {
         // Fetch discovery data
         await fetchDiscoveryProfiles()
         await fetchMatches()
+        await fetchShortcuts()
       } else {
         // Navigate directly to onboarding (Hebrew only)
         navigateTo('onboarding')
@@ -2107,6 +2586,7 @@ const handleGuestLogin = async () => {
       navigateTo('discovery')
       await fetchDiscoveryProfiles()
       await fetchMatches()
+      await fetchShortcuts()
     } else {
       // Report guest login failure
       handleError(new Error(result.error || 'Guest login failed'), { 
@@ -2126,6 +2606,96 @@ const handleGuestLogin = async () => {
 const backendTags = ref([])
 const backendProfiles = ref([])
 const useBackendData = ref(false)
+
+const availableDisabilityTags = computed(() => {
+  const sourceTags = useBackendData.value && backendTags.value.length
+    ? backendTags.value
+    : fallbackDisabilityTags
+  return sourceTags.map(tag => {
+    const code = tag.code || tag.id
+    const fallbackTag = fallbackDisabilityTags.find(t => t.code === code)
+    return {
+      ...tag,
+      code,
+      icon: tag.icon || fallbackTag?.icon || '🏷️',
+      gradient: tag.gradient || tagGradients[code] || 'from-indigo-500 to-blue-400',
+      disclosure_level: tag.disclosure_level || fallbackTag?.disclosure_level || 'functional',
+      category: tag.category || fallbackTag?.category || 'cognitive_emotional',
+    }
+  })
+})
+
+const availableTagByCode = computed(() => {
+  const map = {}
+  availableDisabilityTags.value.forEach(tag => {
+    map[tag.code] = tag
+  })
+  return map
+})
+
+const tagCategoryOrder = {
+  functional: ['vision', 'hearing', 'mobility', 'communication', 'cognitive_emotional'],
+}
+
+const groupTagsByCategory = (tags, order) => {
+  return order
+    .map(category => ({
+      category,
+      tags: tags.filter(tag => tag.category === category),
+    }))
+    .filter(group => group.tags.length)
+}
+
+const functionalTagGroups = computed(() => {
+  const tags = availableDisabilityTags.value.filter(tag => tag.disclosure_level === 'functional')
+  return groupTagsByCategory(tags, tagCategoryOrder.functional)
+})
+
+const getTagLabel = (tagOrCode) => {
+  const tag = typeof tagOrCode === 'string'
+    ? availableTagByCode.value[tagOrCode]
+    : tagOrCode
+  if (!tag) {
+    return typeof tagOrCode === 'string' ? t(`tags.${tagOrCode}`) : ''
+  }
+  const localeKey = `name_${locale.value}`
+  return tag[localeKey] || tag.name_en || tag.name_he || tag.code
+}
+
+const getTagIcon = (tagOrCode) => {
+  const tag = typeof tagOrCode === 'string'
+    ? availableTagByCode.value[tagOrCode]
+    : tagOrCode
+  return tag?.icon || '🏷️'
+}
+
+const tagVisibilityOptions = computed(() => [
+  { id: 'public', label: t('tagVisibility.public') },
+  { id: 'matches', label: t('tagVisibility.matches') },
+  { id: 'specific', label: t('tagVisibility.specific') },
+  { id: 'hidden', label: t('tagVisibility.hidden') },
+])
+
+const getDefaultTagVisibility = () => {
+  return 'public'
+}
+
+const ensureTagVisibility = (tagCode) => {
+  if (!userProfile.value.tagVisibilities[tagCode]) {
+    userProfile.value.tagVisibilities[tagCode] = {
+      visibility: getDefaultTagVisibility(tagCode),
+      allowedViewerIds: [],
+    }
+  }
+}
+
+const setTagVisibility = (tagCode, visibility) => {
+  ensureTagVisibility(tagCode)
+  userProfile.value.tagVisibilities[tagCode].visibility = visibility
+  if (visibility !== 'specific') {
+    userProfile.value.tagVisibilities[tagCode].allowedViewerIds = []
+  }
+}
 
 // Fetch initial data from backend
 // Optimized parallel data fetching
@@ -2163,8 +2733,9 @@ const initializeApp = async () => {
       let discoverError = null
       let matchesError = null
       let conversationsError = null
+      let shortcutsLoadError = null
       
-      const [profile, tagsResponse, discoverResponse, matchesResponse, conversationsResponse] = await Promise.all([
+      const [profile, tagsResponse, discoverResponse, matchesResponse, conversationsResponse, shortcutsResponse] = await Promise.all([
         profileApi.getMyProfile().catch((err) => {
           profileError = err
           return null
@@ -2182,6 +2753,10 @@ const initializeApp = async () => {
           conversationsError = err
           return { results: [] }
         }),
+        chatApi.getShortcuts().catch((err) => {
+          shortcutsLoadError = err
+          return []
+        }),
       ])
       
       // Report non-critical errors
@@ -2196,6 +2771,9 @@ const initializeApp = async () => {
       }
       if (conversationsError) {
         handleError(conversationsError, { source: 'initializeApp', action: 'fetchConversations' })
+      }
+      if (shortcutsLoadError) {
+        handleError(shortcutsLoadError, { source: 'initializeApp', action: 'fetchShortcuts' })
       }
       
       // Check for critical failure - if profile fetch failed and we have no data
@@ -2233,15 +2811,32 @@ const initializeApp = async () => {
       // Process conversations (empty state is OK)
       conversations.value = conversationsResponse?.results || conversationsResponse || []
       
+      // Process shortcuts (empty state is OK)
+      savedShortcuts.value = shortcutsResponse?.results || shortcutsResponse || []
+      shortcutsLoaded.value = true
+      
       // Process profile
       if (profile) {
+        const visibilityMap = {}
+        ;(profile.disability_tag_visibilities || []).forEach(entry => {
+          if (entry.tag?.code) {
+            visibilityMap[entry.tag.code] = {
+              visibility: entry.visibility || 'public',
+              allowedViewerIds: entry.allowed_viewer_ids || [],
+            }
+          }
+        })
+
         userProfile.value = {
           ...userProfile.value,
           name: profile.display_name || userProfile.value.name,
           bio: profile.bio || '',
           location: profile.city || userProfile.value.location,
           tags: (profile.disability_tags || []).map(t => t.code),
+          tagVisibilities: visibilityMap,
           interests: (profile.interests || []).map(i => i.name),
+          relationshipIntent: profile.relationship_intent || '',
+          opennessTags: profile.openness_tags || [],
           promptId: profile.prompt_id || userProfile.value.promptId,
           promptAnswer: profile.prompt_answer || '',
           age: profile.age || userProfile.value.age,
@@ -2257,14 +2852,14 @@ const initializeApp = async () => {
           // Photos
           photos: profile.photos || [],
         }
-        selectedTags.value = userProfile.value.tags
+        selectedTags.value = [...userProfile.value.tags]
+        selectedTags.value.forEach(tagCode => ensureTagVisibility(tagCode))
         currentMood.value = profile.current_mood || 'open'
         
         // Load looking for preferences
         if (profile.looking_for) {
           userProfile.value.lookingFor = {
             genders: normalizeGenderList(profile.looking_for.genders || []),
-            relationshipTypes: normalizeRelationshipTypes(profile.looking_for.relationship_types || []),
             ageRange: {
               min: profile.looking_for.min_age || 18,
               max: profile.looking_for.max_age || 50,
@@ -2366,6 +2961,7 @@ onMounted(async () => {
   
   // Load saved accessibility settings
   loadA11ySettings()
+  loadChatSettings()
   
   try {
     // Check if this is a Facebook OAuth callback
@@ -2434,8 +3030,10 @@ const constellationPoints = computed(() => {
     :dir="dir"
     :class="[
       'min-h-screen-safe font-sans text-text-deep relative overflow-x-hidden bg-background',
+      currentView === 'discovery' ? 'overflow-hidden h-[100svh]' : '',
       textSizeClass,
       a11ySettings.highContrast ? 'high-contrast' : '',
+      a11ySettings.darkMode ? 'dark-mode' : '',
       a11ySettings.reducedMotion ? 'reduce-motion' : '',
     ]"
   >
@@ -2451,14 +3049,7 @@ const constellationPoints = computed(() => {
       </div>
     </Transition>
 
-    <!-- Organic Blob Background - only render after initial load for performance -->
-    <div v-if="!appLoading" class="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-      <div class="blob blob-primary w-[300px] h-[300px] -top-24 -end-24"></div>
-      <div class="blob blob-secondary w-[250px] h-[250px] top-1/2 -start-32"></div>
-    </div>
-    
-    <!-- Static gradient background - lighter than animated blobs -->
-    <div class="fixed inset-0 pointer-events-none bg-organic-pattern opacity-40" aria-hidden="true"></div>
+    <!-- Minimal background for a ChatGPT-like feel -->
 
     <!-- Accessibility Quick Settings Button -->
     <button
@@ -2535,6 +3126,30 @@ const constellationPoints = computed(() => {
               :class="[
                 'absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-all',
                 a11ySettings.highContrast ? 'end-1' : 'start-1'
+              ]"
+            ></span>
+          </button>
+        </label>
+
+        <!-- Dark Mode -->
+        <label class="flex items-center justify-between py-3 cursor-pointer touch-manipulation min-h-[48px]">
+          <div>
+            <span class="text-sm block">{{ t('a11y.darkMode') }}</span>
+            <span class="text-[10px] text-text-muted">{{ t('a11y.darkModeDesc') }}</span>
+          </div>
+          <button
+            @click="a11ySettings.darkMode = !a11ySettings.darkMode"
+            :class="[
+              'w-14 h-8 rounded-full transition-colors relative shrink-0',
+              a11ySettings.darkMode ? 'bg-primary' : 'bg-border'
+            ]"
+            role="switch"
+            :aria-checked="a11ySettings.darkMode"
+          >
+            <span 
+              :class="[
+                'absolute top-1 w-6 h-6 bg-white rounded-full shadow transition-all',
+                a11ySettings.darkMode ? 'end-1' : 'start-1'
               ]"
             ></span>
           </button>
@@ -2894,75 +3509,113 @@ const constellationPoints = computed(() => {
           </div>
           
           <!-- Tags Grid with unique organic styling -->
-          <div class="grid grid-cols-2 gap-3 mb-8">
-            <button
-              v-for="(tag, index) in disabilityTags"
-              :key="tag.id"
-              @click="toggleTag(tag.id)"
-              :class="[
-                'group relative rounded-[18px] transition-all duration-300 animate-scale-in touch-manipulation active:scale-[0.97] overflow-hidden',
-                selectedTags.includes(tag.id) 
-                  ? 'shadow-card' 
-                  : 'shadow-soft hover:shadow-card',
-                `stagger-${(index % 8) + 1}`
-              ]"
-              :aria-pressed="selectedTags.includes(tag.id)"
-            >
-              <!-- Gradient background when selected -->
-              <div 
-                :class="[
-                  'absolute inset-0 transition-opacity duration-300',
-                  selectedTags.includes(tag.id) ? 'opacity-100' : 'opacity-0'
-                ]"
-                :style="`background: linear-gradient(135deg, ${tag.gradient.includes('pink') ? '#FAE5E0' : tag.gradient.includes('green') ? '#D8EBE2' : tag.gradient.includes('amber') ? '#FEF3C7' : '#E0E7FF'}, #fff)`"
-              ></div>
-              
-              <div 
-                :class="[
-                  'relative flex items-center gap-3 px-4 py-4 min-h-[60px] transition-all',
-                  selectedTags.includes(tag.id) ? '' : 'bg-surface-warm'
-                ]"
-              >
-                <span class="text-xl xs:text-2xl">{{ tag.icon }}</span>
-                <span 
-                  :class="[
-                    'flex-1 text-sm font-semibold leading-tight text-start',
-                    selectedTags.includes(tag.id) ? 'text-text-deep' : 'text-text-muted'
-                  ]"
-                >
-                  {{ t(`tags.${tag.id}`) }}
-                </span>
-                <span 
-                  v-if="selectedTags.includes(tag.id)"
-                  class="text-primary text-lg animate-bounce-soft"
-                >
-                  ✓
-                </span>
+          <div class="space-y-6 mb-8">
+            <div>
+              <h3 class="text-sm xs:text-base font-semibold text-text-deep mb-1">
+                {{ t('onboarding.functionalTagsTitle') }}
+              </h3>
+              <p class="text-xs xs:text-sm text-text-muted mb-3">
+                {{ t('onboarding.functionalTagsHint') }}
+              </p>
+              <div v-for="group in functionalTagGroups" :key="group.category" class="mb-4">
+                <h4 class="text-xs uppercase tracking-wide text-text-muted mb-2">
+                  {{ t(`tagCategories.${group.category}`) }}
+                </h4>
+                <div class="grid grid-cols-2 gap-3">
+                  <button
+                    v-for="(tag, index) in group.tags"
+                    :key="tag.code"
+                    @click="toggleTag(tag.code)"
+                    :class="[
+                      'group relative rounded-[18px] transition-all duration-300 animate-scale-in touch-manipulation active:scale-[0.97] overflow-hidden',
+                      selectedTags.includes(tag.code) 
+                        ? 'shadow-card' 
+                        : 'shadow-soft hover:shadow-card',
+                      `stagger-${(index % 8) + 1}`
+                    ]"
+                    :aria-pressed="selectedTags.includes(tag.code)"
+                  >
+                    <!-- Gradient background when selected -->
+                    <div 
+                      :class="[
+                        'absolute inset-0 transition-opacity duration-300',
+                        selectedTags.includes(tag.code) ? 'opacity-100' : 'opacity-0'
+                      ]"
+                      :style="`background: linear-gradient(135deg, ${tag.gradient.includes('pink') ? '#FAE5E0' : tag.gradient.includes('green') ? '#D8EBE2' : tag.gradient.includes('amber') ? '#FEF3C7' : '#E0E7FF'}, #fff)`"
+                    ></div>
+                    
+                    <div 
+                      :class="[
+                        'relative flex items-center gap-3 px-4 py-4 min-h-[60px] transition-all',
+                        selectedTags.includes(tag.code) ? '' : 'bg-surface-warm'
+                      ]"
+                    >
+                      <span class="text-xl xs:text-2xl">{{ tag.icon }}</span>
+                      <span 
+                        :class="[
+                          'flex-1 text-sm font-semibold leading-tight text-start',
+                          selectedTags.includes(tag.code) ? 'text-text-deep' : 'text-text-muted'
+                        ]"
+                      >
+                        {{ getTagLabel(tag) }}
+                      </span>
+                      <span 
+                        v-if="selectedTags.includes(tag.code)"
+                        class="text-primary text-lg animate-bounce-soft"
+                      >
+                        ✓
+                      </span>
+                    </div>
+                  </button>
+                </div>
               </div>
-            </button>
-          </div>
+            </div>
 
-          <!-- Mood Selector with organic style -->
-          <div class="mb-6 card p-5 animate-slide-up stagger-6">
-            <h3 class="text-sm font-semibold text-text-deep mb-4 flex items-center gap-2">
-              <span>🌟</span>
-              {{ t('onboarding.moodQuestion') }}
-            </h3>
-            <div class="grid grid-cols-4 gap-2">
-              <button
-                v-for="mood in moodOptions"
-                :key="mood.id"
-                @click="currentMood = mood.id"
-                :class="[
-                  'flex flex-col items-center gap-2 py-3 rounded-[16px] transition-all touch-manipulation active:scale-95',
-                  currentMood === mood.id 
-                    ? 'bg-gradient-to-br from-primary/20 to-coral/20 shadow-soft scale-105' 
-                    : 'bg-surface-warm hover:bg-background-alt'
-                ]"
-              >
-                <span class="text-2xl xs:text-3xl">{{ mood.emoji }}</span>
-                <span class="text-[10px] xs:text-xs font-medium text-text-muted whitespace-nowrap">{{ t(`moods.${mood.id}`) }}</span>
-              </button>
+            <div v-if="selectedTags.length" class="card p-4 xs:p-5 animate-slide-up">
+              <h3 class="text-sm xs:text-base font-semibold text-text-deep mb-3 flex items-center gap-2">
+                <span>🔒</span> {{ t('tagVisibility.title') }}
+              </h3>
+              <p class="text-xs xs:text-sm text-text-muted mb-4">
+                {{ t('tagVisibility.subtitle') }}
+              </p>
+              <div class="space-y-4">
+                <div v-for="tagCode in selectedTags" :key="tagCode" class="bg-surface rounded-xl p-3 border border-border">
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="text-lg">{{ getTagIcon(tagCode) }}</span>
+                    <span class="text-sm font-semibold text-text-deep flex-1">{{ getTagLabel(tagCode) }}</span>
+                    <select
+                      :value="userProfile.tagVisibilities[tagCode]?.visibility || getDefaultTagVisibility(tagCode)"
+                      @change="setTagVisibility(tagCode, $event.target.value)"
+                      class="text-xs bg-background border border-border rounded-full px-2 py-1"
+                      :aria-label="t('tagVisibility.selectAria', { tag: getTagLabel(tagCode) })"
+                    >
+                      <option v-for="option in tagVisibilityOptions" :key="option.id" :value="option.id">
+                        {{ option.label }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div v-if="userProfile.tagVisibilities[tagCode]?.visibility === 'specific'" class="mt-2">
+                    <p class="text-xs text-text-muted mb-2">{{ t('tagVisibility.choosePeople') }}</p>
+                    <div v-if="matches.length" class="flex flex-wrap gap-2">
+                      <label
+                        v-for="match in matches"
+                        :key="match.id"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-border bg-background text-xs"
+                      >
+                        <input
+                          type="checkbox"
+                          class="accent-primary"
+                          :value="match.other_user?.id"
+                          v-model="userProfile.tagVisibilities[tagCode].allowedViewerIds"
+                        />
+                        <span>{{ match.other_profile?.display_name || match.other_user?.username }}</span>
+                      </label>
+                    </div>
+                    <p v-else class="text-xs text-text-muted">{{ t('tagVisibility.noMatches') }}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -3041,6 +3694,60 @@ const constellationPoints = computed(() => {
             </p>
           </div>
 
+          <!-- What I'm looking for (Intent) -->
+          <div class="card p-4 xs:p-5 animate-slide-up stagger-1">
+            <h3 class="text-sm xs:text-base font-semibold text-text-deep mb-3 flex items-center gap-2">
+              <span>🎯</span> {{ t('intent.title') }}
+            </h3>
+            <p class="text-xs xs:text-sm text-text-muted mb-3">
+              {{ t('intent.subtitle') }}
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="intent in relationshipIntentOptions"
+                :key="intent.id"
+                @click="setRelationshipIntent(intent.id)"
+                :class="[
+                  'flex items-center gap-2 px-3 xs:px-4 py-2 xs:py-2.5 rounded-full transition-all touch-manipulation active:scale-95',
+                  userProfile.relationshipIntent === intent.id
+                    ? 'bg-primary text-white shadow-button'
+                    : 'bg-surface border-2 border-border text-text-muted hover:border-primary/50'
+                ]"
+              >
+                <span class="text-base">{{ intent.emoji }}</span>
+                <span class="text-xs xs:text-sm font-medium">{{ t(`intent.options.${intent.id}`) }}</span>
+                <span v-if="userProfile.relationshipIntent === intent.id" class="text-sm">✓</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Openness Tags -->
+          <div class="card p-4 xs:p-5 animate-slide-up stagger-1">
+            <h3 class="text-sm xs:text-base font-semibold text-text-deep mb-3 flex items-center gap-2">
+              <span>🤗</span> {{ t('openness.title') }}
+            </h3>
+            <p class="text-xs xs:text-sm text-text-muted mb-3">
+              {{ t('openness.subtitle') }}
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="option in opennessOptions"
+                :key="option.id"
+                @click="toggleOpennessTag(option.id)"
+                :class="[
+                  'flex items-center gap-2 px-3 xs:px-4 py-2 xs:py-2.5 rounded-full transition-all touch-manipulation active:scale-95',
+                  userProfile.opennessTags.includes(option.id)
+                    ? 'bg-secondary text-white shadow-button'
+                    : 'bg-surface border-2 border-border text-text-muted hover:border-secondary/50'
+                ]"
+              >
+                <span class="text-base">{{ option.emoji }}</span>
+                <span class="text-xs xs:text-sm font-medium">{{ t(`openness.options.${option.id}`) }}</span>
+                <span v-if="userProfile.opennessTags.includes(option.id)" class="text-sm">✓</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Who are you interested in? -->
           <div class="card p-4 xs:p-5 animate-slide-up stagger-1">
             <h3 class="text-sm xs:text-base font-semibold text-text-deep mb-3 flex items-center gap-2">
@@ -3060,47 +3767,6 @@ const constellationPoints = computed(() => {
               >
                 <span class="text-base">{{ gender.emoji }}</span>
                 <span class="text-sm font-medium">{{ t(`lookingFor.genders.${gender.id}`) }}</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- What are you looking for? -->
-          <div class="card p-4 xs:p-5 animate-slide-up stagger-2">
-            <h3 class="text-sm xs:text-base font-semibold text-text-deep mb-3 flex items-center gap-2">
-              <span>💕</span> {{ t('lookingFor.whatSeeking') }}
-            </h3>
-            <div class="grid grid-cols-2 gap-2">
-              <button
-                v-for="rel in relationshipOptions"
-                :key="rel.id"
-                @click="toggleRelationship(rel.id)"
-                :class="[
-                  'relative p-[2px] rounded-xl transition-all touch-manipulation active:scale-[0.97]',
-                  userProfile.lookingFor.relationshipTypes.includes(rel.id)
-                    ? `bg-gradient-to-r ${rel.gradient}`
-                    : 'bg-border'
-                ]"
-              >
-                <div 
-                  :class="[
-                    'flex items-center gap-2 px-3 py-3 rounded-[10px] bg-surface transition-colors',
-                    userProfile.lookingFor.relationshipTypes.includes(rel.id) ? 'bg-surface/90' : ''
-                  ]"
-                >
-                  <span class="text-lg">{{ rel.emoji }}</span>
-                  <span 
-                    :class="[
-                      'flex-1 text-sm font-medium text-start',
-                      userProfile.lookingFor.relationshipTypes.includes(rel.id) ? 'text-text-deep' : 'text-text-muted'
-                    ]"
-                  >
-                    {{ t(`lookingFor.types.${rel.id}`) }}
-                  </span>
-                  <span 
-                    v-if="userProfile.lookingFor.relationshipTypes.includes(rel.id)"
-                    class="text-primary"
-                  >✓</span>
-                </div>
               </button>
             </div>
           </div>
@@ -3236,36 +3902,36 @@ const constellationPoints = computed(() => {
     <!-- Discovery View -->
     <div 
       v-else-if="currentView === 'discovery'" 
-      class="min-h-screen-safe flex flex-col relative z-10"
+      class="h-[100svh] flex flex-col relative z-10 overflow-hidden overscroll-none"
     >
       <!-- Header -->
       <header class="sticky top-0 z-20 bg-surface/90 backdrop-blur-lg header-safe">
-        <div class="flex items-center justify-between px-3 xs:px-4 py-2 xs:py-3">
+        <div class="flex items-center justify-between px-2 xs:px-3 py-1.5 xs:py-2">
           <!-- Spacer for layout balance -->
-          <div class="w-10 xs:w-11"></div>
+          <div class="w-9 xs:w-10"></div>
           
           <div class="text-center">
-            <h1 class="text-base xs:text-lg font-semibold text-text-deep">{{ t('discovery.title') }}</h1>
-            <p class="text-[10px] xs:text-xs text-text-muted">{{ t('discovery.subtitle') }}</p>
+            <h1 class="text-sm xs:text-base font-semibold text-text-deep">{{ t('discovery.title') }}</h1>
+            <p class="text-[9px] xs:text-[10px] text-text-muted">{{ t('discovery.subtitle') }}</p>
           </div>
           
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5">
             <button
               @click="goToMatches"
-              class="btn-icon bg-background shadow-soft touch-manipulation relative"
+              class="w-9 h-9 xs:w-10 xs:h-10 rounded-xl bg-background shadow-soft touch-manipulation relative flex items-center justify-center"
               :aria-label="t('matches.title')"
             >
-              <span class="text-lg">💬</span>
+              <span class="text-base">💬</span>
               <span 
                 v-if="matches.length > 0"
-                class="absolute -top-1 -right-1 w-4 h-4 bg-primary text-white text-[10px] rounded-full flex items-center justify-center font-semibold"
+                class="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-primary text-white text-[9px] rounded-full flex items-center justify-center font-semibold"
               >
                 {{ matches.length > 9 ? '9+' : matches.length }}
               </span>
             </button>
             <button
               @click="goToProfile"
-              class="btn-icon bg-background shadow-soft touch-manipulation overflow-hidden p-0"
+              class="w-9 h-9 xs:w-10 xs:h-10 rounded-xl bg-background shadow-soft touch-manipulation overflow-hidden p-0"
               :aria-label="t('nav.profile')"
             >
               <img 
@@ -3274,14 +3940,14 @@ const constellationPoints = computed(() => {
                 :alt="t('nav.profile')"
                 class="w-full h-full object-cover"
               />
-              <span v-else class="text-lg">👤</span>
+              <span v-else class="text-base">👤</span>
             </button>
           </div>
         </div>
       </header>
       
       <!-- Profile Card -->
-      <main class="flex-1 px-3 xs:px-4 py-3 xs:py-6 flex flex-col items-center justify-center overflow-hidden relative">
+      <main class="flex-1 min-h-0 px-0 xs:px-1 py-0 xs:py-1 flex flex-col items-center overflow-hidden relative overscroll-none">
         <!-- Accessible swipe hint for all users (auto-hides after 10 seconds) -->
         <Transition name="fade">
           <div 
@@ -3302,7 +3968,7 @@ const constellationPoints = computed(() => {
         <div 
           v-if="currentProfile"
           :key="currentProfile.id || currentProfile.user_id || currentProfileIndex"
-          class="card w-full max-w-sm relative swipeable no-context-menu select-none"
+          class="card w-full max-w-full relative swipeable no-context-menu select-none flex flex-col h-full max-h-full rounded-none"
           :class="{ 'transition-none': isSwiping, 'transition-all duration-300': !isSwiping && !isAnimating }"
           :style="{ 
             transform: `translateX(${cardOffset}px) rotate(${cardRotation}deg)`,
@@ -3398,7 +4064,11 @@ const constellationPoints = computed(() => {
           </div>
 
           <!-- Photo Carousel -->
-          <div class="relative aspect-[4/5] xs:aspect-[4/5] overflow-hidden">
+          <div 
+            ref="discoveryPhotoCarousel"
+            class="relative aspect-[4/3] xs:aspect-[3/2] sm:aspect-[5/4] overflow-hidden transition-all duration-300 ease-out"
+            :style="{ transform: `translateY(-${photoScrollOffset}px)` }"
+          >
             <!-- Photo indicators -->
             <div 
               v-if="getAllPhotos(currentProfile).length > 1"
@@ -3438,20 +4108,31 @@ const constellationPoints = computed(() => {
             <!-- Gradient Overlay -->
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
             
+            <!-- Bot Badge -->
+            <div 
+              v-if="currentProfile.isBot"
+              class="absolute top-3 start-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-cyan-500/90 to-blue-500/90 backdrop-blur-sm border border-white/20 shadow-lg"
+              :aria-label="t('bot.badge')"
+            >
+              <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zm-3 10a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z"/>
+              </svg>
+              <span class="text-[10px] xs:text-xs font-semibold text-white tracking-wide">{{ t('bot.badge') }}</span>
+            </div>
+
             <!-- Profile Info -->
             <div class="absolute bottom-0 inset-x-0 p-4 xs:p-5 text-white">
-              <!-- Mood Badge -->
-              <div class="inline-flex items-center gap-1.5 xs:gap-2 px-3 xs:px-3.5 py-1.5 bg-white/30 backdrop-blur-md rounded-full text-[11px] xs:text-xs font-medium border border-white/40 shadow-sm mb-2 xs:mb-3">
-                <span class="text-sm">{{ moodOptions.find(m => m.id === currentProfile.mood)?.emoji }}</span>
-                <span>{{ t(`moods.${currentProfile.mood}`) }}</span>
-              </div>
-
-              <h2 class="text-xl xs:text-2xl font-bold mb-1">
+              <h2 class="text-xl xs:text-2xl font-bold mb-1 flex items-center gap-2">
                 {{ currentProfile.name }}, {{ currentProfile.age }}
               </h2>
               <p class="text-xs xs:text-sm text-white/80 mb-2 xs:mb-3">
                 📍 {{ t('discovery.distance', { km: currentProfile.distance }) }}
               </p>
+
+              <div v-if="currentProfile.relationshipIntent" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/25 backdrop-blur-md text-white text-[10px] xs:text-xs font-semibold border border-white/30 mb-2 xs:mb-3">
+                <span>🎯</span>
+                <span>{{ t(`intent.options.${currentProfile.relationshipIntent}`) }}</span>
+              </div>
               
               <!-- Tags -->
               <div class="flex flex-wrap gap-1.5 xs:gap-2">
@@ -3465,19 +4146,23 @@ const constellationPoints = computed(() => {
                       : 'bg-white/25 backdrop-blur-md text-white border border-white/30'
                   ]"
                 >
-                  <span>{{ disabilityTags.find(t => t.id === tagId)?.icon }}</span>
-                  <span>{{ t(`tags.${tagId}`) }}</span>
+                  <span>{{ getTagIcon(tagId) }}</span>
+                  <span>{{ getTagLabel(tagId) }}</span>
                 </span>
               </div>
             </div>
           </div>
           
           <!-- Bio & Prompt - Progressive Disclosure -->
-          <div class="p-4 xs:p-5">
+          <div 
+            ref="discoveryDetailsScroll"
+            class="p-4 xs:p-5 sm:p-6 pb-20 xs:pb-24 flex-1 min-h-0 overflow-y-auto momentum-scroll space-y-3 xs:space-y-4"
+            @scroll="handleDiscoveryScroll"
+          >
             <!-- LAYER 1: Essential - Always visible -->
             <!-- Profile Prompt (headline/hook) -->
             <div class="bg-gradient-to-br from-primary-light via-peach/40 to-accent/20 rounded-xl p-3 xs:p-4 mb-3 xs:mb-4 border border-primary/25 shadow-sm">
-              <p class="text-[10px] xs:text-xs font-bold text-primary uppercase tracking-wider mb-1.5">
+              <p class="text-xs xs:text-sm font-bold text-primary uppercase tracking-wider mb-1.5">
                 {{ t(`profilePrompts.${currentProfile.promptId}`) }}
               </p>
               <p class="text-sm xs:text-base text-text-deep font-medium leading-relaxed">
@@ -3485,106 +4170,67 @@ const constellationPoints = computed(() => {
               </p>
             </div>
 
-            <!-- LAYER 2: Curious - Expandable bio and interests -->
-            <Transition name="slide-fade">
-              <div v-if="profileRevealLevel !== 'essential'" class="animate-slide-up">
-                <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2">
-                  {{ t('profile.about') }}
-                </h3>
-                <p class="text-sm xs:text-base text-text-deep leading-relaxed mb-3 xs:mb-4">
-                  {{ getLocalized(currentProfile.bio) }}
-                </p>
+            <!-- Bio -->
+            <div>
+              <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2">
+                {{ t('profile.about') }}
+              </h3>
+              <p class="text-sm xs:text-base text-text-deep leading-relaxed mb-3 xs:mb-4">
+                {{ getLocalized(currentProfile.bio) }}
+              </p>
             
-            <!-- Interests -->
-                <!-- Interests -->
-                <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2">
-                  {{ t('profile.interests') }}
-                </h3>
-                <div class="flex flex-wrap gap-1.5 xs:gap-2">
-                  <span 
-                    v-for="(interest, idx) in getLocalized(currentProfile.interests, [])"
-                    :key="interest"
-                    :class="[
-                      'px-2.5 xs:px-3 py-1 xs:py-1.5 rounded-full text-xs xs:text-sm font-medium border transition-transform hover:scale-105',
-                      interestColorClasses[idx % interestColorClasses.length]
-                    ]"
-                  >
-                    {{ translateInterest(interest) }}
-                  </span>
-                </div>
+              <!-- Interests -->
+              <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2">
+                {{ t('profile.interests') }}
+              </h3>
+              <div class="flex flex-wrap gap-1.5 xs:gap-2">
+                <span 
+                  v-for="(interest, idx) in getLocalized(currentProfile.interests, [])"
+                  :key="interest"
+                  :class="[
+                    'px-2.5 xs:px-3 py-1 xs:py-1.5 rounded-full text-xs xs:text-sm font-medium border transition-transform hover:scale-105',
+                    interestColorClasses[idx % interestColorClasses.length]
+                  ]"
+                >
+                  {{ translateInterest(interest) }}
+                </span>
               </div>
-            </Transition>
+            </div>
             
-            <!-- LAYER 3: Deep Dive - Ask Me About It & Time Preferences -->
-            <Transition name="slide-fade">
-              <div v-if="profileRevealLevel === 'deep-dive'" class="animate-slide-up">
-                <!-- Ask Me About It - Celebration Prompt -->
-                <div v-if="currentProfile.askMeAnswer" class="mt-4 bg-surface rounded-xl p-3 xs:p-4 border border-border shadow-sm">
-                  <p class="text-[10px] xs:text-xs font-bold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                    <span class="text-sm">💜</span>
-                    {{ t('askMeAboutIt.title') }}
-                  </p>
-                  <p class="text-[10px] xs:text-xs text-text-muted mb-1.5">
-                    {{ t(`askMeAboutIt.prompts.${currentProfile.askMePromptId}`) }}
-                  </p>
-                  <p class="text-sm xs:text-base text-text-deep font-medium leading-relaxed">
-                    "{{ currentProfile.askMeAnswer }}"
-                  </p>
-                </div>
-                
-                <!-- Time Preferences -->
-                <div v-if="currentProfile.responsePace || currentProfile.datePace || (currentProfile.preferredTimes && currentProfile.preferredTimes.length > 0)" class="mt-4">
-                  <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                    <span class="text-sm">🕐</span>
-                    {{ t('timePreferences.title') }}
-                  </h3>
-                  <div class="flex flex-wrap gap-1.5">
-                    <!-- Preferred Times -->
-                    <span 
-                      v-for="time in (currentProfile.preferredTimes || [])"
-                      :key="time"
-                      class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-light text-indigo border border-indigo/20 rounded-full text-xs font-medium"
-                    >
-                      <span>{{ timeOptions.find(t => t.id === time)?.emoji }}</span>
-                      <span>{{ t(`timePreferences.times.${time}`) }}</span>
-                    </span>
-                    <!-- Response Pace -->
-                    <span 
-                      v-if="currentProfile.responsePace"
-                      class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-light text-amber border border-amber/20 rounded-full text-xs font-medium"
-                    >
-                      <span>{{ responsePaceOptions.find(p => p.id === currentProfile.responsePace)?.emoji }}</span>
-                      <span>{{ t(`timePreferences.responsePaceOptions.${currentProfile.responsePace}`) }}</span>
-                    </span>
-                    <!-- Date Pace -->
-                    <span 
-                      v-if="currentProfile.datePace"
-                      class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-light text-emerald border border-emerald/20 rounded-full text-xs font-medium"
-                    >
-                      <span>{{ datePaceOptions.find(p => p.id === currentProfile.datePace)?.emoji }}</span>
-                      <span>{{ t(`timePreferences.datePaceOptions.${currentProfile.datePace}`) }}</span>
-                    </span>
-                  </div>
-                </div>
+            <!-- Time Preferences -->
+            <div v-if="currentProfile.responsePace || currentProfile.datePace || (currentProfile.preferredTimes && currentProfile.preferredTimes.length > 0)" class="mt-4 xs:mt-5">
+              <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <span class="text-sm">🕐</span>
+                {{ t('timePreferences.title') }}
+              </h3>
+              <div class="flex flex-wrap gap-1.5">
+                <!-- Preferred Times -->
+                <span 
+                  v-for="time in (currentProfile.preferredTimes || [])"
+                  :key="time"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-light text-indigo border border-indigo/20 rounded-full text-xs font-medium"
+                >
+                  <span>{{ timeOptions.find(t => t.id === time)?.emoji }}</span>
+                  <span>{{ t(`timePreferences.times.${time}`) }}</span>
+                </span>
+                <!-- Response Pace -->
+                <span 
+                  v-if="currentProfile.responsePace"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-light text-amber border border-amber/20 rounded-full text-xs font-medium"
+                >
+                  <span>{{ responsePaceOptions.find(p => p.id === currentProfile.responsePace)?.emoji }}</span>
+                  <span>{{ t(`timePreferences.responsePaceOptions.${currentProfile.responsePace}`) }}</span>
+                </span>
+                <!-- Date Pace -->
+                <span 
+                  v-if="currentProfile.datePace"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-light text-emerald border border-emerald/20 rounded-full text-xs font-medium"
+                >
+                  <span>{{ datePaceOptions.find(p => p.id === currentProfile.datePace)?.emoji }}</span>
+                  <span>{{ t(`timePreferences.datePaceOptions.${currentProfile.datePace}`) }}</span>
+                </span>
               </div>
-            </Transition>
-            
-            <!-- Reveal More Button -->
-            <button
-              @click="cycleRevealLevel"
-              class="w-full mt-4 py-3 px-4 bg-background border-2 border-dashed border-border rounded-xl text-sm font-medium text-text-muted hover:border-primary hover:text-primary hover:bg-primary-light/30 transition-all active:scale-[0.98]"
-              :aria-expanded="profileRevealLevel !== 'essential'"
-            >
-              <span v-if="profileRevealLevel === 'essential'" class="flex items-center justify-center gap-2">
-                👀 {{ t('discovery.learnMore') }}
-              </span>
-              <span v-else-if="profileRevealLevel === 'curious'" class="flex items-center justify-center gap-2">
-                🔍 {{ t('discovery.deepDive') }}
-              </span>
-              <span v-else class="flex items-center justify-center gap-2">
-                📌 {{ t('discovery.showLess') }}
-              </span>
-            </button>
+            </div>
           </div>
         </div>
         
@@ -3615,16 +4261,16 @@ const constellationPoints = computed(() => {
       <!-- Action Buttons -->
       <div 
         v-if="currentProfile"
-        class="sticky bottom-0 bg-surface/90 backdrop-blur-lg p-4 xs:p-6 bottom-bar-safe"
+        class="sticky bottom-0 bg-surface/90 backdrop-blur-lg p-1.5 xs:p-2 bottom-bar-safe"
       >
-        <div class="flex items-center justify-center gap-4 xs:gap-6">
+        <div class="flex items-center justify-center gap-2 xs:gap-3">
           <!-- Pass Button -->
           <button
             @click="passProfile"
-            class="w-14 h-14 xs:w-16 xs:h-16 bg-surface rounded-full shadow-card border-2 border-danger/20 flex items-center justify-center touch-manipulation active:scale-90 active:border-danger"
+            class="w-9 h-9 xs:w-10 xs:h-10 bg-surface rounded-full shadow-card border-2 border-danger/20 flex items-center justify-center touch-manipulation active:scale-90 active:border-danger"
             :aria-label="t('a11y.passProfile')"
           >
-            <svg class="w-6 h-6 xs:w-7 xs:h-7 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 xs:w-5 xs:h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
@@ -3632,19 +4278,13 @@ const constellationPoints = computed(() => {
           <!-- Connect Button -->
           <button
             @click="connectProfile"
-            class="w-16 h-16 xs:w-20 xs:h-20 bg-primary rounded-full shadow-button flex items-center justify-center touch-manipulation active:scale-90"
+            class="w-11 h-11 xs:w-12 xs:h-12 bg-primary rounded-full shadow-button flex items-center justify-center touch-manipulation active:scale-90"
             :aria-label="t('a11y.connectProfile')"
           >
-            <svg class="w-7 h-7 xs:w-9 xs:h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 xs:w-6 xs:h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>
           </button>
-        </div>
-        
-        <!-- Button Labels -->
-        <div class="flex items-center justify-center gap-8 xs:gap-12 mt-2 xs:mt-3">
-          <span class="w-14 xs:w-16 text-center text-xs xs:text-sm text-text-muted">{{ t('discovery.passBtn') }}</span>
-          <span class="w-16 xs:w-20 text-center text-xs xs:text-sm text-primary font-medium">{{ t('discovery.connectBtn') }}</span>
         </div>
         
         <!-- Undo Toast -->
@@ -3750,10 +4390,11 @@ const constellationPoints = computed(() => {
             >
               <div class="w-14 h-14 xs:w-16 xs:h-16 rounded-2xl overflow-hidden bg-surface shadow-soft ring-2 ring-transparent hover:ring-primary/50 transition-all">
                 <img 
-                  v-if="getMatchProfile(match).picture_url"
-                  :src="getMatchProfile(match).picture_url"
+                  v-if="getMatchProfile(match).picture_url || getMatchProfile(match).primary_photo"
+                  :src="getPhotoUrl(getMatchProfile(match).primary_photo || getMatchProfile(match).picture_url)"
                   :alt="getMatchProfile(match).name"
                   class="w-full h-full object-cover"
+                  @error="$event.target.style.display = 'none'; $event.target.nextElementSibling.style.display = 'flex'"
                 />
                 <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20">
                   <span class="text-2xl">{{ getMatchProfile(match).name?.charAt(0) || '?' }}</span>
@@ -3796,11 +4437,14 @@ const constellationPoints = computed(() => {
     <!-- Chat View -->
     <div 
       v-else-if="currentView === 'chat'" 
-      class="min-h-screen-safe flex flex-col relative z-10 bg-background"
+      class="h-[100svh] flex flex-col relative z-10 bg-background overflow-hidden overscroll-none"
     >
       <!-- Header -->
       <header class="sticky top-0 z-20 bg-surface border-b border-border shadow-soft header-safe">
-        <div class="flex items-center gap-2 xs:gap-3 px-3 xs:px-4 py-2 xs:py-3">
+        <div
+          class="flex items-center gap-2 xs:gap-3 px-3 xs:px-4 py-2 xs:py-3"
+          :class="{ 'py-1.5 xs:py-2': isKeyboardOpen }"
+        >
           <button
             @click="goBack"
             class="btn-icon bg-background touch-manipulation"
@@ -3818,26 +4462,58 @@ const constellationPoints = computed(() => {
           >
             <div class="relative">
               <img 
-                :src="mockChat.matchPhoto" 
+                :src="getPhotoUrl(getChatPartnerProfile().primary_photo || getChatPartnerProfile().picture_url || mockChat.matchPhoto)" 
                 :alt="mockChat.matchName"
                 class="w-10 xs:w-11 h-10 xs:h-11 rounded-full object-cover ring-2 ring-primary/20"
+                :class="{ 'w-8 h-8 xs:w-9 xs:h-9': isKeyboardOpen }"
+                @error="$event.target.src = getPhotoUrl(mockChat.matchPhoto) || ''"
               />
               <span 
-                v-if="mockChat.isOnline"
+                v-if="mockChat.isOnline && !mockChat.isBot"
                 class="absolute -bottom-0.5 -end-0.5 w-3 xs:w-3.5 h-3 xs:h-3.5 bg-success rounded-full border-2 border-surface"
               ></span>
             </div>
             <div class="flex-1">
-              <h1 class="text-sm xs:text-base font-semibold text-text-deep">
+              <h1 class="text-sm xs:text-base font-semibold text-text-deep" :class="{ 'text-[13px] xs:text-sm': isKeyboardOpen }">
                 {{ mockChat.matchName }}
               </h1>
-              <p class="text-[10px] xs:text-xs text-success flex items-center gap-1">
+              <p v-if="mockChat.isBot" class="text-[10px] xs:text-xs text-cyan-600 flex items-center gap-1" :class="{ 'text-[9px] xs:text-[10px]': isKeyboardOpen }">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zm-3 10a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z"/>
+                </svg>
+                {{ t('bot.status') }}
+              </p>
+              <p v-else class="text-[10px] xs:text-xs text-success flex items-center gap-1" :class="{ 'text-[9px] xs:text-[10px]': isKeyboardOpen }">
                 <span class="w-1.5 h-1.5 bg-success rounded-full animate-pulse"></span>
                 {{ t('chat.online') }}
               </p>
             </div>
           </div>
           
+          <!-- Sidebar Toggle (Desktop) -->
+          <button
+            @click="showChatSidebar = !showChatSidebar"
+            class="btn-icon bg-background touch-manipulation hidden lg:flex"
+            :aria-label="showChatSidebar ? t('chat.hideSidebar') : t('chat.showSidebar')"
+            :title="showChatSidebar ? t('chat.hideSidebar') : t('chat.showSidebar')"
+          >
+            <svg class="w-5 h-5 text-text-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h10"/>
+            </svg>
+          </button>
+
+          <!-- Summary Button -->
+          <button
+            @click="openSummary"
+            class="btn-icon bg-background touch-manipulation"
+            :aria-label="t('chat.summaryAction')"
+            :title="t('chat.summaryAction')"
+          >
+            <svg class="w-5 h-5 text-text-deep" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6M7 4h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+            </svg>
+          </button>
+
           <!-- Disconnect Button -->
           <button
             @click="showDisconnectConfirm = true"
@@ -3886,280 +4562,524 @@ const constellationPoints = computed(() => {
         </div>
       </Transition>
       
-      <!-- Messages -->
-      <main class="flex-1 px-3 xs:px-4 py-3 xs:py-4 overflow-auto momentum-scroll hide-scrollbar">
-        <div class="max-w-lg mx-auto space-y-3 xs:space-y-4">
-          <!-- Date Separator -->
-          <div class="text-center">
-            <span class="inline-block px-3 xs:px-4 py-1 xs:py-1.5 bg-surface rounded-full text-[10px] xs:text-xs text-text-muted font-medium shadow-soft">
-              {{ t('chat.today') }}
-            </span>
-          </div>
-          
-          <!-- Messages -->
-          <div 
-            v-for="message in mockChat.messages" 
-            :key="message.id"
-            class="flex relative"
-            :class="message.sender === 'me' ? 'justify-end' : 'justify-start'"
-          >
-            <div 
-              :class="[
-                'max-w-[80%] px-3 xs:px-4 py-2.5 xs:py-3 rounded-2xl relative',
-                message.sender === 'me' 
-                  ? 'bg-primary text-white rounded-ee-md' 
-                  : 'bg-surface text-text-deep rounded-es-md shadow-soft',
-                message.isIcebreaker ? 'ring-2 ring-accent/50' : ''
-              ]"
-              @click="message.sender === 'them' && message.messageType !== 'voice' && toggleReactionMenu(message.id)"
-            >
-              <!-- Icebreaker Label -->
-              <span 
-                v-if="message.isIcebreaker"
-                class="absolute -top-2 start-2 px-2 py-0.5 bg-accent text-white text-[9px] xs:text-[10px] font-medium rounded-full"
-              >
-                {{ t('chat.icebreaker') }}
-              </span>
-
-              <!-- Voice Message -->
-              <div v-if="message.messageType === 'voice'" class="flex items-center gap-3">
-                <!-- Play/Pause Button -->
-                <button
-                  v-if="message.audioUrl && !message.isUploading"
-                  @click.stop="playVoiceMessage(message.id, message.audioUrl)"
-                  :class="[
-                    'w-10 h-10 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors',
-                    message.sender === 'me' ? 'bg-white/20 text-white' : 'bg-primary-light text-primary'
-                  ]"
-                  :aria-label="playingAudioId === message.id ? t('chat.pauseVoice') : t('chat.playVoice')"
-                >
-                  <!-- Playing indicator -->
-                  <svg v-if="playingAudioId === message.id" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <rect x="6" y="5" width="4" height="14" rx="1"/>
-                    <rect x="14" y="5" width="4" height="14" rx="1"/>
-                  </svg>
-                  <!-- Play icon -->
-                  <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                </button>
-                
-                <!-- Uploading indicator -->
-                <div v-else-if="message.isUploading" class="w-10 h-10 flex items-center justify-center">
-                  <svg class="w-5 h-5 animate-spin" :class="message.sender === 'me' ? 'text-white/70' : 'text-primary'" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </div>
-                
-                <!-- Waveform visualization (decorative) -->
-                <div class="flex items-center gap-0.5 flex-1">
-                  <div 
-                    v-for="i in 20" 
-                    :key="i"
-                    :class="[
-                      'w-1 rounded-full transition-all duration-100',
-                      message.sender === 'me' ? 'bg-white/50' : 'bg-primary/30',
-                      playingAudioId === message.id ? 'animate-pulse' : ''
-                    ]"
-                    :style="{ height: `${Math.random() * 16 + 8}px` }"
-                  ></div>
-                </div>
-                
-                <!-- Duration -->
-                <span 
-                  :class="[
-                    'text-xs font-mono shrink-0',
-                    message.sender === 'me' ? 'text-white/70' : 'text-text-muted'
-                  ]"
-                >
-                  {{ formatVoiceDuration(message.audioDuration) }}
-                </span>
-              </div>
-
-              <!-- Text Message -->
-              <p v-else class="text-sm xs:text-base leading-relaxed">{{ getLocalized(message.text) }}</p>
-              
-              <div class="flex items-center justify-between gap-2 mt-1">
-                <p 
-                  :class="[
-                    'text-[10px] xs:text-xs',
-                    message.sender === 'me' ? 'text-white/70' : 'text-text-muted'
-                  ]"
-                >
-                  {{ message.time }}
-                </p>
-                
-                <!-- Reaction -->
-                <span v-if="message.reaction" class="text-sm">{{ message.reaction }}</span>
-              </div>
-
-              <!-- Reaction Menu (Mobile tap) -->
-              <Transition name="scale">
-                <div 
-                  v-if="showReactionMenu === message.id && message.sender === 'them'"
-                  class="absolute -bottom-10 start-0 z-10"
-                >
-                  <div class="flex gap-1 bg-surface rounded-full px-2 py-1.5 shadow-card">
-                    <button 
-                      v-for="reaction in reactions"
-                      :key="reaction.emoji"
-                      @click.stop="toggleReaction(message.id, reaction.emoji); showReactionMenu = null"
-                      class="p-1.5 active:scale-125 transition-transform touch-manipulation"
-                      :class="{ 'bg-primary-light rounded-full': message.reaction === reaction.emoji }"
-                    >
-                      {{ reaction.emoji }}
-                    </button>
-                  </div>
-                </div>
-              </Transition>
-            </div>
-          </div>
-        </div>
-      </main>
-      
-      <!-- Conversation Starters -->
-      <Transition name="slide-up">
+      <!-- Conversation Summary Modal -->
+      <Transition name="fade">
         <div 
-          v-if="showIcebreakers"
-          class="bg-surface border-t border-border p-3 xs:p-4"
+          v-if="showSummaryModal"
+          class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          @click.self="showSummaryModal = false"
         >
-          <div class="max-w-lg mx-auto">
-            <h4 class="text-xs xs:text-sm font-semibold text-text-deep mb-1 flex items-center gap-2">
-              <span>💡</span>
-              {{ t('chat.notSureWhatToSay') }}
-            </h4>
-            <p class="text-[10px] xs:text-xs text-text-muted mb-3">{{ t('chat.starterHint') }}</p>
-            <div class="flex flex-wrap gap-2">
+          <div class="bg-surface rounded-2xl max-w-md w-full p-6 shadow-2xl animate-scale-in">
+            <h3 class="text-lg font-semibold text-text-deep mb-2">
+              {{ t('chat.summaryTitle') }}
+            </h3>
+            <p v-if="isLoadingSummary" class="text-text-muted text-sm">
+              {{ t('chat.summaryLoading') }}
+            </p>
+            <p v-else class="text-text-muted text-sm whitespace-pre-wrap">
+              {{ aiSummary }}
+            </p>
+            <div class="mt-5 flex justify-end">
               <button
-                v-for="prompt in icebreakers"
-                :key="prompt.id"
-                @click="sendIcebreaker(prompt)"
-                class="px-3 xs:px-4 py-2 bg-gradient-to-r from-primary-light to-accent/20 hover:from-primary hover:to-accent hover:text-white text-primary border border-primary/20 rounded-full text-xs xs:text-sm font-medium touch-manipulation active:scale-95 transition-all"
+                @click="showSummaryModal = false"
+                class="btn-secondary px-4 py-2"
               >
-                {{ prompt.text }}
+                {{ t('done') }}
               </button>
             </div>
           </div>
         </div>
       </Transition>
       
-      <!-- Input Area - Recording Mode -->
-      <div 
-        v-if="isRecording"
-        class="sticky bottom-0 bg-red-50 border-t border-red-200 p-3 xs:p-4 bottom-bar-safe"
-      >
-        <div class="max-w-lg mx-auto flex items-center gap-3">
-          <!-- Cancel Button -->
-          <button
-            @click="cancelRecording"
-            class="w-10 h-10 xs:w-11 xs:h-11 rounded-full bg-white text-red-500 shadow-soft flex items-center justify-center shrink-0 touch-manipulation active:scale-90"
-            :aria-label="t('chat.cancelRecording')"
-          >
-            <svg class="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-          
-          <!-- Recording Indicator -->
-          <div class="flex-1 flex items-center gap-3">
-            <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            <span class="text-red-600 font-medium text-sm xs:text-base">{{ t('chat.recording') }}</span>
-            <span class="text-red-500 font-mono text-sm xs:text-base">{{ formatRecordingTime(recordingDuration) }}</span>
+      <div class="flex flex-1 min-h-0">
+        <!-- Conversations Sidebar (Desktop) -->
+        <aside 
+          :class="[
+            'hidden lg:flex-col w-72 border-e border-border bg-surface/90',
+            showChatSidebar ? 'lg:flex' : 'lg:hidden'
+          ]"
+          :aria-label="t('chat.conversations')"
+        >
+          <div class="px-4 py-3 border-b border-border">
+            <h2 class="text-xs font-semibold text-text-muted uppercase tracking-wide">
+              {{ t('chat.conversations') }}
+            </h2>
           </div>
-          
-          <!-- Stop/Send Button -->
-          <button
-            @click="stopRecording"
-            class="w-12 h-12 xs:w-14 xs:h-14 rounded-full bg-red-500 text-white shadow-button flex items-center justify-center shrink-0 touch-manipulation active:scale-90 animate-pulse"
-            :aria-label="t('chat.stopRecording')"
-          >
-            <svg class="w-6 h-6 xs:w-7 xs:h-7" fill="currentColor" viewBox="0 0 24 24">
-              <rect x="6" y="6" width="12" height="12" rx="2"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-      
-      <!-- Input Area - Normal Mode -->
-      <div 
-        v-else
-        class="sticky bottom-0 bg-surface border-t border-border p-3 xs:p-4 bottom-bar-safe"
-        :class="{ 'pb-1': isKeyboardOpen }"
-      >
-        <div class="max-w-lg mx-auto flex items-end gap-2 xs:gap-3">
-          <!-- Conversation Starter Help -->
-          <button
-            @click="showIcebreakers = !showIcebreakers"
-            :class="[
-              'w-10 h-10 xs:w-11 xs:h-11 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors',
-              showIcebreakers ? 'bg-accent text-white' : 'bg-primary-light text-primary'
-            ]"
-            :aria-expanded="showIcebreakers"
-            :aria-label="t('chat.needHelp')"
-          >
-            <span class="text-lg xs:text-xl">💡</span>
-          </button>
-
-          <!-- Voice Note Button -->
-          <div class="relative">
+          <div class="flex-1 overflow-y-auto">
             <button
-              @click="startRecording"
-              :disabled="isUploadingVoice"
+              v-for="match in matches"
+              :key="match.id"
+              @click="openChat(match)"
               :class="[
-                'w-10 h-10 xs:w-11 xs:h-11 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors',
-                voiceRecordingError ? 'bg-red-100 text-red-500' : isUploadingVoice ? 'bg-gray-200 text-gray-400' : 'bg-primary-light text-primary'
+                'w-full text-start px-4 py-3 flex items-center gap-3 border-b border-border/60 hover:bg-background/60 transition-colors',
+                currentConversation === (match.conversation_id || null) ? 'bg-background/70' : ''
               ]"
-              :aria-label="t('a11y.recordVoice')"
             >
-              <svg v-if="!isUploadingVoice" class="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
-              </svg>
-              <svg v-else class="w-5 h-5 xs:w-6 xs:h-6 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              <div class="relative shrink-0">
+                <div class="w-9 h-9 rounded-full bg-border/60 border border-border/70 overflow-hidden">
+                  <img 
+                    v-if="getMatchProfile(match).picture_url || getMatchProfile(match).primary_photo"
+                    :src="getPhotoUrl(getMatchProfile(match).primary_photo || getMatchProfile(match).picture_url)"
+                    :alt="getMatchProfile(match).name"
+                    class="w-full h-full object-cover"
+                    @error="$event.target.style.display = 'none'; $event.target.nextElementSibling.style.display = 'flex'"
+                  />
+                  <div v-else class="w-full h-full flex items-center justify-center text-xs text-text-muted">
+                    {{ getMatchProfile(match).name?.charAt(0) || '?' }}
+                  </div>
+                </div>
+                <!-- Bot indicator badge -->
+                <div 
+                  v-if="getMatchProfile(match).is_bot"
+                  class="absolute -bottom-0.5 -end-0.5 w-4 h-4 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 border-2 border-surface flex items-center justify-center"
+                  :title="t('bot.badge')"
+                >
+                  <svg class="w-2.5 h-2.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zm-3 10a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-text-deep truncate">
+                  {{ getMatchProfile(match).name || t('matches.startChat') }}
+                </p>
+                <p class="text-xs text-text-muted truncate">
+                  {{ getMatchProfile(match).bio || t('matches.startChat') }}
+                </p>
+              </div>
             </button>
-            <!-- Error tooltip -->
-            <div 
-              v-if="voiceRecordingError"
-              class="absolute bottom-full mb-2 start-0 bg-red-500 text-white text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap z-20"
-              @click="voiceRecordingError = null"
-            >
-              {{ voiceRecordingError }}
-              <div class="absolute top-full start-4 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-red-500"></div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col min-h-0">
+        <!-- Messages -->
+        <main ref="chatScrollContainer" class="flex-1 px-3 xs:px-4 py-3 xs:py-4 overflow-y-auto overscroll-contain momentum-scroll hide-scrollbar">
+          <div class="max-w-3xl mx-auto w-full space-y-4">
+            <!-- Date Separator -->
+            <div class="text-center">
+              <span class="inline-block px-3 xs:px-4 py-1 xs:py-1.5 bg-surface rounded-full text-[10px] xs:text-xs text-text-muted font-medium shadow-soft">
+                {{ t('chat.today') }}
+              </span>
+            </div>
+            
+            <!-- Messages -->
+            <div class="divide-y divide-border/60">
+              <div 
+                v-for="(message, index) in mockChat.messages" 
+                :key="message.id"
+                class="w-full"
+              >
+                <div 
+                  :class="[
+                    'flex w-full items-start gap-3 xs:gap-4 py-4 xs:py-5',
+                    message.sender === 'me' ? 'justify-end' : 'justify-start'
+                  ]"
+                >
+                  <div v-if="message.sender === 'them'" class="shrink-0 mt-0.5">
+                    <div class="w-6 h-6 xs:w-7 xs:h-7 rounded-full bg-border/60 border border-border/70 flex items-center justify-center overflow-hidden">
+                      <img 
+                        v-if="getChatPartnerProfile().primary_photo || getChatPartnerProfile().picture_url || mockChat.matchPhoto"
+                        :src="getPhotoUrl(getChatPartnerProfile().primary_photo || getChatPartnerProfile().picture_url || mockChat.matchPhoto)" 
+                        :alt="mockChat.matchName"
+                        class="w-full h-full object-cover"
+                        @error="$event.target.style.display = 'none'; $event.target.nextElementSibling.style.display = 'flex'"
+                      />
+                      <span v-else class="text-[10px] xs:text-xs font-semibold text-text-muted">
+                        {{ mockChat.matchName?.[0] || 'N' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div :class="['flex-1 min-w-0', message.sender === 'me' ? 'text-right' : 'text-left']">
+                    <div :class="['flex', message.sender === 'me' ? 'justify-end' : 'justify-start']">
+                      <div 
+                        :class="getMessageBubbleClasses(message)"
+                        @click="message.sender === 'them' && message.messageType !== 'voice' && toggleReactionMenu(message.id)"
+                      >
+                      <!-- Icebreaker Label -->
+                      <span 
+                        v-if="message.isIcebreaker"
+                        class="inline-flex mb-2 px-2 py-0.5 bg-border text-text-muted text-[9px] xs:text-[10px] font-medium rounded-full"
+                      >
+                        {{ t('chat.icebreaker') }}
+                      </span>
+
+                      <!-- Voice Message -->
+                      <div v-if="message.messageType === 'voice'" class="flex items-center gap-3">
+                        <!-- Play/Pause Button -->
+                        <button
+                          v-if="message.audioUrl && !message.isUploading"
+                          @click.stop="playVoiceMessage(message.id, message.audioUrl)"
+                          class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors bg-surface border border-border text-text-muted hover:text-text-deep"
+                          :aria-label="playingAudioId === message.id ? t('chat.pauseVoice') : t('chat.playVoice')"
+                        >
+                          <!-- Playing indicator -->
+                          <svg v-if="playingAudioId === message.id" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <rect x="6" y="5" width="4" height="14" rx="1"/>
+                            <rect x="14" y="5" width="4" height="14" rx="1"/>
+                          </svg>
+                          <!-- Play icon -->
+                          <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                        </button>
+                        
+                        <!-- Uploading indicator -->
+                        <div v-else-if="message.isUploading" class="w-10 h-10 flex items-center justify-center">
+                          <svg class="w-5 h-5 animate-spin text-text-muted" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        </div>
+                        
+                        <!-- Waveform visualization (decorative) -->
+                        <div class="flex items-center gap-0.5 flex-1">
+                          <div 
+                            v-for="i in 20" 
+                            :key="i"
+                            :class="[
+                              'w-1 rounded-full transition-all duration-100 bg-border',
+                              playingAudioId === message.id ? 'animate-pulse' : ''
+                            ]"
+                            :style="{ height: `${Math.random() * 16 + 8}px` }"
+                          ></div>
+                        </div>
+                        
+                        <!-- Duration -->
+                        <span class="text-xs font-mono shrink-0 text-text-muted">
+                          {{ formatVoiceDuration(message.audioDuration) }}
+                        </span>
+                      </div>
+
+                      <!-- Text Message -->
+                      <p
+                        v-else
+                        :class="[
+                          'text-sm xs:text-base leading-relaxed whitespace-pre-wrap',
+                          message.sender === 'me' ? 'text-white' : 'text-text-deep'
+                        ]"
+                      >
+                        {{ getLocalized(message.text) }}
+                      </p>
+                      
+                      <!-- Reaction -->
+                      <span v-if="message.reaction" class="inline-flex mt-2 text-sm">{{ message.reaction }}</span>
+
+                      <!-- Reaction Menu (Mobile tap) -->
+                      <Transition name="scale">
+                        <div 
+                          v-if="showReactionMenu === message.id && message.sender === 'them'"
+                          class="absolute -bottom-10 start-0 z-10"
+                        >
+                          <div class="flex gap-1 bg-surface rounded-full px-2 py-1.5 shadow-card border border-border">
+                            <button 
+                              v-for="reaction in reactions"
+                              :key="reaction.emoji"
+                              @click.stop="toggleReaction(message.id, reaction.emoji); showReactionMenu = null"
+                              class="p-1.5 active:scale-125 transition-transform touch-manipulation"
+                              :class="{ 'bg-primary-light rounded-full': message.reaction === reaction.emoji }"
+                            >
+                              {{ reaction.emoji }}
+                            </button>
+                          </div>
+                        </div>
+                      </Transition>
+                      </div>
+                    </div>
+
+                    <p v-if="shouldShowTimestamp(index)" class="mt-2 text-[10px] xs:text-xs text-text-light">
+                      {{ message.time }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
-          
-          <!-- Text Input -->
-          <textarea
-            v-model="newMessage"
-            :placeholder="t('chat.inputPlaceholder')"
-            class="input-field flex-1 text-base min-h-[60px] max-h-[120px] py-4 resize-none leading-relaxed"
-            rows="2"
-            @keydown.enter.exact.prevent="sendMessage"
-            enterkeyhint="send"
-          ></textarea>
-          
-          <!-- Send Button -->
-          <button
-            @click="sendMessage"
-            class="w-10 h-10 xs:w-11 xs:h-11 rounded-full bg-primary text-white shadow-button flex items-center justify-center shrink-0 touch-manipulation active:scale-90"
-            :disabled="!newMessage.trim()"
-            :class="{ 'opacity-50': !newMessage.trim() }"
+        </main>
+        
+        <!-- Smart Suggestions Panel -->
+        <Transition name="slide-up">
+          <div
+            v-if="showSuggestions"
+            class="bg-surface border-t border-border p-3 xs:p-4"
           >
-            <svg 
-              class="w-5 h-5 xs:w-6 xs:h-6" 
-              :class="{ 'flip-rtl': isRTL }"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
+            <div class="max-w-3xl mx-auto">
+              <div class="flex items-center justify-between gap-3 mb-2">
+                <h4 class="text-xs xs:text-sm font-semibold text-text-deep flex items-center gap-2">
+                  <span>✨</span>
+                  {{ t('chat.smartSuggestions') }}
+                </h4>
+                <button
+                  @click="fetchSuggestions(true)"
+                  class="text-[10px] xs:text-xs text-text-muted hover:text-text-deep border border-border rounded-full px-3 py-1.5 min-h-[36px] touch-manipulation active:scale-95 transition-colors"
+                  :aria-label="t('chat.refreshSuggestions')"
+                  :disabled="isLoadingSuggestions"
+                >
+                  {{ t('chat.refreshSuggestions') }}
+                </button>
+              </div>
+              <div v-if="isLoadingSuggestions" class="text-[10px] xs:text-xs text-text-muted">
+                {{ t('chat.loadingSuggestions') }}
+              </div>
+              <div v-else-if="aiSuggestions.length" class="flex flex-wrap gap-2">
+                <button
+                  v-for="suggestion in aiSuggestions"
+                  :key="suggestion"
+                  @click="sendSuggestedMessage(suggestion)"
+                  class="px-3 xs:px-4 py-2 bg-surface border border-border text-text-deep hover:border-primary/50 rounded-full text-xs xs:text-sm font-medium touch-manipulation active:scale-95 transition-colors min-h-[44px]"
+                >
+                  {{ suggestion }}
+                </button>
+              </div>
+              <div v-else class="text-[10px] xs:text-xs text-text-muted">
+                {{ t('chat.noSuggestions') }}
+              </div>
+            </div>
+          </div>
+        </Transition>
+
+
+        <!-- Shortcuts -->
+        <Transition name="slide-up">
+          <div
+            v-if="showShortcuts"
+            class="bg-surface border-t border-border p-3 xs:p-4"
+          >
+            <div class="max-w-3xl mx-auto">
+              <div class="flex items-start justify-between gap-3 mb-1">
+                <h4 class="text-xs xs:text-sm font-semibold text-text-deep flex items-center gap-2">
+                  <span>⚡</span>
+                  {{ t('shortcuts.title') }}
+                </h4>
+                <button
+                  @click="showShortcuts = false"
+                  class="text-[10px] xs:text-xs text-text-muted hover:text-text-deep border border-border rounded-full px-3 py-1.5 min-h-[36px] touch-manipulation active:scale-95 transition-colors"
+                  :aria-label="t('cancel')"
+                >
+                  {{ t('cancel') }}
+                </button>
+              </div>
+              <p class="text-[10px] xs:text-xs text-text-muted mb-3">{{ t('shortcuts.helper') }}</p>
+              <p v-if="shortcutsError" class="text-[10px] xs:text-xs text-red-600 mb-3">{{ shortcutsError }}</p>
+              
+              <div class="space-y-4">
+                <div>
+                  <p class="text-xs xs:text-sm font-semibold text-text-deep mb-2">
+                    {{ t('shortcuts.savedTitle') }}
+                  </p>
+                  <div v-if="savedShortcutItems.length" class="flex flex-wrap gap-2">
+                    <div
+                      v-for="shortcut in savedShortcutItems"
+                      :key="shortcut.id"
+                      class="flex flex-wrap items-center gap-2"
+                    >
+                      <button
+                        @click="useShortcut(shortcut.content)"
+                        class="px-3 xs:px-4 py-2 bg-surface border border-border text-text-deep hover:border-primary/50 rounded-full text-xs xs:text-sm font-medium min-h-[44px] touch-manipulation active:scale-95 transition-colors"
+                        :aria-label="t('shortcuts.ariaUse', { label: shortcut.title })"
+                      >
+                        {{ shortcut.title }}
+                      </button>
+                      <button
+                        @click="removeShortcut(shortcut.id)"
+                        class="px-3 xs:px-4 py-2 bg-border/40 text-text-muted hover:text-text-deep rounded-full text-xs xs:text-sm font-medium min-h-[44px] touch-manipulation active:scale-95 transition-colors"
+                        :aria-label="t('shortcuts.ariaRemove', { label: shortcut.title })"
+                      >
+                        {{ t('shortcuts.remove') }}
+                      </button>
+                    </div>
+                  </div>
+                  <p v-else class="text-[10px] xs:text-xs text-text-muted">
+                    {{ t('shortcuts.empty') }}
+                  </p>
+                </div>
+                
+                <div>
+                  <p class="text-xs xs:text-sm font-semibold text-text-deep mb-2">
+                    {{ t('shortcuts.createTitle') }}
+                  </p>
+                  <div class="grid gap-2">
+                    <label class="text-[10px] xs:text-xs text-text-muted" :for="'shortcut-title'">
+                      {{ t('shortcuts.titleLabel') }}
+                    </label>
+                    <input
+                      id="shortcut-title"
+                      v-model="newShortcutTitle"
+                      type="text"
+                      class="input-field text-sm xs:text-base"
+                      :placeholder="t('shortcuts.titlePlaceholder')"
+                    />
+                    <label class="text-[10px] xs:text-xs text-text-muted" :for="'shortcut-content'">
+                      {{ t('shortcuts.contentLabel') }}
+                    </label>
+                    <textarea
+                      id="shortcut-content"
+                      v-model="newShortcutContent"
+                      class="input-field text-sm xs:text-base min-h-[72px]"
+                      :placeholder="t('shortcuts.contentPlaceholder')"
+                      rows="2"
+                    ></textarea>
+                    <div class="flex flex-wrap gap-2">
+                      <button
+                        @click="saveShortcut(newShortcutTitle, newShortcutContent)"
+                        class="px-3 xs:px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-full text-xs xs:text-sm font-medium min-h-[44px] touch-manipulation active:scale-95 transition-colors"
+                        :aria-label="t('shortcuts.ariaSave', { label: newShortcutTitle || t('shortcuts.untitled') })"
+                      >
+                        {{ t('shortcuts.add') }}
+                      </button>
+                      <button
+                        @click="useShortcut(newShortcutContent)"
+                        class="px-3 xs:px-4 py-2 bg-surface border border-border text-text-deep hover:border-primary/50 rounded-full text-xs xs:text-sm font-medium min-h-[44px] touch-manipulation active:scale-95 transition-colors"
+                        :aria-label="t('shortcuts.ariaUse', { label: newShortcutTitle || t('shortcuts.untitled') })"
+                      >
+                        {{ t('shortcuts.useDraft') }}
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </Transition>
+        
+        <!-- Input Area - Recording Mode -->
+        <div 
+          v-if="isRecording"
+          class="sticky bottom-0 bg-red-50 border-t border-red-200 p-3 xs:p-4 bottom-bar-safe"
+        >
+          <div class="max-w-3xl mx-auto flex items-center gap-3">
+            <!-- Cancel Button -->
+            <button
+              @click="cancelRecording"
+              class="w-10 h-10 xs:w-11 xs:h-11 rounded-full bg-white text-red-500 shadow-soft flex items-center justify-center shrink-0 touch-manipulation active:scale-90"
+              :aria-label="t('chat.cancelRecording')"
             >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-            </svg>
-          </button>
+              <svg class="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+            
+            <!-- Recording Indicator -->
+            <div class="flex-1 flex items-center gap-3">
+              <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+              <span class="text-red-600 font-medium text-sm xs:text-base">{{ t('chat.recording') }}</span>
+              <span class="text-red-500 font-mono text-sm xs:text-base">{{ formatRecordingTime(recordingDuration) }}</span>
+            </div>
+            
+            <!-- Stop/Send Button -->
+            <button
+              @click="stopRecording"
+              class="w-12 h-12 xs:w-14 xs:h-14 rounded-full bg-red-500 text-white shadow-button flex items-center justify-center shrink-0 touch-manipulation active:scale-90 animate-pulse"
+              :aria-label="t('chat.stopRecording')"
+            >
+              <svg class="w-6 h-6 xs:w-7 xs:h-7" fill="currentColor" viewBox="0 0 24 24">
+                <rect x="6" y="6" width="12" height="12" rx="2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Input Area - Normal Mode -->
+        <div 
+          v-else
+          class="sticky bottom-0 bg-background/95 backdrop-blur border-t border-border p-2 xs:p-3 bottom-bar-safe"
+          :class="{ 'pb-1': isKeyboardOpen }"
+        >
+          <div class="max-w-3xl mx-auto space-y-2">
+            <!-- Action Buttons Row -->
+            <div class="flex items-center justify-center gap-3">
+              <!-- Shortcuts Button -->
+              <button
+                @click="toggleShortcuts"
+                :class="[
+                  'w-8 h-8 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors',
+                  showShortcuts ? 'bg-primary/20 text-primary' : 'bg-border/50 text-text-muted hover:text-text-deep'
+                ]"
+                :aria-expanded="showShortcuts"
+                :aria-label="t('shortcuts.toggle')"
+              >
+                <span class="text-sm">⚡</span>
+              </button>
+
+              <!-- Suggestions Button -->
+              <button
+                @click="toggleSuggestions"
+                :class="[
+                  'w-8 h-8 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors',
+                  showSuggestions ? 'bg-primary/20 text-primary' : 'bg-border/50 text-text-muted hover:text-text-deep'
+                ]"
+                :aria-expanded="showSuggestions"
+                :aria-label="t('chat.smartSuggestions')"
+              >
+                <span class="text-sm">✨</span>
+              </button>
+
+              <!-- Voice Note Button -->
+              <div class="relative">
+                <button
+                  @click="startRecording"
+                  :disabled="isUploadingVoice"
+                  :class="[
+                    'w-8 h-8 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors',
+                    voiceRecordingError ? 'bg-red-100 text-red-600' : isUploadingVoice ? 'bg-gray-200 text-gray-400' : 'bg-border/50 text-text-muted hover:text-text-deep'
+                  ]"
+                  :aria-label="t('a11y.recordVoice')"
+                >
+                  <svg v-if="!isUploadingVoice" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                  </svg>
+                  <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </button>
+                <!-- Error tooltip -->
+                <div 
+                  v-if="voiceRecordingError"
+                  class="absolute bottom-full mb-2 start-0 bg-red-500 text-white text-xs px-3 py-2 rounded-lg shadow-lg whitespace-nowrap z-20"
+                  @click="voiceRecordingError = null"
+                >
+                  {{ voiceRecordingError }}
+                  <div class="absolute top-full start-4 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-red-500"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Text Input Row -->
+            <div class="flex items-end gap-2 bg-surface border border-border rounded-2xl px-3 py-2 shadow-soft">
+              <textarea
+                v-model="newMessage"
+                :placeholder="t('chat.inputPlaceholder')"
+                class="input-field flex-1 text-sm max-h-[120px] resize-none leading-relaxed border-0 focus:ring-0 bg-transparent min-h-[40px] py-2"
+                rows="1"
+                @keydown.enter.exact.prevent="sendMessage"
+                enterkeyhint="send"
+              ></textarea>
+
+              <!-- Send Button -->
+              <button
+                @click="sendMessage"
+                class="w-9 h-9 rounded-full bg-primary text-white shadow-button flex items-center justify-center shrink-0 touch-manipulation active:scale-90"
+                :class="{ 'opacity-50': !newMessage.trim() }"
+                :disabled="!newMessage.trim()"
+              >
+                <svg 
+                  class="w-4 h-4" 
+                  :class="{ 'flip-rtl': isRTL }"
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+    </div>
     </div>
 
     <!-- Profile Edit View -->
@@ -4417,50 +5337,6 @@ const constellationPoints = computed(() => {
             </div>
           </div>
 
-          <!-- Ask Me About It - Celebration Prompt -->
-          <div class="card p-4 xs:p-5 animate-slide-up stagger-2">
-            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-2">
-              <span>💜</span>
-              {{ t('askMeAboutIt.title') }}
-            </h3>
-            <p class="text-xs text-text-muted mb-4">{{ t('askMeAboutIt.subtitle') }}</p>
-            
-            <div class="space-y-3 xs:space-y-4">
-              <!-- Prompt Selection -->
-              <div class="flex flex-col gap-2">
-                <button
-                  v-for="prompt in askMePrompts"
-                  :key="prompt.id"
-                  @click="userProfile.askMePromptId = prompt.id"
-                  :class="[
-                    'px-4 py-3 rounded-xl text-xs xs:text-sm font-medium transition-all touch-manipulation active:scale-[0.98] text-start',
-                    userProfile.askMePromptId === prompt.id 
-                      ? 'bg-primary text-white shadow-md' 
-                      : 'bg-background text-text-deep border border-border hover:border-primary/50'
-                  ]"
-                >
-                  <span class="flex items-center gap-2">
-                    <span class="text-base">{{ prompt.emoji }}</span>
-                    <span class="flex-1">{{ t(`askMeAboutIt.prompts.${prompt.id}`) }}</span>
-                    <span v-if="userProfile.askMePromptId === prompt.id" class="text-base">✓</span>
-                  </span>
-                </button>
-              </div>
-              
-              <!-- Answer -->
-              <div v-if="userProfile.askMePromptId">
-                <label class="block text-xs xs:text-sm font-medium text-text-deep mb-1 xs:mb-1.5">
-                  {{ t(`askMeAboutIt.prompts.${userProfile.askMePromptId}`) }}
-                </label>
-                <textarea 
-                  v-model="userProfile.askMeAnswer"
-                  class="input-field min-h-[80px]"
-                  :placeholder="t(`askMeAboutIt.prompts.${userProfile.askMePromptId}`)"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-
           <!-- Time Preferences -->
           <div class="card p-4 xs:p-5 animate-slide-up stagger-2">
             <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-2">
@@ -4557,19 +5433,120 @@ const constellationPoints = computed(() => {
             
             <div class="grid grid-cols-2 gap-2">
               <button
-                v-for="tag in disabilityTags"
-                :key="tag.id"
-                @click="toggleProfileTag(tag.id)"
+                v-for="tag in availableDisabilityTags"
+                :key="tag.code"
+                @click="toggleProfileTag(tag.code)"
                 :class="[
                   'flex items-center gap-1.5 xs:gap-2 px-2.5 xs:px-3 py-2 xs:py-2.5 rounded-xl text-xs xs:text-sm transition-all touch-manipulation active:scale-95',
-                  userProfile.tags.includes(tag.id) 
+                  userProfile.tags.includes(tag.code) 
                     ? 'bg-primary text-white' 
                     : 'bg-surface border border-border text-text-muted'
                 ]"
               >
                 <span>{{ tag.icon }}</span>
-                <span class="flex-1 text-start truncate">{{ t(`tags.${tag.id}`) }}</span>
-                <span v-if="userProfile.tags.includes(tag.id)" class="text-xs">✓</span>
+                <span class="flex-1 text-start truncate">{{ getTagLabel(tag) }}</span>
+                <span v-if="userProfile.tags.includes(tag.code)" class="text-xs">✓</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tag Visibility -->
+          <div class="card p-4 xs:p-5 animate-slide-up stagger-3">
+            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-3 xs:mb-4 flex items-center gap-2">
+              <span>🔒</span>
+              {{ t('tagVisibility.title') }}
+            </h3>
+            <p class="text-xs xs:text-sm text-text-muted mb-3">
+              {{ t('tagVisibility.subtitle') }}
+            </p>
+            <div v-if="userProfile.tags.length" class="space-y-3">
+              <div
+                v-for="tagCode in userProfile.tags"
+                :key="tagCode"
+                class="bg-surface rounded-xl p-3 border border-border"
+              >
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">{{ getTagIcon(tagCode) }}</span>
+                  <span class="text-sm font-semibold text-text-deep flex-1">{{ getTagLabel(tagCode) }}</span>
+                  <select
+                    :value="userProfile.tagVisibilities[tagCode]?.visibility || getDefaultTagVisibility(tagCode)"
+                    @change="setTagVisibility(tagCode, $event.target.value)"
+                    class="text-xs bg-background border border-border rounded-full px-2 py-1"
+                    :aria-label="t('tagVisibility.selectAria', { tag: getTagLabel(tagCode) })"
+                  >
+                    <option v-for="option in tagVisibilityOptions" :key="option.id" :value="option.id">
+                      {{ option.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <div v-if="userProfile.tagVisibilities[tagCode]?.visibility === 'specific'" class="mt-2">
+                  <p class="text-xs text-text-muted mb-2">{{ t('tagVisibility.choosePeople') }}</p>
+                  <div v-if="matches.length" class="flex flex-wrap gap-2">
+                    <label
+                      v-for="match in matches"
+                      :key="match.id"
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-border bg-background text-xs"
+                    >
+                      <input
+                        type="checkbox"
+                        class="accent-primary"
+                        :value="match.other_user?.id"
+                        v-model="userProfile.tagVisibilities[tagCode].allowedViewerIds"
+                      />
+                      <span>{{ match.other_profile?.display_name || match.other_user?.username }}</span>
+                    </label>
+                  </div>
+                  <p v-else class="text-xs text-text-muted">{{ t('tagVisibility.noMatches') }}</p>
+                </div>
+              </div>
+            </div>
+            <p v-else class="text-xs text-text-muted">{{ t('tagVisibility.noneSelected') }}</p>
+          </div>
+
+          <!-- Intent & Openness -->
+          <div class="card p-4 xs:p-5 animate-slide-up stagger-3">
+            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-3 xs:mb-4 flex items-center gap-2">
+              <span>🎯</span>
+              {{ t('intent.title') }}
+            </h3>
+            <div class="flex flex-wrap gap-2 mb-4">
+              <button
+                v-for="intent in relationshipIntentOptions"
+                :key="intent.id"
+                @click="setRelationshipIntent(intent.id)"
+                :class="[
+                  'flex items-center gap-2 px-3 xs:px-4 py-2 xs:py-2.5 rounded-full transition-all touch-manipulation active:scale-95',
+                  userProfile.relationshipIntent === intent.id
+                    ? 'bg-primary text-white shadow-button'
+                    : 'bg-surface border-2 border-border text-text-muted hover:border-primary/50'
+                ]"
+              >
+                <span class="text-base">{{ intent.emoji }}</span>
+                <span class="text-xs xs:text-sm font-medium">{{ t(`intent.options.${intent.id}`) }}</span>
+                <span v-if="userProfile.relationshipIntent === intent.id" class="text-sm">✓</span>
+              </button>
+            </div>
+
+            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-3 flex items-center gap-2">
+              <span>🤗</span>
+              {{ t('openness.title') }}
+            </h3>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="option in opennessOptions"
+                :key="option.id"
+                @click="toggleOpennessTag(option.id)"
+                :class="[
+                  'flex items-center gap-2 px-3 xs:px-4 py-2 xs:py-2.5 rounded-full transition-all touch-manipulation active:scale-95',
+                  userProfile.opennessTags.includes(option.id)
+                    ? 'bg-secondary text-white shadow-button'
+                    : 'bg-surface border-2 border-border text-text-muted hover:border-secondary/50'
+                ]"
+              >
+                <span class="text-base">{{ option.emoji }}</span>
+                <span class="text-xs xs:text-sm font-medium">{{ t(`openness.options.${option.id}`) }}</span>
+                <span v-if="userProfile.opennessTags.includes(option.id)" class="text-sm">✓</span>
               </button>
             </div>
           </div>
@@ -4603,45 +5580,6 @@ const constellationPoints = computed(() => {
               </div>
             </div>
             
-            <!-- What are you looking for? -->
-            <div class="mb-5">
-              <p class="text-xs xs:text-sm text-text-muted mb-3">{{ t('lookingFor.whatSeeking') }}</p>
-              <div class="grid grid-cols-2 gap-2">
-                <button
-                  v-for="rel in relationshipOptions"
-                  :key="rel.id"
-                  @click="toggleRelationship(rel.id)"
-                  :class="[
-                    'relative p-[2px] rounded-xl transition-all touch-manipulation active:scale-[0.97]',
-                    userProfile.lookingFor.relationshipTypes.includes(rel.id)
-                      ? `bg-gradient-to-r ${rel.gradient}`
-                      : 'bg-border'
-                  ]"
-                >
-                  <div 
-                    :class="[
-                      'flex items-center gap-2 px-3 py-2.5 rounded-[10px] bg-surface transition-colors',
-                      userProfile.lookingFor.relationshipTypes.includes(rel.id) ? 'bg-surface/90' : ''
-                    ]"
-                  >
-                    <span class="text-lg">{{ rel.emoji }}</span>
-                    <span 
-                      :class="[
-                        'flex-1 text-xs xs:text-sm font-medium text-start',
-                        userProfile.lookingFor.relationshipTypes.includes(rel.id) ? 'text-text-deep' : 'text-text-muted'
-                      ]"
-                    >
-                      {{ t(`lookingFor.types.${rel.id}`) }}
-                    </span>
-                    <span 
-                      v-if="userProfile.lookingFor.relationshipTypes.includes(rel.id)"
-                      class="text-primary text-xs"
-                    >✓</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-
             <!-- Age Range -->
             <div class="mb-5">
               <p class="text-xs xs:text-sm text-text-muted mb-3">{{ t('lookingFor.ageRange') }}</p>
@@ -4951,36 +5889,34 @@ const constellationPoints = computed(() => {
           
           <!-- Profile Details -->
           <div class="p-5">
-            <!-- Mood Badge -->
-            <div 
-              v-if="viewingProfileData.mood"
-              class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-primary-light to-peach/50 rounded-full text-primary text-sm font-medium border border-primary/15 shadow-sm mb-3"
-            >
-              <span class="text-base">{{ moodOptions.find(m => m.id === viewingProfileData.mood)?.emoji }}</span>
-              <span>{{ t(`moods.${viewingProfileData.mood}`) }}</span>
-            </div>
-            
             <!-- Bio -->
             <div v-if="viewingProfileData.bio" class="mb-4">
               <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">{{ t('profile.about') }}</h3>
               <p class="text-text-deep">{{ viewingProfileData.bio }}</p>
             </div>
-            
-            <!-- Ask Me About It -->
-            <div 
-              v-if="viewingProfileData.askMeAnswer" 
-              class="mb-4 bg-surface rounded-xl p-3 border border-border shadow-sm"
-            >
-              <p class="text-xs font-bold text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <span class="text-sm">💜</span>
-                {{ t('askMeAboutIt.title') }}
-              </p>
-              <p v-if="viewingProfileData.askMePromptId" class="text-xs text-text-muted mb-1.5">
-                {{ t(`askMeAboutIt.prompts.${viewingProfileData.askMePromptId}`) }}
-              </p>
-              <p class="text-text-deep font-medium leading-relaxed">
-                "{{ viewingProfileData.askMeAnswer }}"
-              </p>
+
+            <!-- Intent -->
+            <div v-if="viewingProfileData.relationshipIntent" class="mb-4">
+              <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">{{ t('intent.title') }}</h3>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-light text-primary border border-primary/20 text-xs font-medium">
+                <span>🎯</span>
+                <span>{{ t(`intent.options.${viewingProfileData.relationshipIntent}`) }}</span>
+              </span>
+            </div>
+
+            <!-- Openness -->
+            <div v-if="viewingProfileData.opennessTags?.length" class="mb-4">
+              <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">{{ t('openness.title') }}</h3>
+              <div class="flex flex-wrap gap-1.5">
+                <span 
+                  v-for="tag in viewingProfileData.opennessTags"
+                  :key="tag"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-secondary-light text-secondary border border-secondary/20 rounded-full text-xs font-medium"
+                >
+                  <span>{{ opennessOptions.find(o => o.id === tag)?.emoji }}</span>
+                  <span>{{ t(`openness.options.${tag}`) }}</span>
+                </span>
+              </div>
             </div>
             
             <!-- Tags -->
@@ -4992,7 +5928,10 @@ const constellationPoints = computed(() => {
                   :key="typeof tag === 'string' ? tag : tag.code"
                   class="inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-primary-light to-coral/20 text-primary border border-primary/20 rounded-full text-xs font-medium"
                 >
-                  {{ typeof tag === 'string' ? t(`tags.${tag}`) : (tag.icon + ' ' + t(`tags.${tag.code}`)) }}
+                  <span class="inline-flex items-center gap-1">
+                    <span>{{ getTagIcon(tag) }}</span>
+                    <span>{{ getTagLabel(tag) }}</span>
+                  </span>
                 </span>
               </div>
             </div>
@@ -5365,6 +6304,329 @@ const constellationPoints = computed(() => {
 .high-contrast .bg-surface {
   background: #fff;
   border: 2px solid #000;
+}
+
+/* Dark mode - Fully dark */
+.dark-mode {
+  color-scheme: dark;
+}
+
+.dark-mode .bg-background,
+.dark-mode.bg-background {
+  background: #000000 !important;
+}
+
+.dark-mode .bg-background\/95 {
+  background: rgba(0, 0, 0, 0.95) !important;
+}
+
+.dark-mode .bg-background\/70 {
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+.dark-mode .bg-background\/60 {
+  background: rgba(0, 0, 0, 0.6) !important;
+}
+
+.dark-mode .bg-surface,
+.dark-mode.bg-surface {
+  background: #0A0A0A !important;
+}
+
+.dark-mode .bg-surface\/90 {
+  background: rgba(10, 10, 10, 0.9) !important;
+}
+
+.dark-mode .bg-surface\/95 {
+  background: rgba(10, 10, 10, 0.95) !important;
+}
+
+.dark-mode .bg-white {
+  background: #0A0A0A !important;
+}
+
+.dark-mode .bg-border {
+  background: #1A1A1A !important;
+}
+
+.dark-mode .bg-border\/60 {
+  background: rgba(26, 26, 26, 0.6) !important;
+}
+
+.dark-mode .bg-background-alt {
+  background: #050505 !important;
+}
+
+.dark-mode .text-text-deep,
+.dark-mode.text-text-deep {
+  color: #FFFFFF !important;
+}
+
+.dark-mode .text-text-muted {
+  color: #A0A0A0 !important;
+}
+
+.dark-mode .text-text-light {
+  color: #707070 !important;
+}
+
+.dark-mode .text-black {
+  color: #FFFFFF !important;
+}
+
+.dark-mode .text-gray-900 {
+  color: #FFFFFF !important;
+}
+
+.dark-mode .text-gray-800 {
+  color: #E5E5E5 !important;
+}
+
+.dark-mode .text-gray-700 {
+  color: #D0D0D0 !important;
+}
+
+.dark-mode .text-gray-600 {
+  color: #A0A0A0 !important;
+}
+
+.dark-mode .text-gray-500 {
+  color: #808080 !important;
+}
+
+.dark-mode .border-border {
+  border-color: #1F1F1F !important;
+}
+
+.dark-mode .border-border\/70 {
+  border-color: rgba(31, 31, 31, 0.7) !important;
+}
+
+.dark-mode .border-border\/60 {
+  border-color: rgba(31, 31, 31, 0.6) !important;
+}
+
+.dark-mode .border-gray-200,
+.dark-mode .border-gray-300 {
+  border-color: #1F1F1F !important;
+}
+
+.dark-mode .shadow-soft,
+.dark-mode .shadow-card {
+  box-shadow: none !important;
+}
+
+/* Dark mode buttons */
+.dark-mode .btn-secondary {
+  background: #0A0A0A !important;
+  border-color: #1F1F1F !important;
+  color: #FFFFFF !important;
+}
+
+.dark-mode .btn-secondary:hover {
+  border-color: #10A37F !important;
+}
+
+.dark-mode .btn-icon {
+  background: #0A0A0A !important;
+  border-color: #1F1F1F !important;
+}
+
+/* Dark mode cards */
+.dark-mode .card {
+  background: #0A0A0A !important;
+  box-shadow: none !important;
+}
+
+/* Dark mode chips */
+.dark-mode .chip {
+  background: #0A0A0A !important;
+  border-color: #1F1F1F !important;
+  color: #FFFFFF !important;
+}
+
+.dark-mode .chip-active {
+  background: #0F2A23 !important;
+  border-color: #10A37F !important;
+}
+
+/* Dark mode inputs */
+.dark-mode .input-field,
+.dark-mode input,
+.dark-mode textarea,
+.dark-mode select {
+  background: #0A0A0A !important;
+  border-color: #1F1F1F !important;
+  color: #FFFFFF !important;
+}
+
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+  color: #505050 !important;
+}
+
+.dark-mode input:focus,
+.dark-mode textarea:focus,
+.dark-mode .input-field:focus {
+  border-color: #10A37F !important;
+  background: #050505 !important;
+}
+
+/* Dark mode glass effect */
+.dark-mode .glass {
+  background: rgba(0, 0, 0, 0.85) !important;
+  border-color: rgba(31, 31, 31, 0.8) !important;
+}
+
+/* Dark mode scrollbar */
+.dark-mode::-webkit-scrollbar-track {
+  background: #0A0A0A !important;
+}
+
+.dark-mode::-webkit-scrollbar-thumb {
+  background: #2A2A2A !important;
+}
+
+.dark-mode::-webkit-scrollbar-thumb:hover {
+  background: #3A3A3A !important;
+}
+
+/* Dark mode dividers */
+.dark-mode .divide-border > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1F1F1F !important;
+}
+
+/* Dark mode light backgrounds */
+.dark-mode .bg-primary-light {
+  background: #0F2A23 !important;
+}
+
+.dark-mode .bg-primary-light\/30 {
+  background: rgba(15, 42, 35, 0.3) !important;
+}
+
+.dark-mode .bg-primary-light\/50 {
+  background: rgba(15, 42, 35, 0.5) !important;
+}
+
+.dark-mode .bg-secondary-light {
+  background: #0A2622 !important;
+}
+
+.dark-mode .bg-teal-light {
+  background: #0A2622 !important;
+}
+
+.dark-mode .bg-rose-light {
+  background: #2A1418 !important;
+}
+
+.dark-mode .bg-violet-light {
+  background: #1A1528 !important;
+}
+
+.dark-mode .bg-amber-light {
+  background: #2A2010 !important;
+}
+
+.dark-mode .bg-indigo-light {
+  background: #14162A !important;
+}
+
+.dark-mode .bg-emerald-light {
+  background: #0A2A1A !important;
+}
+
+.dark-mode .bg-gray-100,
+.dark-mode .bg-gray-200 {
+  background: #1A1A1A !important;
+}
+
+.dark-mode .bg-red-100 {
+  background: #2A1414 !important;
+}
+
+.dark-mode .bg-border\/50 {
+  background: rgba(26, 26, 26, 0.5) !important;
+}
+
+/* Dark mode for surface with backdrop blur */
+.dark-mode [class*="bg-surface"][class*="backdrop-blur"] {
+  background: rgba(0, 0, 0, 0.85) !important;
+}
+
+/* Dark mode for gradient backgrounds */
+.dark-mode .bg-gradient-mesh {
+  background: radial-gradient(at 40% 20%, #0A1A15 0px, transparent 50%), radial-gradient(at 80% 0%, #0A1A15 0px, transparent 50%), radial-gradient(at 0% 50%, #0A0A0A 0px, transparent 50%) !important;
+}
+
+/* Dark mode dividers and separators */
+.dark-mode .border-t,
+.dark-mode .border-b,
+.dark-mode .border-y {
+  border-color: #1F1F1F !important;
+}
+
+.dark-mode .border-primary\/20 {
+  border-color: rgba(16, 163, 127, 0.2) !important;
+}
+
+/* Ensure modal backgrounds are dark */
+.dark-mode .fixed.inset-0[class*="bg-"] {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+}
+
+/* Dark mode for any remaining white backgrounds */
+.dark-mode [class*="bg-white"] {
+  background: #0A0A0A !important;
+}
+
+/* Dark mode for gradient prompt cards and light gradients */
+.dark-mode [class*="bg-gradient"][class*="from-primary-light"],
+.dark-mode [class*="bg-gradient"][class*="from-secondary-light"],
+.dark-mode [class*="bg-gradient"][class*="via-peach"],
+.dark-mode [class*="bg-gradient"][class*="to-accent"] {
+  background: linear-gradient(135deg, #0F1A17 0%, #0A0A0A 50%, #0A0A0A 100%) !important;
+  border-color: #1F1F1F !important;
+}
+
+/* Override Tailwind gradient colors in dark mode */
+.dark-mode .from-primary-light {
+  --tw-gradient-from: #0F2A23 !important;
+}
+
+.dark-mode .via-peach,
+.dark-mode .via-peach\/40 {
+  --tw-gradient-via: #1A1A1A !important;
+}
+
+.dark-mode .to-accent,
+.dark-mode .to-accent\/20 {
+  --tw-gradient-to: #0A0A0A !important;
+}
+
+.dark-mode .to-coral,
+.dark-mode .to-coral\/20 {
+  --tw-gradient-to: #0A1A1A !important;
+}
+
+.dark-mode .from-coral {
+  --tw-gradient-from: #0A2020 !important;
+}
+
+/* Dark mode hover states */
+.dark-mode .hover\:bg-background:hover {
+  background: #050505 !important;
+}
+
+.dark-mode .hover\:bg-surface:hover {
+  background: #111111 !important;
+}
+
+/* Dark mode for body background */
+.dark-mode body,
+body.dark-mode {
+  background: #000000 !important;
 }
 
 /* Transitions */

@@ -8,7 +8,7 @@ const MEDIA_BASE_URL = API_URL.replace('/api', '')
 
 /**
  * Get full URL for a photo
- * Handles both external URLs (https://...) and relative paths (/media/...)
+ * Handles both external URLs (https://...) and relative paths (/media/..., /static/...)
  * @param {object|string} photo - Photo object with image/url fields, or direct URL string
  * @returns {string} Full URL to the photo
  */
@@ -20,7 +20,8 @@ export const getPhotoUrl = (photo) => {
     if (photo.startsWith('http://') || photo.startsWith('https://')) {
       return photo
     }
-    // Relative path - prepend media base URL
+    // Relative path - prepend backend base URL
+    // Handles both /media/... and /static/... paths
     return `${MEDIA_BASE_URL}${photo}`
   }
   
@@ -34,7 +35,8 @@ export const getPhotoUrl = (photo) => {
     return url
   }
   
-  // Relative path - prepend media base URL
+  // Relative path - prepend backend base URL
+  // Handles both /media/... and /static/... paths
   return `${MEDIA_BASE_URL}${url}`
 }
 
@@ -357,6 +359,58 @@ export const chatApi = {
     
     return response.json()
   },
+
+  /**
+   * Get AI reply suggestions
+   */
+  getSuggestions: (conversationId, language, forceRefresh = false) => {
+    const params = new URLSearchParams()
+    if (language) params.set('lang', language)
+    if (forceRefresh) params.set('t', Date.now().toString())
+    const query = params.toString()
+    return apiRequest(`/conversations/${conversationId}/suggestions/${query ? `?${query}` : ''}`)
+  },
+
+  /**
+   * Get conversation summary
+   */
+  getSummary: (conversationId, language) =>
+    apiRequest(`/conversations/${conversationId}/summary/${language ? `?lang=${language}` : ''}`),
+
+  /**
+   * Set typing status
+   */
+  setTyping: (conversationId, isTyping = true) =>
+    apiRequest(`/conversations/${conversationId}/typing/`, {
+      method: 'POST',
+      body: JSON.stringify({ is_typing: isTyping }),
+    }),
+
+  /**
+   * Get typing status
+   */
+  getTyping: (conversationId) =>
+    apiRequest(`/conversations/${conversationId}/typing/`),
+
+  /**
+   * Get saved shortcuts
+   */
+  getShortcuts: () => apiRequest('/shortcuts/'),
+
+  /**
+   * Save a shortcut
+   */
+  saveShortcut: (data) => apiRequest('/shortcuts/', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  /**
+   * Remove a shortcut
+   */
+  deleteShortcut: (shortcutId) => apiRequest(`/shortcuts/${shortcutId}/`, {
+    method: 'DELETE',
+  }),
 }
 
 /**

@@ -4936,6 +4936,11 @@ const constellationPoints = computed(() => {
                       type="text"
                       class="input-field text-sm xs:text-base"
                       :placeholder="t('shortcuts.titlePlaceholder')"
+                      autocomplete="off"
+                      autocorrect="off"
+                      autocapitalize="off"
+                      data-form-type="other"
+                      data-lpignore="true"
                     />
                     <label class="text-[10px] xs:text-xs text-text-muted" :for="'shortcut-content'">
                       {{ t('shortcuts.contentLabel') }}
@@ -4946,6 +4951,11 @@ const constellationPoints = computed(() => {
                       class="input-field text-sm xs:text-base min-h-[72px]"
                       :placeholder="t('shortcuts.contentPlaceholder')"
                       rows="2"
+                      autocomplete="off"
+                      autocorrect="off"
+                      autocapitalize="off"
+                      data-form-type="other"
+                      data-lpignore="true"
                     ></textarea>
                     <div class="flex flex-wrap gap-2">
                       <button
@@ -5090,6 +5100,9 @@ const constellationPoints = computed(() => {
                 autocorrect="off"
                 autocapitalize="off"
                 spellcheck="false"
+                data-form-type="other"
+                data-lpignore="true"
+                name="message-text"
               ></textarea>
 
               <!-- Send Button -->
@@ -5323,6 +5336,10 @@ const constellationPoints = computed(() => {
                   rows="3"
                   class="input-field resize-none"
                   :placeholder="t('profile.bioPlaceholder')"
+                  autocomplete="off"
+                  autocorrect="on"
+                  data-form-type="other"
+                  data-lpignore="true"
                 ></textarea>
               </div>
             </div>

@@ -40,11 +40,15 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="format-detection" content="telephone=no" />
     
-    <!-- Disable iOS keyboard accessory bar -->
+    <!-- Disable keyboard accessory bar on mobile browsers -->
     <style>
       input, textarea, select {
         -webkit-appearance: none;
         appearance: none;
+      }
+      /* Prevent Chrome keyboard suggestions bar */
+      input[type="text"], input[type="email"], input[type="tel"], textarea {
+        font-size: 16px !important; /* Prevents zoom on focus in iOS */
       }
     </style>
     

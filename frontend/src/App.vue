@@ -5086,6 +5086,10 @@ const constellationPoints = computed(() => {
                 rows="1"
                 @keydown.enter.exact.prevent="sendMessage"
                 enterkeyhint="send"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
               ></textarea>
 
               <!-- Send Button -->

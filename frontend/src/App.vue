@@ -490,14 +490,14 @@ const noMoreProfiles = ref(false)
 const showSwipeHint = ref(true)
 let swipeHintTimeout = null
 
-// Show hint for 2 seconds when entering discovery view
+// Show hint for 5 seconds when entering discovery view
 watch(() => currentView.value, (newView) => {
   if (newView === 'discovery') {
     showSwipeHint.value = true
     if (swipeHintTimeout) clearTimeout(swipeHintTimeout)
     swipeHintTimeout = setTimeout(() => {
       showSwipeHint.value = false
-    }, 10000)
+    }, 5000)
   }
 }, { immediate: true })
 

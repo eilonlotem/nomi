@@ -2274,7 +2274,7 @@ const sendMessage = async (overrideText = null) => {
     
     // Check for AI response after a short delay
     setTimeout(checkForNewMessages, 2000)
-    fetchSuggestions(true)
+    // Don't fetch suggestions here - wait for bot response to avoid double refresh
     
   } catch (error) {
     console.error('Failed to send:', error)
@@ -2310,7 +2310,7 @@ const sendIcebreaker = async (prompt) => {
       lastSeenMessageId.value = serverMsg.id
     }
     setTimeout(checkForNewMessages, 2000)
-    fetchSuggestions(true)
+    // Don't fetch suggestions here - wait for bot response to avoid double refresh
   } catch (error) {
     console.error('Failed to send icebreaker:', error)
     chatMessages.value = chatMessages.value.map(m => 
@@ -2386,7 +2386,10 @@ const toggleSuggestions = () => {
   if (showSuggestions.value) {
     showIcebreakers.value = false
     showShortcuts.value = false
-    fetchSuggestions(true)
+    // Only fetch if we don't have suggestions yet
+    if (aiSuggestions.value.length === 0) {
+      fetchSuggestions(true)
+    }
   }
 }
 
@@ -3965,7 +3968,7 @@ const constellationPoints = computed(() => {
       </header>
       
       <!-- Profile Card -->
-      <main class="flex-1 min-h-0 px-0 xs:px-1 py-0 xs:py-1 flex flex-col items-center overflow-hidden relative overscroll-none">
+      <main class="flex-1 min-h-0 px-2 sm:px-4 py-2 sm:py-4 flex flex-col items-center overflow-hidden relative overscroll-none">
         <!-- Accessible swipe hint for all users (auto-hides after 10 seconds) -->
         <Transition name="fade">
           <div 
@@ -3986,7 +3989,7 @@ const constellationPoints = computed(() => {
         <div 
           v-if="currentProfile"
           :key="currentProfile.id || currentProfile.user_id || currentProfileIndex"
-          class="card w-full max-w-full relative swipeable no-context-menu select-none flex flex-col h-full max-h-full rounded-none"
+          class="card w-full max-w-md mx-auto relative swipeable no-context-menu select-none flex flex-col h-full max-h-full rounded-3xl overflow-hidden shadow-card"
           :class="{ 'transition-none': isSwiping, 'transition-all duration-300': !isSwiping && !isAnimating }"
           :style="{ 
             transform: `translateX(${cardOffset}px) rotate(${cardRotation}deg)`,
@@ -5012,8 +5015,11 @@ const constellationPoints = computed(() => {
           :class="{ 'pb-1': isKeyboardOpen }"
         >
           <div class="max-w-3xl mx-auto space-y-2">
-            <!-- Action Buttons Row -->
-            <div class="flex items-center justify-center gap-3">
+            <!-- Action Buttons Row - Hidden when keyboard is open -->
+            <div 
+              v-if="!isKeyboardOpen"
+              class="flex items-center justify-center gap-3"
+            >
               <!-- Shortcuts Button -->
               <button
                 @click="toggleShortcuts"

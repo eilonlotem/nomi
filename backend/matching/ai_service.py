@@ -25,6 +25,7 @@ class ProfileSummary(BaseModel):
     interests: str = "various things"
     response_pace: str = ""
     location: str = ""
+    language: str = "en"  # User's preferred language
     
     @classmethod
     def from_django_profile(cls, profile: Any) -> ProfileSummary:
@@ -40,6 +41,23 @@ class ProfileSummary(BaseModel):
         # Get location
         location = profile.city or ""
         
+        # Detect language from bio (if bio contains Hebrew/Arabic characters, use that language)
+        language = "en"
+        if profile.bio:
+            # Check for Hebrew characters
+            if any('\u0590' <= char <= '\u05FF' for char in profile.bio):
+                language = "he"
+            # Check for Arabic characters
+            elif any('\u0600' <= char <= '\u06FF' for char in profile.bio):
+                language = "ar"
+        
+        # Try to get user's preferred language
+        try:
+            if hasattr(profile.user, 'preferred_language') and profile.user.preferred_language:
+                language = profile.user.preferred_language
+        except Exception:
+            pass  # Use detected language
+        
         return cls(
             name=profile.display_name or "User",
             bio=profile.bio or "",
@@ -48,6 +66,7 @@ class ProfileSummary(BaseModel):
             interests=interests_str,
             response_pace=profile.response_pace or "",
             location=location,
+            language=language,
         )
 
 
@@ -63,8 +82,9 @@ class AIConfig(BaseModel):
     
     model: str = "gpt-4o-mini"
     max_tokens: int = 150
-    temperature: float = Field(default=0.8, ge=0, le=2)
-    presence_penalty: float = Field(default=0.3, ge=-2, le=2)
+    temperature: float = Field(default=0.9, ge=0, le=2)  # Increased for more varied, natural responses
+    presence_penalty: float = Field(default=0.6, ge=-2, le=2)  # Increased to encourage topic variety
+    frequency_penalty: float = Field(default=0.3, ge=-2, le=2)  # Added to reduce repetition
 
 
 class PersonalityPromptBuilder:
@@ -83,12 +103,26 @@ class PersonalityPromptBuilder:
         return ""
     
     def build(self) -> str:
-        """Build the complete personality prompt."""
-        prompt = f"""You are {self.mock.name}, a person on a dating app called Nomi (a dating app for people with disabilities).
+        """Build the complete personality prompt using human-like conversation best practices."""
+        # Determine the language for responses
+        response_language = self.mock.language
+        language_names = {
+            "en": "English",
+            "he": "Hebrew",
+            "es": "Spanish", 
+            "fr": "French",
+            "ar": "Arabic"
+        }
+        language_instruction = ""
+        if response_language != "en":
+            lang_name = language_names.get(response_language, "English")
+            language_instruction = f"\n\nIMPORTANT: Respond in {lang_name}. Your bio and profile are in {lang_name}, so chat naturally in that language."
+        
+        prompt = f"""You are {self.mock.name}, a real person chatting on Nomi, a dating app for people with disabilities.
 
-YOUR PROFILE:
+YOUR IDENTITY:
 - Bio: {self.mock.bio or "You haven't written much about yourself yet"}
-- Identity/Disability tags: {self.mock.tags}
+- You identify with: {self.mock.tags}
 - Interests: {self.mock.interests}
 - Location: {self.mock.location or "Not specified"}"""
 
@@ -96,34 +130,69 @@ YOUR PROFILE:
         if self.user:
             prompt += f"""
 
-THE PERSON YOU'RE CHATTING WITH:
+WHO YOU'RE TALKING TO:
 - Name: {self.user.name}
-- Bio: {self.user.bio or 'Not much shared yet'}
-- Their interests: {self.user.interests}
-- Their location: {self.user.location or 'Not specified'}"""
-            
-            prompt += "\n\nUse this context to ask relevant questions and show genuine interest in them."
+- {self.user.bio or "They haven't shared much yet"}
+- They enjoy: {self.user.interests}
+- From: {self.user.location or 'somewhere'}
+
+Remember details they share and bring them up naturally later."""
 
         pace_note = self._get_pace_note()
-        prompt += f"""
+        prompt += f"""{language_instruction}
 
-YOUR PERSONALITY GUIDELINES:
-- Be warm, genuine, and friendly
-- Show authentic interest in the other person - ask about their interests!
-- Reference your own interests and experiences naturally
-- Be supportive and understanding - this is a safe space
-- Keep responses conversational and not too long (1-3 sentences usually)
-- Use appropriate emojis occasionally but don't overdo it 💜
-- Be flirty but respectful when appropriate
-- If discussing disabilities, be matter-of-fact and positive about your own experiences
-- If asked about your location, share where you're from naturally and mention things you like about your city"""
+HOW TO BE AUTHENTICALLY HUMAN:
+
+Natural Language:
+- Use contractions ("I'm" not "I am", "can't" not "cannot")
+- Include filler words occasionally (like, um, actually, you know)
+- Make minor typos sometimes (but stay readable)
+- Don't always use perfect grammar - real people don't
+- Vary sentence lengths - mix short and longer ones
+
+Emotional Authenticity:
+- React naturally to what they say - laugh, express surprise, show empathy
+- Share your genuine feelings and experiences
+- Be vulnerable sometimes - real connections need that
+- Mirror their energy level somewhat
+- Acknowledge if you're unsure about something
+
+Conversational Flow:
+- Keep most responses 1-2 sentences (occasionally 3 if you're excited!)
+- Don't answer everything at once - leave room for back-and-forth
+- Ask follow-up questions that show you're actually listening
+- Reference earlier parts of the conversation naturally
+- Sometimes respond with just an emoji or short phrase
+- Let conversations breathe - you don't need to be profound every time
+
+Show Personality:
+- Use emojis naturally but sparingly (1-2 per message max, and not every message)
+- Express yourself through your interests and experiences
+- Have opinions! You don't need to be neutral about everything
+- Tell brief stories or anecdotes when relevant
+- Use humor when it feels natural (not forced)
+- Be playfully flirty if the vibe is right, but always respectful
+
+Dating App Context:
+- Show interest in getting to know them, not just talking about yourself
+- Find common ground in your shared interests or experiences
+- Be positive but real - you can mention challenges too
+- When discussing disability/accessibility, be natural and matter-of-fact
+- Don't rush - building connection takes time"""
         
         if pace_note:
             prompt += f"\n- {pace_note}"
         
         prompt += """
-- Don't pretend to be able to meet up in person or make specific plans
-- Never break character or mention you're an AI"""
+
+IMPORTANT BOUNDARIES:
+- Never suggest meeting up or making specific plans (this is early stage)
+- Never break character or mention being AI
+- Don't give overly long, essay-like responses
+- Avoid therapist-speak or overly formal language
+- Don't be TOO perfect - real people are a bit messy
+
+Remember: You're not trying to impress them with eloquence. You're trying to connect like a real person would - casually, authentically, with some imperfection."""
 
         return prompt
 
@@ -185,6 +254,7 @@ class AIResponseGenerator:
                 max_tokens=self.config.max_tokens,
                 temperature=self.config.temperature,
                 presence_penalty=self.config.presence_penalty,
+                frequency_penalty=self.config.frequency_penalty,
             )
             
             ai_message = response.choices[0].message.content
@@ -221,14 +291,26 @@ class AIResponseGenerator:
             
             messages = [
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": "Generate a friendly opening message for someone you just matched with on a dating app. Keep it casual, warm, and under 20 words. Maybe reference one of your interests."}
+                {"role": "user", "content": """Send your first message to this match! 
+
+Guidelines:
+- Keep it casual and warm (under 20 words)
+- Maybe ask a simple question or mention something from your profile
+- Don't overthink it - first messages are always a bit awkward
+- Could be playful, could reference a shared interest
+- Use a casual greeting if it feels right
+- You can use one emoji if it fits naturally
+
+Be yourself!"""}
             ]
             
             response = self.client.chat.completions.create(
                 model=self.config.model,
                 messages=messages,  # type: ignore
-                max_tokens=50,
-                temperature=0.9,
+                max_tokens=60,
+                temperature=1.0,  # Higher temperature for more variety in greetings
+                presence_penalty=0.3,
+                frequency_penalty=0.3,
             )
             
             return response.choices[0].message.content

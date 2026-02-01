@@ -30,10 +30,10 @@ def get_gemini_api_key() -> str:
 
 # Mapping disability tags to visual descriptors for art generation
 DISABILITY_TAG_VISUAL_HINTS: dict[str, str] = {
-    "wheelchairUser": "sitting in a sleek modern wheelchair",
-    "mobility": "using mobility aids with confidence",
-    "blindLowVision": "with closed eyes or stylized sunglasses, serene expression",
-    "deafHoh": "with visible hearing aids or cochlear implants",
+    "wheelchairUser": "person sitting in a modern wheelchair, wheelchair MUST be clearly visible in frame",
+    "mobility": "person using crutches or cane, mobility aid MUST be clearly visible",
+    "blindLowVision": "person wearing dark stylized sunglasses or white cane visible, representing visual impairment",
+    "deafHoh": "person wearing visible hearing aids or cochlear implant behind ear",
     "autism": "",  # No visual representation needed
     "neurodivergent": "",  # No visual representation needed
     "chronicIllness": "",  # Invisible, no visual representation
@@ -241,23 +241,27 @@ def _build_realistic_prompt(user_data: dict[str, Any], style_idx: int = 0) -> st
     
     # Build the prompt with all unique elements - emphasize authentic everyday look and age
     prompt_parts = [
-        f"Candid realistic photograph of a {age}-year-old Israeli {gender_desc}",
-        f"appearing exactly {age} years old with {age_descriptors}",
+        f"IMPORTANT: Realistic photograph of a {age}-year-old Israeli {gender_desc}",
+        f"The person MUST appear exactly {age} years old with clear {age_descriptors}",
         f"with {hair_desc} and {skin_tone}",
         f"wearing {clothing}",
     ]
     
     if disability_visual:
-        prompt_parts.append(disability_visual)
+        prompt_parts.insert(2, f"CRITICAL: {disability_visual}")
     
     prompt_parts.extend([
         f"{expression}",
         f"Setting: {scene}",
         f"Lighting: {lighting}",
-        f"IMPORTANT: The person must look exactly {age} years old - age-appropriate facial features, skin texture, and overall appearance",
-        "Everyday person, NOT a model, natural imperfections like asymmetry and skin texture",
+        f"MANDATORY: Show realistic age - the person must have age {age} facial features, appropriate skin texture, and matching maturity level",
+        f"DO NOT make them look younger or older than {age}",
+        "If using wheelchair or mobility aids, they MUST be clearly visible in the photo",
+        "If using hearing aids or glasses, they MUST be clearly visible",
+        "Everyday person, NOT a model or celebrity, with natural imperfections",
         "Real person you might meet on the street, authentic and relatable",
-        "Upper body portrait, face clearly visible, amateur smartphone photo quality",
+        "Upper body portrait or full upper torso if showing mobility aids, face clearly visible",
+        "Amateur smartphone photo quality with natural lighting",
         "Slight imperfections, natural look, not overly polished or airbrushed",
     ])
     

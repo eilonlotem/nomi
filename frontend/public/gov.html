@@ -15,10 +15,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Primary Meta Tags -->
-    <title>עלינו | נומי - אפליקציית היכרויות לאנשים עם מוגבלויות</title>
-    <meta name="title" content="עלינו | נומי - אפליקציית היכרויות לאנשים עם מוגבלויות">
-    <meta name="description" content="הכירו את נומי - אפליקציית ההיכרויות המכילה הראשונה בישראל. הסיפור שלנו, החזון, ואיך אנחנו יוצרים מרחב בטוח לאהבה בלי התנצלות.">
-    <meta name="keywords" content="נומי, אפליקציית היכרויות, מוגבלות, דייטינג נגיש, היכרויות מכילות, אהבה, about nomi, disability dating">
+    <title>עמוד ממשלתי | Know Me - מיזם לשוויון בהיכרויות דיגיטליות</title>
+    <meta name="title" content="עמוד ממשלתי | Know Me - מיזם לשוויון בהיכרויות דיגיטליות">
+    <meta name="description" content="Know Me - מיזם טכנולוגי לשוויון בהיכרויות דיגיטליות. מידע על פרטיות, אבטחה, נגישות אדפטיבית וערך ציבורי.">
+    <meta name="keywords" content="Know Me, היכרויות נגישות, מוגבלות, דייטינג נגיש, נגישות אדפטיבית, אבטחה, פרטיות">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://nomi-online.com/gov.html">
     
@@ -30,17 +30,17 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://nomi-online.com/gov.html">
-    <meta property="og:title" content="עלינו | נומי - דייטינג שמבין אותך">
-    <meta property="og:description" content="הכירו את נומי - מרחב בטוח להיכרויות לאנשים עם מוגבלויות. החזון, הסיפור, והערכים שלנו.">
+    <meta property="og:title" content="עמוד ממשלתי | Know Me">
+    <meta property="og:description" content="Know Me - מיזם טכנולוגי לשוויון בהיכרויות דיגיטליות. נגישות, אבטחה, ופרטיות.">
     <meta property="og:image" content="https://nomi-online.com/og-image.png">
     <meta property="og:locale" content="he_IL">
     <meta property="og:locale:alternate" content="en_US">
-    <meta property="og:site_name" content="Nomi">
+    <meta property="og:site_name" content="Know Me">
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="עלינו | נומי - דייטינג שמבין אותך">
-    <meta name="twitter:description" content="הכירו את נומי - מרחב בטוח להיכרויות לאנשים עם מוגבלויות.">
+    <meta name="twitter:title" content="עמוד ממשלתי | Know Me">
+    <meta name="twitter:description" content="Know Me - מיזם טכנולוגי לשוויון בהיכרויות דיגיטליות.">
     <meta name="twitter:image" content="https://nomi-online.com/og-image.png">
     
     <!-- Schema.org -->
@@ -48,16 +48,15 @@
     {
         "@context": "https://schema.org",
         "@type": "AboutPage",
-        "name": "About Nomi",
-        "description": "Learn about Nomi - the inclusive dating app for people with disabilities",
+        "name": "Know Me - Government Page",
+        "description": "Know Me - Technology initiative for equality in digital dating",
         "url": "https://nomi-online.com/gov.html",
         "mainEntity": {
             "@type": "Organization",
-            "name": "Nomi",
-            "description": "Inclusive dating app for people with disabilities",
+            "name": "Know Me",
+            "description": "Digital platform for accessible dating and human connections",
             "url": "https://nomi-online.com",
-            "foundingDate": "2025",
-            "slogan": "אהבה בלי התנצלות - Love without apology"
+            "foundingDate": "2025"
         }
     }
     </script>
@@ -1162,9 +1161,9 @@
         }
 
         .vision-quote {
-            font-size: clamp(1.25rem, 3vw, 1.75rem);
-            font-weight: 600;
-            line-height: 1.6;
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 700;
+            line-height: 1.4;
             color: var(--text);
             margin-bottom: 1.5rem;
         }
@@ -1317,6 +1316,39 @@
             }
         }
 
+        /* Team cards */
+        .team-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            text-align: right;
+        }
+
+        html[dir="ltr"] .team-card {
+            text-align: left;
+        }
+
+        .team-card h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+        }
+
+        .team-card p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 768px) {
+            .team-card {
+                text-align: center !important;
+            }
+        }
+
         /* Reduced motion support */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
@@ -1331,8 +1363,8 @@
     <!-- Navbar -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
         <a href="/" class="nav-logo">
-            <span data-lang="he">נומי</span>
-            <span data-lang="en">Nomi</span>
+            <span data-lang="he">Know Me</span>
+            <span data-lang="en">Know Me</span>
         </a>
         <div class="nav-actions">
             <button class="lang-toggle" onclick="toggleLanguage()" aria-label="Switch language">
@@ -1353,26 +1385,26 @@
         <div class="hero-content">
             <div class="hero-badge">
                 <span>💜</span>
-                <span data-lang="he">דייטינג לאנשים עם מוגבלויות נראות ושקופות</span>
-                <span data-lang="en">Dating for people with visible and invisible disabilities</span>
+                <span data-lang="he">מרחב דיגיטלי לחיבורים אנושיים משמעותיים</span>
+                <span data-lang="en">Digital space for meaningful human connections</span>
             </div>
             <div class="logo" aria-hidden="true">🧡</div>
             <h1>
-                <span data-lang="he">שוויון אמיתי<br><span class="highlight">באהבה</span></span>
-                <span data-lang="en">Real Equality<br><span class="highlight">in Love</span></span>
+                <span data-lang="he">Know Me<br><span class="highlight">מרחב דיגיטלי שוויוני ונגיש</span></span>
+                <span data-lang="en">Know Me<br><span class="highlight">Equitable & Accessible Digital Space</span></span>
             </h1>
             <p class="tagline">
-                <span data-lang="he">נומי יוצרת מרחב בטוח להכרויות ויצירת קשרים רומנטיים לאנשים עם מוגבלויות פיזיות, חושיות, קוגניטיביות ורגשיות. כאן אתם לא צריכים להסביר, להתנצל, או "לצאת מהארון" של המוגבלות.</span>
-                <span data-lang="en">Nomi creates a safe space for dating and romantic connections for people with physical, sensory, cognitive, and emotional disabilities. Here you don't need to explain, apologize, or "come out" about your disability.</span>
+                <span data-lang="he">Know Me היא פלטפורמה דיגיטלית ליצירת קשרים אנושיים משמעותיים, מבוססת על נגישות אדפטיבית, פרטיות ואבטחה. המיזם מאפשר למשתמשים עם מוגבלויות לחפש זוגיות, חברויות וקשרים חברתיים במרחב בטוח, מותאם ולא שיפוטי.</span>
+                <span data-lang="en">Know Me is a digital platform for meaningful human connections, based on adaptive accessibility, privacy, and security. The initiative enables users with disabilities to seek relationships, friendships, and social connections in a safe, adapted, and non-judgmental space.</span>
             </p>
             <div class="cta-group">
-                <a href="/" class="cta-button">
-                    <span data-lang="he">בואו נתחיל 🧡</span>
-                    <span data-lang="en">Let's Begin 🧡</span>
+                <a href="#technology" class="cta-secondary">
+                    <span data-lang="he">הטכנולוגיה שלנו</span>
+                    <span data-lang="en">Our Technology</span>
                 </a>
-                <a href="#story" class="cta-secondary">
-                    <span data-lang="he">הסיפור שלנו</span>
-                    <span data-lang="en">Our Story</span>
+                <a href="#team" class="cta-secondary">
+                    <span data-lang="he">צוות המיזם</span>
+                    <span data-lang="en">Our Team</span>
                 </a>
             </div>
         </div>
@@ -1384,12 +1416,12 @@
         <div class="problem-inner">
             <div class="section-header">
                 <span class="section-eyebrow">
-                    <span data-lang="he">הבעיה</span>
-                    <span data-lang="en">THE PROBLEM</span>
+                    <span data-lang="he">רקע</span>
+                    <span data-lang="en">BACKGROUND</span>
                 </span>
                 <h2 class="section-title">
-                    <span data-lang="he">עולם הדייטינג הדיגיטלי לא נגיש</span>
-                    <span data-lang="en">Digital Dating Isn't Accessible</span>
+                    <span data-lang="he">מרחבים דיגיטליים להיכרויות אינם נגישים</span>
+                    <span data-lang="en">Digital Dating Spaces Are Not Accessible</span>
                 </h2>
                 <p class="section-subtitle">
                     <span data-lang="he">למרות שמדובר במיליוני אנשים ברחבי העולם, אין פלטפורמה מובילה שמאפשרת היכרות זוגית במרחב מותאם, בטוח ולא שיפוטי.</span>
@@ -1403,8 +1435,8 @@
                     <span data-lang="en">Why now?</span>
                 </h3>
                 <p>
-                    <span data-lang="he">כי עולם ההיכרויות עובר שינוי עמוק: יותר מודעות להכלה, יותר שיח על נגישות, ויותר הבנה שקשרים אנושיים הם תשתית לרווחה נפשית וחברתית. במקביל, טכנולוגיות AI מאפשרות לראשונה התאמה חכמה, בטוחה ומותאמת אישית גם לאוכלוסיות שהודרו עד היום. בזמן שמיליוני אנשים עם מוגבלויות מחפשים זוגיות – אין להם פלטפורמה שבאמת נבנתה עבורם. נומי נולדת בדיוק בצומת הזה: צורך חברתי ברור, טכנולוגיה בשלה, ורגע שבו השוק, הרגולציה והמודעות הציבורית סוף-סוף נפגשים.</span>
-                    <span data-lang="en">Because the dating world is undergoing a deep shift: more awareness of inclusion, more conversation about accessibility, and a growing understanding that human connection is a foundation for mental and social wellbeing. At the same time, AI technologies now enable smart, safe, and personalized matching for communities that have long been excluded. While millions of people with disabilities are looking for love, they still don't have a platform built for them. Nomi is born exactly at this intersection: a clear social need, mature technology, and a moment when the market, regulation, and public awareness finally meet.</span>
+                    <span data-lang="he">עולם ההיכרויות עובר שינוי: יותר מודעות להכלה, יותר שיח על נגישות, ויותר הבנה שקשרים אנושיים הם תשתית לרווחה נפשית וחברתית. במקביל, טכנולוגיות AI מאפשרות לראשונה התאמה חכמה, בטוחה ומותאמת אישית גם לאוכלוסיות שהודרו עד היום. בזמן שמיליוני אנשים עם מוגבלויות מחפשים זוגיות – אין להם פלטפורמה שבאמת נבנתה עבורם. Know Me נולדת בדיוק בצומת הזה: צורך חברתי ברור, טכנולוגיה בשלה, ורגע שבו השוק, הרגולציה והמודעות הציבורית סוף-סוף נפגשים.</span>
+                    <span data-lang="en">The dating world is undergoing a shift: more awareness of inclusion, more conversation about accessibility, and a growing understanding that human connection is a foundation for mental and social wellbeing. At the same time, AI technologies now enable smart, safe, and personalized matching for communities that have long been excluded. While millions of people with disabilities are looking for love, they still don't have a platform built for them. Know Me is born exactly at this intersection: a clear social need, mature technology, and a moment when the market, regulation, and public awareness finally meet.</span>
                 </p>
             </div>
             
@@ -1476,7 +1508,7 @@
                     <p>בפועל, שון – כמו רבים אחרים – מודרת מעולם ההיכרויות הדיגיטלי. אין פילטרים רלוונטיים, אין מרחב בטוח, ואין פלטפורמה שמכירה בזכות הבסיסית שלה לזוגיות, בלי התנצלות ובלי צורך להסביר את עצמה מחדש בכל פעם.</p>
                     
                     <div class="story-highlight">
-                        <p>נומי נולדה מהפער הזה:<br>בין הרצון האנושי הבסיסי לאהבה – לבין קהילות דיגיטליות שאינן מותאמות ונגישות לאנשים עם מוגבלויות.</p>
+                        <p>Know Me נולדה מהפער הזה:<br>בין הרצון האנושי הבסיסי לאהבה – לבין קהילות דיגיטליות שאינן מותאמות ונגישות לאנשים עם מוגבלויות.</p>
                     </div>
                 </div>
                 <div data-lang="en">
@@ -1484,7 +1516,7 @@
                     <p>In practice, Shon – like many others – is excluded from digital dating. There are no relevant filters, no safe space, and no platform that recognizes her basic right to love, without apology and without having to explain herself again and again.</p>
                     
                     <div class="story-highlight">
-                        <p>Nomi was born from this gap:<br>Between the basic human desire for love – and digital communities that aren't adapted and accessible for people with disabilities.</p>
+                        <p>Know Me was born from this gap:<br>Between the basic human desire for love – and digital communities that aren't adapted and accessible for people with disabilities.</p>
                     </div>
                 </div>
             </div>
@@ -1496,58 +1528,47 @@
         <div class="principles-inner">
             <div class="principles-header">
                 <h2>
-                    <span data-lang="he">עקרונות הליבה שלנו</span>
-                    <span data-lang="en">Our Core Principles</span>
+                    <span data-lang="he">עקרונות ליבה – שליטה, בחירה ופרטיות</span>
+                    <span data-lang="en">Core Principles – Control, Choice, and Privacy</span>
                 </h2>
                 <p>
-                    <span data-lang="he">כל החלטה ב-נומי נבחנת דרך העקרונות האלה</span>
-                    <span data-lang="en">Every decision at Nomi is evaluated through these principles</span>
+                    <span data-lang="he">שליטה של המשתמשים במידע האישי שלהם</span>
+                    <span data-lang="en">User control over their personal information</span>
                 </p>
             </div>
 
             <div class="principles-grid">
                 <div class="principle-card">
-                    <div class="principle-icon" aria-hidden="true">♿</div>
-                    <h3>
-                        <span data-lang="he">נגישות מלאה</span>
-                        <span data-lang="en">Full Accessibility</span>
-                    </h3>
-                    <p>
-                        <span data-lang="he">UX, שפה, פונקציונליות – הכל מותאם למוגבלויות פיזיות, חושיות, קוגניטיביות ורגשיות</span>
-                        <span data-lang="en">UX, language, functionality – everything adapted for physical, sensory, cognitive, and emotional disabilities</span>
-                    </p>
-                </div>
-                <div class="principle-card">
                     <div class="principle-icon" aria-hidden="true">🎯</div>
                     <h3>
-                        <span data-lang="he">בחירה, לא חשיפה</span>
-                        <span data-lang="en">Choice, Not Exposure</span>
+                        <span data-lang="he">שליטה מלאה במידע</span>
+                        <span data-lang="en">Full Control Over Information</span>
                     </h3>
                     <p>
-                        <span data-lang="he">אתם מחליטים מה, מתי ואיך לשתף. הסיפור שלכם, בשליטה שלכם</span>
-                        <span data-lang="en">You decide what, when, and how to share. Your story, your control</span>
+                        <span data-lang="he">המשתמשים מחליטים מה, מתי ובאיזה אופן לשתף מידע אישי. החשיפה בנויה באופן מדורג, מבוסס בחירה, וללא חובה לשתף מידע שאינו מרגיש בטוח או רלוונטי.</span>
+                        <span data-lang="en">Users decide what, when, and how to share personal information. Exposure is gradual, choice-based, and without obligation to share information that doesn't feel safe or relevant.</span>
                     </p>
                 </div>
                 <div class="principle-card">
-                    <div class="principle-icon" aria-hidden="true">🛡️</div>
+                    <div class="principle-icon" aria-hidden="true">🏷️</div>
                     <h3>
-                        <span data-lang="he">מרחב בטוח</span>
-                        <span data-lang="en">Safe Space</span>
+                        <span data-lang="he">בחירת תגיות</span>
+                        <span data-lang="en">Tag Selection</span>
                     </h3>
                     <p>
-                        <span data-lang="he">בלי צורך להסביר, להתנצל או "לצאת מהארון" של המוגבלות</span>
-                        <span data-lang="en">No need to explain, apologize, or "come out" about your disability</span>
+                        <span data-lang="he">תגיות להצגה בפרופיל הגלוי. תגיות נוספות הנחשפות רק בשלב ההתאמה, בהתאם להחלטת המשתמשים.</span>
+                        <span data-lang="en">Tags for display in public profile. Additional tags revealed only during matching stage, according to users' decisions.</span>
                     </p>
                 </div>
                 <div class="principle-card">
-                    <div class="principle-icon" aria-hidden="true">💡</div>
+                    <div class="principle-icon" aria-hidden="true">✏️</div>
                     <h3>
-                        <span data-lang="he">התאמות חכמות</span>
-                        <span data-lang="en">Smart Matching</span>
+                        <span data-lang="he">גמישות ועדכון</span>
+                        <span data-lang="en">Flexibility and Updates</span>
                     </h3>
                     <p>
-                        <span data-lang="he">לא לפי מגבלה, אלא לפי התאמה אנושית – חוויות דומות, סגנון חיים, קצב</span>
-                        <span data-lang="en">Not by limitation, but by human compatibility – shared experiences, lifestyle, pace</span>
+                        <span data-lang="he">אפשרות לשינוי, עדכון או הסרת מידע בכל שלב. העיקרון המנחה: הסיפור האישי נמצא בשליטת המשתמשים בלבד.</span>
+                        <span data-lang="en">Ability to change, update, or remove information at any stage. The guiding principle: the personal story is under users' control alone.</span>
                     </p>
                 </div>
             </div>
@@ -1560,16 +1581,16 @@
             <div class="technology-header">
                 <div class="technology-badge">
                     <span>⚡</span>
-                    <span data-lang="he">חדשנות טכנולוגית</span>
-                    <span data-lang="en">Innovation</span>
+                    <span data-lang="he">טכנולוגיה</span>
+                    <span data-lang="en">Technology</span>
                 </div>
                 <h2 class="technology-title">
-                    <span data-lang="he">הטכנולוגיה <span class="technology-highlight">שלנו</span></span>
-                    <span data-lang="en">Our <span class="technology-highlight">Technology</span></span>
+                    <span data-lang="he">הטכנולוגיה של <span class="technology-highlight">Know Me</span></span>
+                    <span data-lang="en"><span class="technology-highlight">Know Me</span> Technology</span>
                 </h2>
                 <p class="technology-intro">
-                    <span data-lang="he">בנינו טכנולוגיה שמבינה שנגישות אמיתית דורשת התאמה אישית – לא פתרון אחיד לכולם.</span>
-                    <span data-lang="en">True accessibility requires personalization, not one-size-fits-all. Our AI adapts to you.</span>
+                    <span data-lang="he">Know Me מבוססת על טכנולוגיית נגישות אדפטיבית, המאפשרת לממשק להשתנות ולהסתגל לצרכים שונים של משתמשים.</span>
+                    <span data-lang="en">Know Me is based on adaptive accessibility technology, allowing the interface to change and adapt to users' diverse needs.</span>
                 </p>
             </div>
 
@@ -1578,60 +1599,33 @@
                 <div class="tech-card">
                     <div class="tech-card-icon" aria-hidden="true">🧠</div>
                     <h3>
+                        <span data-lang="he">האפליקציה מתאימה את עצמה למשתמשים</span>
+                        <span data-lang="en">The App Adapts to Users</span>
+                    </h3>
+                    <p class="tech-card-tagline">
                         <span data-lang="he">נגישות אדפטיבית</span>
                         <span data-lang="en">Adaptive Accessibility</span>
-                    </h3>
-                    <p class="tech-card-tagline">
-                        <span data-lang="he">האפליקציה מתאימה את עצמה אליכם</span>
-                        <span data-lang="en">The app adapts to you, not the reverse</span>
                     </p>
                     <p class="tech-card-desc">
-                        <span data-lang="he">בינה מלאכותית שלומדת את הצרכים הייחודיים שלכם ומתאימה את הממשק בזמן אמת – בלי שתצטרכו לבקש.</span>
-                        <span data-lang="en">Context-aware AI learns your unique needs and adjusts the interface in real-time – without you asking.</span>
+                        <span data-lang="he">מערכת בינה מלאכותית לומדת את דפוסי השימוש ואת הצרכים הייחודיים, ומתאימה את חוויית השימוש בזמן אמת — ללא צורך בבקשה יזומה מצד המשתמשים.</span>
+                        <span data-lang="en">AI system learns usage patterns and unique needs, adapting the user experience in real-time — without requiring proactive requests from users.</span>
                     </p>
                     <ul class="tech-card-list">
                         <li>
-                            <span data-lang="he">קלט רב-מודלי: קול, טקסט, תנועה</span>
-                            <span data-lang="en">Multi-modal input: voice, text, gesture</span>
+                            <span data-lang="he">מבנה המסכים</span>
+                            <span data-lang="en">Screen structure</span>
                         </li>
                         <li>
-                            <span data-lang="he">ממשק דינמי שמשתנה לפי הקשר</span>
-                            <span data-lang="en">Dynamic interface adapts to context</span>
+                            <span data-lang="he">עומס מידע</span>
+                            <span data-lang="en">Information load</span>
                         </li>
                         <li>
-                            <span data-lang="he">למידה רציפה מההתנהגות שלכם</span>
-                            <span data-lang="en">Continuous learning from your behavior</span>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Privacy-First Safety -->
-                <div class="tech-card">
-                    <div class="tech-card-icon" aria-hidden="true">🔐</div>
-                    <h3>
-                        <span data-lang="he">פרטיות קודם כל</span>
-                        <span data-lang="en">Privacy-First Safety</span>
-                    </h3>
-                    <p class="tech-card-tagline">
-                        <span data-lang="he">הגנה מלאה בלי לוותר על פרטיות</span>
-                        <span data-lang="en">Protection without privacy trade-offs</span>
-                    </p>
-                    <p class="tech-card-desc">
-                        <span data-lang="he">מודלי AI שרצים על המכשיר שלכם. זיהוי ניסיונות ניצול ללא שליחת מידע אישי לשרתים חיצוניים.</span>
-                        <span data-lang="en">AI models run entirely on your device. Exploitation detection without personal data ever leaving your phone.</span>
-                    </p>
-                    <ul class="tech-card-list">
-                        <li>
-                            <span data-lang="he">עיבוד מקומי על המכשיר</span>
-                            <span data-lang="en">On-device edge computing</span>
+                            <span data-lang="he">קצב אינטראקציה</span>
+                            <span data-lang="en">Interaction pace</span>
                         </li>
                         <li>
-                            <span data-lang="he">זיהוי פרואקטיבי של ניצול</span>
-                            <span data-lang="en">Proactive exploitation detection</span>
-                        </li>
-                        <li>
-                            <span data-lang="he">המידע שלכם נשאר אצלכם</span>
-                            <span data-lang="en">Your data stays with you</span>
+                            <span data-lang="he">אופן הצגת תכנים</span>
+                            <span data-lang="en">Content presentation</span>
                         </li>
                     </ul>
                 </div>
@@ -1640,29 +1634,60 @@
                 <div class="tech-card">
                     <div class="tech-card-icon" aria-hidden="true">🌉</div>
                     <h3>
-                        <span data-lang="he">גישור תקשורתי</span>
-                        <span data-lang="en">Communication Bridging</span>
+                        <span data-lang="he">גישור טכנולוגי</span>
+                        <span data-lang="en">Technological Bridging</span>
                     </h3>
                     <p class="tech-card-tagline">
-                        <span data-lang="he">תרגום בין סגנונות תקשורת שונים</span>
-                        <span data-lang="en">Translating between communication styles</span>
+                        <span data-lang="he">שפה, ניסוח והתאמה חווייתית</span>
+                        <span data-lang="en">Language, phrasing, and experiential adaptation</span>
                     </p>
                     <p class="tech-card-desc">
-                        <span data-lang="he">AI שמגשר בין דרכי תקשורת מגוונות – כך ששני הצדדים יכולים להיות עצמם ולהבין אחד את השני.</span>
-                        <span data-lang="en">AI bridges diverse communication needs so both users can be authentically themselves while understanding each other.</span>
+                        <span data-lang="he">כלים טכנולוגיים המסייעים בהקלדה, בניסוח ובהבעת כוונה, עבור משתמשים שמתקשים בהבעה כתובה, בבחירת מילים או בניסוח מסרים.</span>
+                        <span data-lang="en">Technological tools assist with typing, phrasing, and intent expression, for users who struggle with written expression, word choice, or message formulation.</span>
                     </p>
                     <ul class="tech-card-list">
                         <li>
-                            <span data-lang="he">תיאורים חזותיים לעיוורים</span>
-                            <span data-lang="en">Visual descriptions for blind users</span>
+                            <span data-lang="he">סיוע בניסוח ובהבעה כתובה</span>
+                            <span data-lang="en">Writing and expression assistance</span>
                         </li>
                         <li>
-                            <span data-lang="he">שפה ליטרלית לנוירו-דיברגנטים</span>
-                            <span data-lang="en">Literal language for neurodivergent</span>
+                            <span data-lang="he">שפה ברורה וישירה</span>
+                            <span data-lang="en">Clear and direct language</span>
                         </li>
                         <li>
-                            <span data-lang="he">התאמת קצב לאנרגיה משתנה</span>
-                            <span data-lang="en">Pacing for variable energy levels</span>
+                            <span data-lang="he">התאמה חווייתית מבוססת AI</span>
+                            <span data-lang="en">AI-based experiential adaptation</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Not Just Dating -->
+                <div class="tech-card">
+                    <div class="tech-card-icon" aria-hidden="true">🤝</div>
+                    <h3>
+                        <span data-lang="he">מרחב לחיבורים אנושיים</span>
+                        <span data-lang="en">Space for Human Connections</span>
+                    </h3>
+                    <p class="tech-card-tagline">
+                        <span data-lang="he">לא רק זוגיות</span>
+                        <span data-lang="en">Not just dating</span>
+                    </p>
+                    <p class="tech-card-desc">
+                        <span data-lang="he">Know Me אינה עוסקת רק בזוגיות, אלא מציעה מרחב דיגיטלי ליצירת קשרים אנושיים משמעותיים. עבור אנשים עם מוגבלויות, גיל 21 מסמן לעיתים יציאה ממסגרות חינוכיות וחברתיות.</span>
+                        <span data-lang="en">Know Me isn't only about dating, but offers a digital space for creating meaningful human connections. For people with disabilities, age 21 often marks an exit from educational and social frameworks.</span>
+                    </p>
+                    <ul class="tech-card-list">
+                        <li>
+                            <span data-lang="he">יצירת חברויות</span>
+                            <span data-lang="en">Creating friendships</span>
+                        </li>
+                        <li>
+                            <span data-lang="he">קשרים חברתיים</span>
+                            <span data-lang="en">Social connections</span>
+                        </li>
+                        <li>
+                            <span data-lang="he">היכרות בקצב מותאם</span>
+                            <span data-lang="en">Meeting at adapted pace</span>
                         </li>
                     </ul>
                 </div>
@@ -1675,16 +1700,16 @@
         <div class="safety-inner">
             <div class="safety-badge">
                 <span>🛡️</span>
-                <span data-lang="he">בטיחות ואמון</span>
-                <span data-lang="en">Safety & Trust</span>
+                <span data-lang="he">אבטחה ואימות</span>
+                <span data-lang="en">Security & Authentication</span>
             </div>
             <h2 class="safety-title">
-                <span data-lang="he">המרחב <span class="safety-highlight">הבטוח</span> שלכם</span>
-                <span data-lang="en">Your <span class="safety-highlight">Safe</span> Space</span>
+                <span data-lang="he">אבטחה, אימות ומרחב <span class="safety-highlight">בטוח</span></span>
+                <span data-lang="en">Security, Authentication & <span class="safety-highlight">Safe</span> Space</span>
             </h2>
             <p class="safety-intro">
-                <span data-lang="he">בנומי, הבטיחות והאמון הם תנאי בסיס – לא תוספת.</span>
-                <span data-lang="en">At Nomi, safety and trust are fundamental – not an afterthought.</span>
+                <span data-lang="he">Know Me נבנית כמרחב דיגיטלי בטוח, עם מנגנוני בקרה ואימות ברורים, המותאמים לאוכלוסיות רגישות.</span>
+                <span data-lang="en">Know Me is built as a secure digital space, with clear control and authentication mechanisms, adapted for sensitive populations.</span>
             </p>
             
             <div class="safety-grid">
@@ -1693,12 +1718,12 @@
                         <span aria-hidden="true">🪪</span>
                     </div>
                     <h3>
-                        <span data-lang="he">אימות מתקדם</span>
-                        <span data-lang="en">Advanced Verification</span>
+                        <span data-lang="he">תהליכי אימות משתמשים</span>
+                        <span data-lang="en">User Authentication Processes</span>
                     </h3>
                     <p>
-                        <span data-lang="he">כל משתמש ומשתמשת עוברים תהליך אימות הכולל העלאת תעודת זהות ובקרה אנושית, כדי לוודא שמדובר באדם אמיתי ולמנוע התחזות או ניצול.</span>
-                        <span data-lang="en">Every user undergoes a verification process including ID upload and human review, ensuring real people and preventing impersonation or exploitation.</span>
+                        <span data-lang="he">תהליכי אימות משתמשים להמנעות מהתחזות ופרופילים פיקטיביים.</span>
+                        <span data-lang="en">User authentication processes to prevent impersonation and fake profiles.</span>
                     </p>
                 </div>
                 <div class="safety-card">
@@ -1706,38 +1731,38 @@
                         <span aria-hidden="true">🔍</span>
                     </div>
                     <h3>
-                        <span data-lang="he">ניטור חכם</span>
-                        <span data-lang="en">Smart Monitoring</span>
+                        <span data-lang="he">ניטור והגנה</span>
+                        <span data-lang="en">Monitoring & Protection</span>
                     </h3>
                     <p>
-                        <span data-lang="he">מנגנוני ניטור חכמים, זיהוי התנהגות חריגה ומערך דיווח מהיר ונגיש – כי הביטחון שלכם בראש סדר העדיפויות.</span>
-                        <span data-lang="en">Smart monitoring mechanisms, unusual behavior detection, and a fast, accessible reporting system – because your security is our top priority.</span>
+                        <span data-lang="he">ניטור טכנולוגי ואנושי של שיח פוגעני, הטרדות והתנהגות חריגה.</span>
+                        <span data-lang="en">Technological and human monitoring of harmful discourse, harassment, and unusual behavior.</span>
                     </p>
                 </div>
                 <div class="safety-card">
                     <div class="safety-card-icon">
-                        <span aria-hidden="true">📚</span>
+                        <span aria-hidden="true">🚫</span>
                     </div>
                     <h3>
-                        <span data-lang="he">הדרכה להיכרות בטוחה</span>
-                        <span data-lang="en">Safe Dating Guidance</span>
+                        <span data-lang="he">מנגנוני חסימה ודיווח</span>
+                        <span data-lang="en">Blocking & Reporting Mechanisms</span>
                     </h3>
                     <p>
-                        <span data-lang="he">הדרכה ברורה ורגישה – מה חשוב לדעת לפני מפגש פיזי, איך לזהות סימני אזהרה, ואיך לפעול במקרה של חוסר נוחות.</span>
-                        <span data-lang="en">Clear and sensitive guidance – what to know before meeting, how to identify warning signs, and how to act if you feel uncomfortable.</span>
+                        <span data-lang="he">מנגנוני חסימה ודיווח פשוטים וברורים, ומניעת העלאת תכנים ותמונות פוגעניות.</span>
+                        <span data-lang="en">Simple and clear blocking and reporting mechanisms, and prevention of offensive content and image uploads.</span>
                     </p>
                 </div>
                 <div class="safety-card">
                     <div class="safety-card-icon">
-                        <span aria-hidden="true">👥</span>
+                        <span aria-hidden="true">🛡️</span>
                     </div>
                     <h3>
-                        <span data-lang="he">צוות אנושי</span>
-                        <span data-lang="en">Human Team</span>
+                        <span data-lang="he">אבטחה כחלק מתשתית הליבה</span>
+                        <span data-lang="en">Security as Core Infrastructure</span>
                     </h3>
                     <p>
-                        <span data-lang="he">השילוב בין טכנולוגיה, צוות אנושי והדרכה יוצר מרחב היכרויות מוגן, מכבד ובטוח באמת.</span>
-                        <span data-lang="en">The combination of technology, human team, and guidance creates a truly protected, respectful, and safe dating space.</span>
+                        <span data-lang="he">דגש על מהימנות, אמון והגנה על המשתמשים לאורך כל חוויית השימוש. האבטחה אינה תוספת, אלא חלק מתשתית הליבה של הפלטפורמה.</span>
+                        <span data-lang="en">Emphasis on reliability, trust, and user protection throughout the entire user experience. Security is not an add-on, but part of the platform's core infrastructure.</span>
                     </p>
                 </div>
             </div>
@@ -1755,16 +1780,16 @@
     <section>
         <div class="section-header">
             <span class="section-eyebrow">
-                <span data-lang="he">הפתרון</span>
-                <span data-lang="en">THE SOLUTION</span>
+                <span data-lang="he">תכונות הפלטפורמה</span>
+                <span data-lang="en">PLATFORM FEATURES</span>
             </span>
             <h2 class="section-title">
-                <span data-lang="he">נבנה אחרת. בכוונה.</span>
-                <span data-lang="en">Built Different. On Purpose.</span>
+                <span data-lang="he">מבנה הפלטפורמה</span>
+                <span data-lang="en">Platform Structure</span>
             </h2>
             <p class="section-subtitle">
-                <span data-lang="he">נומי אינה "אפליקציה לאנשים עם מוגבלויות". היא אפליקציית דייטינג טובה – שנגישה לכולם.</span>
-                <span data-lang="en">Nomi isn't "an app for people with disabilities." It's a good dating app – that's accessible to everyone.</span>
+                <span data-lang="he">Know Me היא פלטפורמה דיגיטלית המתאימה עצמה לצרכים של המשתמשים, תוך שמירה על פרטיות, אבטחה ונגישות.</span>
+                <span data-lang="en">Know Me is a digital platform that adapts itself to users' needs, while maintaining privacy, security, and accessibility.</span>
             </p>
         </div>
         
@@ -1772,158 +1797,135 @@
             <div class="feature-card">
                 <div class="feature-icon" aria-hidden="true">🏷️</div>
                 <h3>
-                    <span data-lang="he">תגיות זהות</span>
-                    <span data-lang="en">Identity Tags</span>
+                    <span data-lang="he">תגיות זהות והצגה</span>
+                    <span data-lang="en">Identity and Display Tags</span>
                 </h3>
                 <p>
-                    <span data-lang="he">בחרו תגיות שמתארות אתכם בשפה מכבדת ולא רפואית. כשמישהו רואה את הפרופיל שלכם, הוא כבר יודע – בלי שאלות מביכות.</span>
-                    <span data-lang="en">Choose tags that describe you in respectful, non-medical language. When someone sees your profile, they already know – no awkward questions.</span>
+                    <span data-lang="he">המשתמשים בוחרים תגיות המתארות את זהותם בשפה מכבדת ולא רפואית. התגיות מאפשרות חשיפה מבוקרת של מידע רלוונטי.</span>
+                    <span data-lang="en">Users choose tags that describe their identity in respectful, non-medical language. Tags enable controlled exposure of relevant information.</span>
                 </p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon" aria-hidden="true">✨</div>
                 <h3>
-                    <span data-lang="he">"תשאלו אותי על..."</span>
-                    <span data-lang="en">"Ask Me About..."</span>
+                    <span data-lang="he">חגיגת השונות</span>
+                    <span data-lang="en">Celebrating Difference</span>
                 </h3>
                 <p>
-                    <span data-lang="he">במקום להסתיר, לחגוג. ספרו על הדברים שהמוגבלות לימדה אתכם, על הכוחות שפיתחתם. עיצוב שחוגג שונות – לא מנסה להעלים אותה.</span>
-                    <span data-lang="en">Instead of hiding, celebrate. Share what disability taught you, the strengths you've developed. Design that celebrates difference – doesn't try to hide it.</span>
+                    <span data-lang="he">הפלטפורמה מאפשרת למשתמשים לשתף חוויות והיבטים ייחודיים של חייהם, תוך יצירת מרחב של כבוד והכרה.</span>
+                    <span data-lang="en">The platform enables users to share unique experiences and aspects of their lives, while creating a space of respect and recognition.</span>
                 </p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon" aria-hidden="true">🌡️</div>
                 <h3>
-                    <span data-lang="he">מד אנרגיה</span>
-                    <span data-lang="en">Energy Meter</span>
+                    <span data-lang="he">התאמה למצב אנרגיה משתנה</span>
+                    <span data-lang="en">Variable Energy State Adaptation</span>
                 </h3>
                 <p>
-                    <span data-lang="he">עדכנו את המצב שלכם: "יום קשה", "פתוחה לשיחה", "מרגיש הרפתקני". אנשים יבינו מה לצפות – כי יש ימים שיש כוחות ויש ימים שאין.</span>
-                    <span data-lang="en">Update your status: "tough day," "open to chat," "feeling adventurous." People will know what to expect – because some days you have energy, some days you don't.</span>
+                    <span data-lang="he">המערכת מאפשרת למשתמשים לעדכן את רמת האנרגיה והזמינות שלהם, תוך הכרה בכך שיכולות והעדפות עשויות להשתנות לאורך זמן.</span>
+                    <span data-lang="en">The system allows users to update their energy level and availability, recognizing that abilities and preferences may vary over time.</span>
                 </p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon" aria-hidden="true">⏱️</div>
                 <h3>
-                    <span data-lang="he">קצב משלכם</span>
-                    <span data-lang="en">Your Own Pace</span>
+                    <span data-lang="he">קצב אישי ומותאם</span>
+                    <span data-lang="en">Personal and Adapted Pace</span>
                 </h3>
                 <p>
-                    <span data-lang="he">הגדירו כמה מהר אתם עונים בדרך כלל, מתי אתם זמינים. בלי לחץ, בלי ציפיות לא ריאליות.</span>
-                    <span data-lang="en">Set how quickly you usually respond, when you're available. No pressure, no unrealistic expectations.</span>
+                    <span data-lang="he">המשתמשים קובעים את קצב התקשורת המועדף עליהם, תוך הקטנת הציפיות ולחצים חברתיים.</span>
+                    <span data-lang="en">Users determine their preferred communication pace, reducing social expectations and pressures.</span>
                 </p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon" aria-hidden="true">🎯</div>
                 <h3>
-                    <span data-lang="he">התאמה אמיתית</span>
-                    <span data-lang="en">Real Matching</span>
+                    <span data-lang="he">אלגוריתם התאמה מבוסס ניסיון</span>
+                    <span data-lang="en">Experience-Based Matching Algorithm</span>
                 </h3>
                 <p>
-                    <span data-lang="he">האלגוריתם שלנו מתחשב בדברים שחשובים: חוויות מוגבלות דומות, סגנון תקשורת, קצב חיים. חוויות משותפות יוצרות הבנה עמוקה יותר.</span>
-                    <span data-lang="en">Our algorithm considers what matters: shared disability experiences, communication style, life pace. Shared experiences create deeper understanding.</span>
+                    <span data-lang="he">אלגוריתם ההתאמה לוקח בחשבון חוויות משותפות, סגנון תקשורת וקצב חיים, ולא רק קריטריונים דמוגרפיים בסיסיים.</span>
+                    <span data-lang="en">The matching algorithm considers shared experiences, communication style, and life pace, not just basic demographic criteria.</span>
                 </p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon" aria-hidden="true">🛡️</div>
                 <h3>
-                    <span data-lang="he">הגנה וקהילה</span>
-                    <span data-lang="en">Protection & Community</span>
+                    <span data-lang="he">מנגנוני הגנה וקהילה</span>
+                    <span data-lang="en">Protection Mechanisms and Community</span>
                 </h3>
                 <p>
-                    <span data-lang="he">מנגנוני הגנה מובנים, דיווח, וקהילה תומכת שמבינה את המציאות שלכם.</span>
-                    <span data-lang="en">Built-in protection mechanisms, reporting, and a supportive community that understands your reality.</span>
+                    <span data-lang="he">מערכת הגנה מובנית, כלי דיווח נגישים, וקהילה תומכת המבינה את המציאות המגוונת של המשתמשים.</span>
+                    <span data-lang="en">Built-in protection system, accessible reporting tools, and a supportive community that understands users' diverse reality.</span>
                 </p>
             </div>
         </div>
     </section>
     
-    <!-- How it Works -->
-    <section id="how">
-        <div class="section-header">
-            <span class="section-eyebrow">
-                <span data-lang="he">פשוט להתחיל</span>
-                <span data-lang="en">EASY TO START</span>
-            </span>
-            <h2 class="section-title">
-                <span data-lang="he">שלושה צעדים לחיבור אמיתי</span>
-                <span data-lang="en">Three Steps to Real Connection</span>
-            </h2>
-        </div>
-        
-        <div class="steps">
-            <div class="step">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                    <h3>
-                        <span data-lang="he">התחברו עם פייסבוק</span>
-                        <span data-lang="en">Connect with Facebook</span>
-                    </h3>
-                    <p>
-                        <span data-lang="he">הרשמה בלחיצה אחת. בלי סיסמאות, בלי טפסים מסובכים.</span>
-                        <span data-lang="en">One-click signup. No passwords, no complicated forms.</span>
-                    </p>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                    <h3>
-                        <span data-lang="he">ספרו על עצמכם</span>
-                        <span data-lang="en">Tell Us About Yourself</span>
-                    </h3>
-                    <p>
-                        <span data-lang="he">בחרו תגיות זהות, כתבו קצת, הגדירו מה אתם מחפשים – בקצב שלכם.</span>
-                        <span data-lang="en">Choose identity tags, write a bit, define what you're looking for – at your own pace.</span>
-                    </p>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                    <h3>
-                        <span data-lang="he">גלו אנשים שמבינים</span>
-                        <span data-lang="en">Discover People Who Get You</span>
-                    </h3>
-                    <p>
-                        <span data-lang="he">החליקו, התאימו, התחילו לדבר. בלי צורך להסביר, בלי להתנצל.</span>
-                        <span data-lang="en">Swipe, match, start talking. No need to explain, no apologies.</span>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- Vision -->
     <section class="vision">
         <div class="vision-inner">
             <div class="vision-quote">
-                <span data-lang="he">"נומי אינה אפליקציה לאנשים עם מוגבלויות.<br>היא אפליקציית דייטינג טובה – שנגישה לכולם."</span>
-                <span data-lang="en">"Nomi isn't an app for people with disabilities.<br>It's a good dating app – that's accessible to everyone."</span>
+                <span data-lang="he">הצהרת ערכים</span>
+                <span data-lang="en">Values Statement</span>
             </div>
             <p class="vision-text">
-                <span data-lang="he">אנחנו מאמינים שכל אדם זכאי לזוגיות בלי התנצלות. אנחנו בונים את הפלטפורמה שהיינו רוצים שתהיה קיימת – מרחב שמכבד, מבין, ומאפשר חיבורים אמיתיים.</span>
-                <span data-lang="en">We believe everyone deserves love without apology. We're building the platform we wish existed – a space that respects, understands, and enables real connections.</span>
+                <span data-lang="he">אנחנו מאמינים שכל אדם זכאי לזוגיות ולקשרים אנושיים משמעותיים ללא התנצלות. Know Me נבנית כמרחב שמכבד, מבין ומאפשר חיבורים אמיתיים — מרחב שנגיש באמת, לכולם ולכולן.</span>
+                <span data-lang="en">We believe every person is entitled to relationships and meaningful human connections without apology. Know Me is built as a space that respects, understands, and enables real connections — a space that is truly accessible, for everyone.</span>
             </p>
         </div>
     </section>
     
-    <!-- Final CTA -->
-    <section class="final-cta">
+    <!-- Team Section -->
+    <section class="final-cta" id="team">
         <div class="final-cta-inner">
-            <div class="final-cta-icon" aria-hidden="true">🧡</div>
+            <div class="final-cta-icon" aria-hidden="true">👥</div>
             <h2>
-                <span data-lang="he">מוכנים לאהבה בלי התנצלות?</span>
-                <span data-lang="en">Ready for Love Without Apology?</span>
+                <span data-lang="he">צוות המיזם</span>
+                <span data-lang="en">The Team</span>
             </h2>
-            <p>
-                <span data-lang="he">הצטרפו לקהילה שלנו. בחינם, בלי התחייבות, בלי שיפוטיות.</span>
-                <span data-lang="en">Join our community. Free, no commitment, no judgment.</span>
+            
+            <div style="max-width: 800px; margin: 2rem auto;">
+                <div class="team-card">
+                    <h3>
+                        <span data-lang="he">אילון לוטם</span>
+                        <span data-lang="en">Eilon Lotem</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">יזם טכנולוגי ומפתח, בעל ניסיון בהובלת פיתוח מערכות מורכבות ומיזמים דיגיטליים. אחראי על התשתית הטכנולוגית, פיתוח המוצר והטמעת פתרונות נגישות מתקדמים.</span>
+                        <span data-lang="en">Technology entrepreneur and developer, with experience leading development of complex systems and digital initiatives. Responsible for technological infrastructure, product development, and implementation of advanced accessibility solutions.</span>
+                    </p>
+                </div>
+                
+                <div class="team-card">
+                    <h3>
+                        <span data-lang="he">עילי פרבשטיין</span>
+                        <span data-lang="en">Ily Farbstein</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">יזם חברתי ומנהל, מייסד-שותף של עמותת "בית על הים", עם ניסיון רב בעבודה עם אוכלוסיות מגוונות ובפיתוח מענים חברתיים חדשניים. אחראי על החזון, החיבור לשטח, שותפויות אסטרטגיות והיבטים חברתיים וערכיים של המיזם.</span>
+                        <span data-lang="en">Social entrepreneur and manager, co-founder of "Beit Al HaYam" organization, with extensive experience working with diverse populations and developing innovative social solutions. Responsible for vision, field connection, strategic partnerships, and social and value aspects of the initiative.</span>
+                    </p>
+                </div>
+                
+                <div class="team-card">
+                    <h3>
+                        <span data-lang="he">שון יורמן</span>
+                        <span data-lang="en">Shon Yorman</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">אקטיביסטית ושותפה ליזמות, המתמודדת עם שיתוק מוחין ופועלת לקידום הנגשה ושוויון במרחבים חברתיים ודיגיטליים. הסיפור האישי והניסיון שלה עומדים בבסיס זיהוי הצורך והדיוק של הפתרון עבור קהלים עם מוגבלויות.</span>
+                        <span data-lang="en">Activist and entrepreneurial partner, living with cerebral palsy and working to advance accessibility and equality in social and digital spaces. Her personal story and experience form the basis for identifying the need and precision of the solution for audiences with disabilities.</span>
+                    </p>
+                </div>
+            </div>
+            
+            <p style="font-size: 1.2rem; color: var(--text); margin-top: 3rem; max-width: 700px; margin-left: auto; margin-right: auto; text-align: center;">
+                <span data-lang="he">בואו ניצור יחד מרחב שוויוני, נגיש וחדשני —<br>מרחב שיאפשר לכולם ולכולן לחפש בו את מה שכולם רוצים: אהבה.</span>
+                <span data-lang="en">Let's create together an equitable, accessible, and innovative space —<br>A space that will enable everyone to seek what everyone wants: love.</span>
             </p>
-            <a href="/" class="cta-button">
-                <span data-lang="he">הצטרפו עכשיו – בחינם</span>
-                <span data-lang="en">Join Now – It's Free</span>
-            </a>
         </div>
     </section>
     
@@ -1931,8 +1933,8 @@
     <footer>
         <div class="footer-inner">
             <div class="footer-brand">
-                <span data-lang="he">נומי 🧡</span>
-                <span data-lang="en">Nomi 🧡</span>
+                <span data-lang="he">Know Me 🧡</span>
+                <span data-lang="en">Know Me 🧡</span>
             </div>
             <div class="footer-links">
                 <a href="/">
@@ -1969,8 +1971,8 @@
                 </a>
             </div>
             <p class="copyright">
-                <span data-lang="he">© 2026 נומי. כל הזכויות שמורות.</span>
-                <span data-lang="en">© 2026 Nomi. All rights reserved.</span>
+                <span data-lang="he">© 2026 Know Me. כל הזכויות שמורות.</span>
+                <span data-lang="en">© 2026 Know Me. All rights reserved.</span>
             </p>
         </div>
     </footer>
@@ -1985,17 +1987,17 @@
             if (currentLang === 'he') {
                 html.setAttribute('lang', 'en');
                 html.setAttribute('dir', 'ltr');
-                localStorage.setItem('nomi-about-lang', 'en');
+                localStorage.setItem('knowme-gov-lang', 'en');
             } else {
                 html.setAttribute('lang', 'he');
                 html.setAttribute('dir', 'rtl');
-                localStorage.setItem('nomi-about-lang', 'he');
+                localStorage.setItem('knowme-gov-lang', 'he');
             }
         }
 
         // Restore language preference on page load
         document.addEventListener('DOMContentLoaded', function() {
-            const savedLang = localStorage.getItem('nomi-about-lang');
+            const savedLang = localStorage.getItem('knowme-gov-lang');
             if (savedLang === 'en') {
                 document.documentElement.setAttribute('lang', 'en');
                 document.documentElement.setAttribute('dir', 'ltr');

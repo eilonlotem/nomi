@@ -311,6 +311,11 @@
     color: #0F172A;
   }
 
+  /* Dark mode gradient text - high contrast for visibility */
+  .dark-mode .text-gradient {
+    color: #FFFFFF;
+  }
+
   /* Organic tag badges */
   .tag-badge {
     position: relative;

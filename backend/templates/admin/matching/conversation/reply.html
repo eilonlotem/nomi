@@ -1,0 +1,111 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<style>
+  .chat-container {
+    max-width: 700px;
+    margin: 0 auto 24px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: #f8f9fa;
+    padding: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .chat-bubble {
+    max-width: 75%;
+    padding: 10px 16px;
+    border-radius: 16px;
+    line-height: 1.5;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+  }
+  .chat-bubble.support {
+    align-self: flex-end;
+    background: #417690;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .chat-bubble.user {
+    align-self: flex-start;
+    background: #fff;
+    color: #333;
+    border: 1px solid #ddd;
+    border-bottom-left-radius: 4px;
+  }
+  .chat-meta {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 4px;
+  }
+  .chat-bubble.support .chat-meta { text-align: right; }
+  .chat-bubble.user .chat-meta { text-align: left; }
+  .reply-form {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .reply-form textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    resize: vertical;
+    direction: rtl;
+  }
+  .reply-form button {
+    margin-top: 8px;
+    padding: 10px 28px;
+    background: #417690;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .reply-form button:hover { background: #2a5a72; }
+  .back-link {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: #417690;
+    text-decoration: none;
+  }
+  .back-link:hover { text-decoration: underline; }
+</style>
+
+<a class="back-link" href="{% url 'admin:matching_conversation_changelist' %}">&larr; Back to conversations</a>
+
+<h2 style="text-align:center;">{{ title }}</h2>
+
+<div class="chat-container" id="chat">
+  {% for msg in chat_messages %}
+    <div class="chat-bubble {% if msg.sender.username == support_username %}support{% else %}user{% endif %}">
+      {{ msg.content }}
+      <div class="chat-meta">
+        {% if msg.sender.username == support_username %}תמיכה{% else %}{{ other_name }}{% endif %}
+        &middot; {{ msg.sent_at|date:"d/m H:i" }}
+      </div>
+    </div>
+  {% empty %}
+    <p style="text-align:center;color:#888;">No messages yet.</p>
+  {% endfor %}
+</div>
+
+<form method="post" class="reply-form">
+  {% csrf_token %}
+  <textarea name="content" placeholder="Type your reply as תמיכה..." autofocus></textarea>
+  <button type="submit">Send Reply</button>
+</form>
+
+<script>
+  const chat = document.getElementById('chat');
+  if (chat) chat.scrollTop = chat.scrollHeight;
+</script>
+{% endblock %}

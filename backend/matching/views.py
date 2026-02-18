@@ -92,8 +92,14 @@ class DiscoveryView(APIView):
             Swipe.objects.filter(from_user=user).values_list("to_user_id", flat=True)
         )
 
-        # Exclude self, blocked, and already swiped
-        exclude_ids: set[int] = blocked_ids | swiped_ids | {user.id}
+        # Exclude the support avatar from discovery
+        from .support import SUPPORT_USERNAME
+        support_ids: set[int] = set(
+            User.objects.filter(username=SUPPORT_USERNAME).values_list("id", flat=True)
+        )
+
+        # Exclude self, blocked, already swiped, and support user
+        exclude_ids: set[int] = blocked_ids | swiped_ids | support_ids | {user.id}
 
         # Query candidate profiles with prefetched data for algorithm
         candidates: QuerySet[Profile] = (
@@ -606,6 +612,7 @@ class VoiceMessageUploadView(APIView):
 
         audio_file = serializer.validated_data["audio"]
         duration = serializer.validated_data.get("duration", 0)
+        transcript = serializer.validated_data.get("transcript", "")
 
         try:
             # Upload to Cloudinary
@@ -633,6 +640,7 @@ class VoiceMessageUploadView(APIView):
                 content="🎤 Voice message",
                 audio_url=audio_url,
                 audio_duration=duration,
+                transcript=transcript,
             )
 
             # Update conversation timestamp

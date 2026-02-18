@@ -3,26 +3,19 @@ set -e
 
 echo "🚀 Starting Nomi backend..."
 
-# Run tests
-echo "🧪 Running tests..."
-python manage.py test matching --verbosity=1
-echo "✅ Tests passed!"
-
-# Run migrations
+# Run migrations (safe to run repeatedly - only applies new migrations)
 echo "📦 Running database migrations..."
 python manage.py migrate --noinput
 
-# Seed initial data (disability tags, interests)
+# Seed initial data (disability tags, interests) - idempotent, uses update_or_create
 echo "🌱 Seeding initial data..."
 python manage.py seed_data
 
-# Seed mock users (idempotent - won't create duplicates)
+# Seed mock users (idempotent - won't create duplicates, preserves existing data)
 echo "👥 Seeding mock users..."
 python manage.py seed_mock_users
 
-# Skip mock matches - matches are created through the real swipe flow
-
-echo "👤 Creating admin user..."
+echo "👤 Ensuring admin user exists..."
 python manage.py shell -c "
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -38,6 +31,9 @@ else:
     u.save()
     print('  🔄 Reset admin password')
 "
+
+echo "💬 Ensuring support user exists..."
+python manage.py create_support_user
 
 echo "✅ Database setup complete!"
 

@@ -37,6 +37,13 @@ class UserRegistrationView(generics.CreateAPIView):  # type: ignore[type-arg]
         # Create auth token
         token, _ = Token.objects.get_or_create(user=user)
 
+        # Auto-match with the support avatar
+        try:
+            from matching.support import ensure_support_match
+            ensure_support_match(user)
+        except Exception:
+            pass
+
         return Response(
             {"user": UserSerializer(user).data, "token": token.key},
             status=status.HTTP_201_CREATED,
@@ -250,6 +257,13 @@ class FacebookAuthView(APIView):
 
         # Get or create auth token
         token, _ = Token.objects.get_or_create(user=user)
+
+        # Auto-match with the support avatar
+        try:
+            from matching.support import ensure_support_match
+            ensure_support_match(user)
+        except Exception:
+            pass
 
         return Response(
             {
@@ -655,6 +669,13 @@ class GuestLoginView(APIView):
         
         # Get or create auth token
         token, _ = Token.objects.get_or_create(user=user)
+
+        # Auto-match with the support avatar
+        try:
+            from matching.support import ensure_support_match
+            ensure_support_match(user)
+        except Exception:
+            pass
         
         # Get user's profile data
         profile_data = None

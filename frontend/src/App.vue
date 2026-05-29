@@ -5634,7 +5634,7 @@ const constellationPoints = computed(() => {
                   :src="getPrimaryPhotoUrl()" 
                   alt="Primary Photo"
                   class="w-full h-full object-cover"
-                  @error="$event.target.style.opacity = '0'"
+                  @error="$event.target.src = ''"
                 />
                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <span class="text-4xl opacity-30">👤</span>
@@ -5654,7 +5654,7 @@ const constellationPoints = computed(() => {
                   :src="getPhotoUrl(photo)" 
                   :alt="`Photo ${index + 2}`"
                   class="w-full h-full object-cover"
-                  @error="$event.target.style.opacity = '0'"
+                  @error="$event.target.src = ''"
                 />
                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <span class="text-3xl opacity-30">📷</span>

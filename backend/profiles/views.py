@@ -80,7 +80,7 @@ class ProfilePhotoUploadView(APIView):
             )
 
             return Response(
-                ProfilePhotoSerializer(photo).data,
+                ProfilePhotoSerializer(photo, context={"request": request}).data,
                 status=status.HTTP_201_CREATED,
             )
 

@@ -17,11 +17,14 @@ export const getPhotoUrl = (photo) => {
   
   // If it's a string, handle it directly
   if (typeof photo === 'string') {
-    if (photo.startsWith('http://') || photo.startsWith('https://')) {
+    if (photo.startsWith('http://') || photo.startsWith('https://') || photo.startsWith('data:')) {
       return photo
     }
-    // Relative path - prepend backend base URL
-    const path = photo.startsWith('/') ? photo : `/${photo}`
+    // Relative path - ensure /media/ prefix for file paths
+    let path = photo.startsWith('/') ? photo : `/${photo}`
+    if (!path.startsWith('/media/') && !path.startsWith('/static/') && !path.startsWith('/api/')) {
+      path = `/media${path}`
+    }
     return `${MEDIA_BASE_URL}${path}`
   }
   
@@ -31,12 +34,15 @@ export const getPhotoUrl = (photo) => {
   
   if (!url) return ''
   
-  if (url.startsWith('http://') || url.startsWith('https://')) {
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
     return url
   }
   
-  // Relative path - prepend backend base URL
-  const path = url.startsWith('/') ? url : `/${url}`
+  // Relative path - ensure /media/ prefix for file paths
+  let path = url.startsWith('/') ? url : `/${url}`
+  if (!path.startsWith('/media/') && !path.startsWith('/static/') && !path.startsWith('/api/')) {
+    path = `/media${path}`
+  }
   return `${MEDIA_BASE_URL}${path}`
 }
 

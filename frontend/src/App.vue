@@ -3687,11 +3687,6 @@ const constellationPoints = computed(() => {
             {{ t('auth.aboutUs') }} →
           </a>
         </p>
-        
-        <!-- Ownership note -->
-        <p class="mt-6 text-xs text-text-light/60 animate-slide-up stagger-6">
-          {{ locale === 'he' ? 'אתר זה בבעלות אילון לוטם נסים' : 'This site is owned by Eilon Lotem Nasim' }}
-        </p>
       </div>
     </div>
 

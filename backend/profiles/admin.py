@@ -78,11 +78,11 @@ class ProfileAdmin(admin.ModelAdmin):  # type: ignore[type-arg]
         ),
         (
             "Intent",
-            {"fields": ("relationship_intent", "openness_tags")},
+            {"fields": ("relationship_intent",)},
         ),
         ("Prompt", {"fields": ("prompt_id", "prompt_answer")}),
         ("Ask Me About It", {"fields": ("ask_me_prompt_id", "ask_me_answer")}),
-        ("Time Preferences", {"fields": ("preferred_times", "response_pace", "date_pace", "time_notes")}),
+        ("Time Preferences", {"fields": ("preferred_times", "response_pace", "time_notes")}),
         ("Settings", {"fields": ("is_visible", "show_distance", "picture_url")}),
         (
             "Timestamps",

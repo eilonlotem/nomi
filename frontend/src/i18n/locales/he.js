@@ -3,7 +3,7 @@
  */
 export default {
   // General
-  appName: 'נומי',
+  appName: 'KnowMe',
   tagline: 'מצא את החיבור שלך',
   motto: 'כי כולם ראויים לאהבה',
   back: 'חזור',
@@ -66,29 +66,14 @@ export default {
     noneSelected: 'בחרו לפחות תגית אחת כדי להגדיר חשיפה.',
   },
 
-  // Intent & openness
+  // מטרת הקשר
   intent: {
-    title: 'מה אני מחפש/ת',
-    subtitle: 'כדאי להבהיר כוונה כבר מההתחלה.',
+    title: 'מטרת הקשר',
+    subtitle: 'איזה סוג חיבור את/ה מחפש/ת?',
     options: {
-      relationship: 'מחפש/ת קשר זוגי',
-      friendship: 'מחפש/ת חברות',
-      open: 'פתוח/ה להכל',
-      slow: 'מחפש/ת היכרות רגועה',
-      unsure: 'לא בטוח/ה עדיין',
-    },
-  },
-  openness: {
-    title: 'פתוח/ה ל',
-    subtitle: 'אפשר לבחור כמה.',
-    options: {
-      openToCaregiver: 'פתוח/ה לקשר עם מלווה',
-      openToMobility: 'פתוח/ה לקשר עם אדם עם מגבלת ניידות',
-      openToMentalHealth: 'פתוח/ה לקשר עם מתמודד/ת נפש',
-      openToAll: 'פתוח/ה להכל',
-      notSure: 'לא יודע/ת',
-      meetThenDecide: 'רוצה להכיר ואז להחליט',
-      understandsDisability: 'מחפש/ת מישהו שמבין מוגבלות מבפנים',
+      relationship: 'קשר רומנטי',
+      friendship: 'חברות',
+      unsure: 'עדיין לא בטוח/ה',
     },
   },
   
@@ -100,26 +85,40 @@ export default {
     adventurous: 'מרגיש נועז',
   },
   
-  // Disability Tags
+  // Disability Tags (functional codes matching backend seed_data)
   tags: {
-    wheelchairUser: 'מתנייד בכיסא גלגלים',
-    neurodivergent: 'נוירו-מגוון',
-    deafHoh: 'חרש/כבד שמיעה',
-    blindLowVision: 'עיוור/לקוי ראייה',
-    chronicIllness: 'מחלה כרונית',
-    mentalHealth: 'בריאות הנפש',
-    mobility: 'הבדל בניידות',
-    cognitive: 'הבדל קוגניטיבי',
-    invisible: 'מוגבלות נסתרת',
-    acquired: 'מוגבלות נרכשת',
-    caregiver: 'מטפל/ת או בן/בת לוויה',
-    autism: 'אוטיזם',
+    // ראייה
+    difficultySeeing: 'מתקשה לראות',
+    partialVision: 'רואה באופן חלקי',
+    visionAids: 'נעזר/ת בעזרים לראייה',
+    lightSensitivity: 'רגישות לאור',
+    // שמיעה
+    difficultyHearing: 'מתקשה לשמוע',
+    partialHearing: 'שומע/ת באופן חלקי',
+    hearingAids: 'נעזר/ת בעזרים לשמיעה',
+    noisyConversations: 'מתקשה בשיחות עם הרבה אנשים',
+    // ניידות
+    mobilityDifficulty: 'קושי בהתניידות',
+    wheelchairUser: 'מתנייד/ת בכיסא גלגלים',
+    shortDistances: 'הולך/ת למרחקים קצרים',
+    needsAccessibility: 'זקוק/ה להתאמות פיזיות',
+    // תקשורת ודיבור
+    speechDifficulty: 'קושי בדיבור',
+    alternativeCommunication: 'מתקשר/ת בדרכים חלופיות',
+    needsTimeToSpeak: 'צריך/ה זמן להתנסח',
+    // קוגניטיבי / רגשי
+    processingDifficulty: 'קושי בעיבוד מידע',
+    sensoryOverload: 'רגישות לעומס או גירויים',
+    slowClearPace: 'זקוק/ה לקצב איטי וברור',
+    calmSafeSpace: 'צריך/ה מרחב רגוע ובטוח',
+    noiseSensitivity: 'רגישות לרעשים חזקים',
+    socialCommunicationDifficulty: 'קושי בתקשורת חברתית',
   },
   
   // Discovery
   discovery: {
-    title: 'נומי מאץ׳',
-    subtitle: 'אנשים שמבינים אותך',
+    title: 'KnowMe',
+    subtitle: '',
     noMoreProfiles: 'ראית את כולם לעת עתה!',
     checkBackLater: 'חזור מאוחר יותר לחיבורים חדשים',
     noMoreExplanation: 'צפית בכל הפרופילים הזמינים לפי ההעדפות שלך. בדוק מאוחר יותר לפרופילים חדשים או התאם את העדפות החיפוש.',
@@ -143,10 +142,18 @@ export default {
     nearby: 'קרוב אלייך',
     sharedInterests: 'תחומי עניין משותפים',
     matchDisclaimer: 'ציוני התאמה הם הצעות. חיבור קורה בדרכים לא צפויות! 💫',
+    // Shared / in common
+    inCommon: '{count} משותפים',
+    sharedTagsCount: '{count} תגיות משותפות',
+    sharedInterestsCount: '{count} תחומי עניין משותפים',
+    thingsInCommon: 'דברים משותפים',
     // Undo
     skipping: 'מדלג על',
     connecting: 'מתחבר עם',
     undo: 'בטל',
+    // Review again
+    reviewAgain: 'עברו על הפרופילים שוב',
+    reviewAgainHint: 'ראו פרופילים שדילגתם עליהם',
   },
   
   // Matches
@@ -201,6 +208,12 @@ export default {
     playVoice: 'נגן הודעה קולית',
     pauseVoice: 'השהה הודעה קולית',
     voiceMessage: 'הודעה קולית',
+    // Speech-to-text transcript
+    showTranscript: 'הצג טקסט',
+    hideTranscript: 'הסתר טקסט',
+    liveTranscript: 'תמלול חי',
+    sendImage: 'שלח תמונה',
+    imageMessage: 'תמונה',
   },
 
   // Shortcuts
@@ -252,13 +265,6 @@ export default {
     laughMost: 'מה שגורם לי לצחוק הכי הרבה זה...',
     perfectSunday: 'יום ראשון מושלם נראה כמו...',
     convinced: 'אני משוכנע/ת ש...',
-    // Additional prompts from Ask Me About It
-    coolestThing: 'הדבר הכי מגניב במצב שלי זה...',
-    superpower: 'כוח העל שלי מלהיות שונה הוא...',
-    wishPeopleKnew: 'מה שהייתי רוצה שאנשים ידעו זה...',
-    proudOf: 'משהו שאני גאה שהתגברתי עליו זה...',
-    dontLetStop: 'אני לא נותן/ת לשום דבר לעצור אותי מ...',
-    loveAboutCommunity: 'מה שאני אוהב/ת בקהילת המוגבלות זה...',
   },
   
   // Ask Me About It - Celebration prompts
@@ -275,10 +281,10 @@ export default {
     },
   },
   
-  // Time Preferences
+  // זמינות
   timePreferences: {
-    title: 'העדפות זמן',
-    subtitle: 'עזרו לאחרים לדעת מתי אתם זמינים',
+    title: 'זמינות',
+    subtitle: 'מתי את/ה בדרך כלל פנוי/ה?',
     preferredTimes: 'הזמנים הטובים בשבילי',
     times: {
       morning: 'בוקר',
@@ -294,15 +300,8 @@ export default {
       slow: 'תוך 1-2 ימים',
       variable: 'משתנה לפי האנרגיה שלי',
     },
-    datePace: 'העדפות מפגש',
-    datePaceOptions: {
-      ready: 'מוכן/ה להיפגש בקרוב',
-      slow: 'מעדיף/ה לשוחח קודם',
-      virtual: 'מעדיף/ה דייטים וירטואליים',
-      flexible: 'פתוח/ה לכל דבר',
-    },
     notes: 'הערות נוספות',
-    notesPlaceholder: 'למשל: יש לי פיזיותרפיה בימי שלישי, אני ציפור לילה...',
+    notesPlaceholder: 'למשל: אני ציפור לילה, ימי שישי הכי טובים בשבילי...',
   },
   
   // Profile
@@ -321,8 +320,14 @@ export default {
     myTags: 'התגים שלי',
     myInterests: 'תחומי העניין שלי',
     addInterest: 'הוסף תחום עניין',
-    prompt: 'שאלת פרופיל',
-    promptAnswer: 'כתוב את התשובה שלך...',
+    addCustomInterest: 'הוסיפו משלכם',
+    customInterestPlaceholder: 'הקלידו תחום עניין...',
+    customInterestHint: 'עד 5 תחומי עניין מותאמים אישית, עד 20 תווים כל אחד',
+    prompt: 'קצת עליי',
+    promptSubtitle: 'זה הדבר הראשון שאנשים רואים בפרופיל שלך',
+    promptEncouragement: 'אין תשובה נכונה או לא נכונה — פשוט היו עצמכם.',
+    promptPlaceholder: 'שתפו קצת על עצמכם...',
+    promptCharCount: '{count}/300',
     saveChanges: 'שמור שינויים',
     photoHint: 'לחץ לניהול',
     photoInstructions: 'העלה עד 6 תמונות. מומלץ: 800x800 פיקסלים, פורמט JPG/PNG. לחץ לסידור או מחיקה.',
@@ -339,13 +344,13 @@ export default {
     unknownUser: 'משתמש',
   },
   
-  // Looking For
+  // העדפות חיפוש
   lookingFor: {
-    title: 'מחפש/ת',
+    title: 'העדפות חיפוש',
     step: 'שלב 2 מתוך 2',
     subtitle: 'מי תופס את העין שלך?',
-    description: 'ספר לנו מה את/ה מחפש/ת כדי שנוכל למצוא את ההתאמות המושלמות.',
-    interestedIn: 'מתעניין/ת ב...',
+    description: 'ספרו לנו על ההעדפות שלכם ונמצא עבורכם את ההתאמות הנכונות.',
+    interestedIn: 'מגדר',
     ageRange: 'טווח גילאים',
     minAge: 'מינימום',
     maxAge: 'מקסימום',
@@ -355,12 +360,12 @@ export default {
     locationPlaceholder: 'לדוגמה: תל אביב, ירושלים...',
     locationHint: 'בחר עיר מוכרת לחישוב מרחק מדויק',
     maxDistance: 'מרחק מקסימלי',
+    maxDistanceUpTo: 'עד {km} ק״מ',
     distanceRange: 'טווח: 5-200 ק״מ',
     km: 'ק״מ',
     genders: {
       male: 'גברים',
       female: 'נשים',
-      nonbinary: 'לא-בינארי',
       everyone: 'כולם',
     },
   },
@@ -373,6 +378,26 @@ export default {
     keepDiscovering: 'המשך לגלות',
   },
   
+  // Report
+  report: {
+    button: 'דיווח',
+    confirmTitle: 'לדווח על המשתמש/ת?',
+    confirmMessage: 'פעולה זו תחסום את האדם הזה ותסיר אותו מההתאמות שלך. לא יוכלו ליצור איתך קשר שוב.',
+    confirmAction: 'דווח וחסום',
+    success: 'המשתמש דווח ונחסם.',
+  },
+
+  // Feedback
+  feedback: {
+    button: 'השאירו משוב',
+    title: 'שתפו את המשוב שלכם',
+    subtitle: 'עזרו לנו לשפר את KnowMe',
+    placeholder: 'ספרו לנו מה אתם חושבים...',
+    send: 'שלח משוב',
+    thanks: 'תודה על המשוב!',
+    emailSubject: 'משוב על אפליקציית KnowMe',
+  },
+
   // Navigation
   nav: {
     discover: 'גלה',
@@ -447,18 +472,18 @@ export default {
   inviteFriends: {
     title: 'שלח הזמנה לחברים',
     subtitle: 'שתפו את האהבה!',
-    description: 'הזמינו את חברי הפייסבוק שלכם להצטרף לנומי ולמצוא את החיבורים שלהם.',
+    description: 'הזמינו את חברי הפייסבוק שלכם להצטרף ל-KnowMe ולמצוא את החיבורים שלהם.',
     inviteButton: 'שלח הזמנה לחברים',
     loading: 'טוען חברים...',
     noFriends: 'אין חברים להזמנה',
     noFriendsDescription: 'התחברו עם פייסבוק כדי לראות חברים שניתן להזמין.',
     invite: 'הזמן',
     invited: 'הוזמן',
-    alreadyOnApp: 'כבר בנומי',
+    alreadyOnApp: 'כבר ב-KnowMe',
     sendInvite: 'שלח הזמנה',
     inviteSent: 'ההזמנה נשלחה!',
     inviteError: 'שליחת ההזמנה נכשלה',
-    shareMessage: 'היי! אני משתמש/ת בנומי - אפליקציית היכרויות מכילה. בואו תצטרפו!',
+    shareMessage: 'היי! אני משתמש/ת ב-KnowMe - אפליקציית היכרויות מכילה. בואו תצטרפו!',
     close: 'סגור',
     loginRequired: 'נא להתחבר עם פייסבוק כדי להזמין חברים',
     stats: {
@@ -468,27 +493,88 @@ export default {
     },
   },
 
+  // Interest categories
+  interestCategories: {
+    Creative: 'יצירתי',
+    Active: 'פעיל',
+    Entertainment: 'בידור',
+    'Food & Drink': 'אוכל ושתייה',
+    'Tech & Learning': 'טכנולוגיה ולמידה',
+    Lifestyle: 'אורח חיים',
+    Social: 'חברתי וקהילתי',
+    Other: 'אחר',
+  },
+
   // Interest Tags (translated)
   interests: {
-    Music: 'מוזיקה',
-    Reading: 'קריאה',
-    Hiking: 'טיולים',
-    Cooking: 'בישול',
-    Gaming: 'משחקים',
-    Art: 'אמנות',
-    Sports: 'ספורט',
-    Travel: 'נסיעות',
-    Movies: 'סרטים',
+    // יצירתי
     Photography: 'צילום',
-    Dancing: 'ריקוד',
+    Art: 'אמנות',
+    Music: 'מוזיקה',
     Writing: 'כתיבה',
+    Painting: 'ציור',
+    Design: 'עיצוב',
+    'Digital Art': 'אמנות דיגיטלית',
+    'Graphic Design': 'עיצוב גרפי',
+    Guitar: 'גיטרה',
+    Drumming: 'תופים',
+    'Music Production': 'הפקת מוזיקה',
+    Poetry: 'שירה',
+    Comics: 'קומיקס',
+    // פעיל
     Yoga: 'יוגה',
-    Meditation: 'מדיטציה',
-    Nature: 'טבע',
-    Technology: 'טכנולוגיה',
-    Fashion: 'אופנה',
-    Food: 'אוכל',
+    Hiking: 'טיולים',
+    Swimming: 'שחייה',
+    Sports: 'ספורט',
+    Dancing: 'ריקוד',
+    Running: 'ריצה',
     Fitness: 'כושר',
+    Basketball: 'כדורסל',
+    'Scuba Diving': 'צלילה',
+    Beach: 'חוף ים',
+    Surfing: 'גלישה',
+    // בידור
+    Gaming: 'משחקים',
+    Movies: 'סרטים',
+    Reading: 'קריאה',
+    'Sci-Fi': 'מדע בדיוני',
+    Podcasts: 'פודקאסטים',
+    'Board Games': 'משחקי קופסה',
+    Comedy: 'קומדיה',
+    'Stand-up Comedy': 'סטנדאפ',
+    Anime: 'אנימה',
+    // אוכל ושתייה
+    Cooking: 'בישול',
+    Baking: 'אפייה',
+    Coffee: 'קפה',
+    Wine: 'יין',
+    Nutrition: 'תזונה',
+    // טכנולוגיה ולמידה
+    Technology: 'טכנולוגיה',
+    Coding: 'תכנות',
+    Science: 'מדע',
+    Languages: 'שפות',
+    Engineering: 'הנדסה',
+    Psychology: 'פסיכולוגיה',
+    Philosophy: 'פילוסופיה',
+    History: 'היסטוריה',
+    Astronomy: 'אסטרונומיה',
+    // אורח חיים
+    Travel: 'טיולים בעולם',
+    Nature: 'טבע',
     Animals: 'בעלי חיים',
+    Fashion: 'אופנה',
+    Meditation: 'מדיטציה',
+    Wellness: 'בריאות ורווחה',
+    Dogs: 'כלבים',
+    Cats: 'חתולים',
+    Blogging: 'בלוגים',
+    // חברתי וקהילתי
+    'Social Justice': 'צדק חברתי',
+    Volunteering: 'התנדבות',
+    Teaching: 'הוראה',
+    Healthcare: 'בריאות',
+    Museums: 'מוזיאונים',
+    Architecture: 'אדריכלות',
   },
 }

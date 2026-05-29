@@ -19,12 +19,12 @@ test.describe('Discovery View', () => {
       await skipBtn.click();
     }
     // Wait for discovery page
-    await expect(page.getByRole('heading', { name: 'Nomi Match' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'KnowMe' })).toBeVisible({ timeout: 10000 });
   });
 
   test('displays discovery header', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Nomi Match' })).toBeVisible();
-    await expect(page.getByText('People who get you')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'KnowMe' })).toBeVisible();
+    // subtitle removed
   });
 
   test('displays swipe hint', async ({ page }) => {

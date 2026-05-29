@@ -595,6 +595,46 @@ class VoiceMessageUploadView(APIView):
             .first()
         )
 
+    def _upload_to_cloudinary(self, audio_file: Any) -> Optional[str]:
+        """Try uploading to Cloudinary. Returns URL or None."""
+        import os
+
+        if not os.getenv("CLOUDINARY_CLOUD_NAME"):
+            return None
+        try:
+            import cloudinary.uploader
+
+            upload_result = cloudinary.uploader.upload(
+                audio_file,
+                resource_type="video",
+                folder="nomi/voice_messages",
+                format="mp3",
+            )
+            return upload_result.get("secure_url") or None
+        except Exception as e:
+            logger.warning(f"Cloudinary upload failed, falling back to local: {e}")
+            return None
+
+    def _save_locally(self, audio_file: Any, request: Request) -> str:
+        """Save audio file to local Django media storage."""
+        import os
+        import uuid
+
+        from django.conf import settings
+
+        voice_dir = os.path.join(settings.MEDIA_ROOT, "voice_messages")
+        os.makedirs(voice_dir, exist_ok=True)
+
+        ext = os.path.splitext(audio_file.name)[1] or ".webm"
+        filename = f"{uuid.uuid4().hex}{ext}"
+        filepath = os.path.join(voice_dir, filename)
+
+        with open(filepath, "wb") as f:
+            for chunk in audio_file.chunks():
+                f.write(chunk)
+
+        return request.build_absolute_uri(f"/{settings.MEDIA_URL}voice_messages/{filename}")
+
     def post(self, request: Request, conversation_id: int) -> Response:
         """Upload a voice message."""
         user = cast(User, request.user)
@@ -615,35 +655,22 @@ class VoiceMessageUploadView(APIView):
         transcript = serializer.validated_data.get("transcript", "")
 
         try:
-            # Upload to Cloudinary
-            import cloudinary.uploader
-
-            upload_result = cloudinary.uploader.upload(
-                audio_file,
-                resource_type="video",  # Cloudinary uses 'video' for audio
-                folder="nomi/voice_messages",
-                format="mp3",
-            )
-            audio_url = upload_result.get("secure_url", "")
+            audio_url = self._upload_to_cloudinary(audio_file)
 
             if not audio_url:
-                return Response(
-                    {"error": "Failed to upload audio"},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
+                audio_file.seek(0)
+                audio_url = self._save_locally(audio_file, request)
 
-            # Create the message
             message = Message.objects.create(
                 conversation=conversation,
                 sender=user,
                 message_type="voice",
-                content="🎤 Voice message",
+                content="\U0001f3a4 Voice message",
                 audio_url=audio_url,
                 audio_duration=duration,
                 transcript=transcript,
             )
 
-            # Update conversation timestamp
             conversation.save()
 
             logger.info(f"Voice message uploaded: {message.id} by user {user.id}")
@@ -653,18 +680,55 @@ class VoiceMessageUploadView(APIView):
                 status=status.HTTP_201_CREATED,
             )
 
-        except ImportError:
-            logger.error("Cloudinary not installed")
-            return Response(
-                {"error": "Voice messages not configured"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
         except Exception as e:
             logger.error(f"Error uploading voice message: {e}")
             return Response(
                 {"error": "Failed to upload voice message"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class ImageMessageUploadView(APIView):
+    """Upload image message for a conversation."""
+
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request: Request, conversation_id: int) -> Response:
+        user = cast(User, request.user)
+        conversation = (
+            Conversation.objects.filter(id=conversation_id)
+            .filter(Q(match__user1=user) | Q(match__user2=user))
+            .first()
+        )
+
+        if not conversation:
+            return Response(
+                {"error": "Conversation not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        image_file = request.FILES.get("image")
+        if not image_file:
+            return Response(
+                {"error": "No image provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        message = Message.objects.create(
+            conversation=conversation,
+            sender=user,
+            message_type="image",
+            content="",
+            image=image_file,
+        )
+
+        conversation.save()
+
+        return Response(
+            MessageSerializer(message, context={"request": request}).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class BlockUserView(APIView):
@@ -764,6 +828,18 @@ class UnmatchView(APIView):
                 "messages": messages_deleted,
             }
         })
+
+
+class ResetPassesView(APIView):
+    """Reset passed profiles so they appear in discovery again."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request: Request) -> Response:
+        user = cast(User, request.user)
+        count: int = Swipe.objects.filter(from_user=user, action="pass").count()
+        Swipe.objects.filter(from_user=user, action="pass").delete()
+        return Response({"message": "Passes reset", "deleted": count})
 
 
 class CleanupView(APIView):

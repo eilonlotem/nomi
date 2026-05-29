@@ -27,8 +27,6 @@ class Gender(StrEnum):
     """
     MALE = "male"
     FEMALE = "female"
-    NONBINARY = "nonbinary"
-    OTHER = "other"
     EVERYONE = "everyone"  # Only used in preferences (looking_for.genders)
 
 
@@ -46,14 +44,6 @@ class ResponsePace(StrEnum):
     MODERATE = "moderate"
     SLOW = "slow"
     VARIABLE = "variable"
-
-
-class DatePace(StrEnum):
-    """Preferred dating pace."""
-    READY = "ready"
-    SLOW = "slow"
-    VIRTUAL = "virtual"
-    FLEXIBLE = "flexible"
 
 
 class TimePreference(StrEnum):

@@ -24,7 +24,7 @@ class MockProfile:
         self._lf, self._has_lf = looking_for, has_lf
         self._tags, self._interests = tags or [], interests or []
         self.current_mood = mood
-        self.response_pace = self.date_pace = ""
+        self.response_pace = ""
         self.preferred_times = []
 
     @property
@@ -77,7 +77,7 @@ class GenderFilterTests(TestCase):
 
     def test_everyone_matches_all(self):
         user = MockProfile(gender=Gender.FEMALE, looking_for=MockLookingFor(genders=[Gender.EVERYONE]))
-        for g in [Gender.MALE, Gender.FEMALE, Gender.NONBINARY]:
+        for g in [Gender.MALE, Gender.FEMALE]:
             cand = MockProfile(gender=g, looking_for=MockLookingFor(genders=[Gender.EVERYONE]))
             self.assertTrue(self.f._check_gender_preferences(user, cand))
 

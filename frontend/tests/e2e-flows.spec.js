@@ -66,7 +66,7 @@ async function loginAndOnboard(page) {
   }
   
   // Should now be on discovery
-  await expect(page.getByRole('heading', { name: 'Nomi Match' })).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'KnowMe' })).toBeVisible({ timeout: 10000 });
 }
 
 // Helper to navigate to matches view
@@ -248,7 +248,7 @@ test.describe('3. Check Matches Flow', () => {
     await page.getByRole('button', { name: 'Go back' }).click();
     
     // Should return to discovery
-    await expect(page.getByRole('heading', { name: 'Nomi Match' })).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole('heading', { name: 'KnowMe' })).toBeVisible({ timeout: 5000 });
   });
 });
 

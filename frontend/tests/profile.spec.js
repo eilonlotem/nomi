@@ -91,7 +91,7 @@ test.describe('Profile View', () => {
   test('back button returns to discovery', async ({ page }) => {
     await page.getByRole('button', { name: 'Go back' }).click();
     
-    await expect(page.getByRole('heading', { name: 'Nomi Match' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'KnowMe' })).toBeVisible();
   });
 });
 

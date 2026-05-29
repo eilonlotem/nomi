@@ -71,7 +71,7 @@ TEST_USERS = [
         'first_name': 'Alex',
         'last_name': 'Shapiro',
         'display_name': 'Alex',
-        'gender': 'nonbinary',
+        'gender': 'male',
         'age': 30,
         'bio': 'Living with chronic illness. Advocate for disability rights and accessibility.',
         'tags': ['chronicIllness', 'invisible'],

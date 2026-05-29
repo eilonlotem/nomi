@@ -149,20 +149,19 @@ const userProfile = ref({
   tags: [],
   tagVisibilities: {},
   interests: ['Music', 'Reading', 'Hiking'],
+  customInterests: [],
   relationshipIntent: '',
-  opennessTags: [],
   promptId: 'laughMost',
   promptAnswer: '',
   // Ask Me About It - celebration prompt
   askMePromptId: '',
   askMeAnswer: '',
-  // Time Preferences
+  // Availability
   preferredTimes: [], // 'morning', 'afternoon', 'evening', 'night', 'flexible'
   responsePace: '', // 'quick', 'moderate', 'slow', 'variable'
-  datePace: '', // 'ready', 'slow', 'virtual', 'flexible'
   timeNotes: '',
   lookingFor: {
-    genders: [], // 'male', 'female', 'nonbinary', 'everyone'
+    genders: [], // 'male', 'female', 'everyone'
     ageRange: { min: 18, max: 50 },
     maxDistance: 50, // km
     location: '', // City/area
@@ -312,26 +311,13 @@ const prevPhoto = () => {
 const genderOptions = [
   { id: 'male', emoji: '👨' },
   { id: 'female', emoji: '👩' },
-  { id: 'nonbinary', emoji: '🧑' },
   { id: 'everyone', emoji: '💫' },
 ]
 
 const relationshipIntentOptions = [
   { id: 'relationship', emoji: '💞' },
   { id: 'friendship', emoji: '🤝' },
-  { id: 'open', emoji: '🌈' },
-  { id: 'slow', emoji: '🌿' },
   { id: 'unsure', emoji: '🤔' },
-]
-
-const opennessOptions = [
-  { id: 'openToCaregiver', emoji: '🤝' },
-  { id: 'openToMobility', emoji: '🦽' },
-  { id: 'openToMentalHealth', emoji: '💚' },
-  { id: 'openToAll', emoji: '🌍' },
-  { id: 'notSure', emoji: '❓' },
-  { id: 'meetThenDecide', emoji: '💬' },
-  { id: 'understandsDisability', emoji: '🫶' },
 ]
 
 // Ask Me About It prompts
@@ -358,13 +344,6 @@ const responsePaceOptions = [
   { id: 'moderate', emoji: '🕐' },
   { id: 'slow', emoji: '🐢' },
   { id: 'variable', emoji: '🔋' },
-]
-
-const datePaceOptions = [
-  { id: 'ready', emoji: '🎯' },
-  { id: 'slow', emoji: '💬' },
-  { id: 'virtual', emoji: '📱' },
-  { id: 'flexible', emoji: '🌈' },
 ]
 
 // Toggle time preference
@@ -448,29 +427,6 @@ const setRelationshipIntent = (intentId) => {
   userProfile.value.relationshipIntent = intentId
 }
 
-const toggleOpennessTag = (tagId) => {
-  const tags = userProfile.value.opennessTags || []
-
-  if (tagId === 'openToAll') {
-    userProfile.value.opennessTags = ['openToAll']
-    return
-  }
-
-  if (tagId === 'notSure') {
-    userProfile.value.opennessTags = ['notSure']
-    return
-  }
-
-  const filtered = tags.filter(t => t !== 'openToAll' && t !== 'notSure')
-  const index = filtered.indexOf(tagId)
-  if (index > -1) {
-    filtered.splice(index, 1)
-  } else {
-    filtered.push(tagId)
-  }
-  userProfile.value.opennessTags = filtered
-}
-
 // Available profile prompts
 const profilePromptOptions = ['laughMost', 'perfectSunday', 'convinced']
 
@@ -526,6 +482,7 @@ watch(currentProfileIndex, () => {
 // Match breakdown visibility
 const showMatchBreakdown = ref(false)
 
+
 // Discovery page scroll tracking
 const discoveryDetailsScroll = ref(null)
 const discoveryPhotoCarousel = ref(null)
@@ -564,6 +521,7 @@ const undoSwipe = () => {
 
 // Current profile - uses backend data only, normalized for template
 const currentProfile = computed(() => {
+  if (noMoreProfiles.value) return null
   const profile = discoveryProfiles.value[currentProfileIndex.value]
   if (!profile) return null
   
@@ -586,14 +544,20 @@ const currentProfile = computed(() => {
     promptId: profile.prompt_id || 'laughMost',
     promptAnswer: profile.prompt_answer || '',
     relationshipIntent: profile.relationship_intent || '',
-    opennessTags: profile.openness_tags || [],
     // Ask Me About It
     askMePromptId: profile.ask_me_prompt_id || '',
     askMeAnswer: profile.ask_me_answer || '',
-    // Time Preferences
+    // Availability
     preferredTimes: profile.preferred_times || [],
     responsePace: profile.response_pace || '',
-    datePace: profile.date_pace || '',
+    // Search Preferences
+    lookingFor: profile.looking_for ? {
+      genders: profile.looking_for.genders || [],
+      minAge: profile.looking_for.min_age || null,
+      maxAge: profile.looking_for.max_age || null,
+      maxDistance: profile.looking_for.max_distance || null,
+      location: profile.looking_for.preferred_location || '',
+    } : null,
     // Bot indicator
     isBot: profile.is_bot || false,
   }
@@ -607,6 +571,17 @@ const sharedTags = computed(() => {
   return profileTags.filter(tag => selectedTags.value.includes(tag))
 })
 
+// Shared interests with current profile
+const sharedInterests = computed(() => {
+  if (!currentProfile.value) return []
+  const profileInterests = (currentProfile.value.interests || []).map(i => typeof i === 'string' ? i : i.name)
+  const myInterests = userProfile.value.interests || []
+  return profileInterests.filter(interest => myInterests.includes(interest))
+})
+
+// Total shared count (tags + interests)
+const totalSharedCount = computed(() => sharedTags.value.length + sharedInterests.value.length)
+
 // Match animation state
 const showMatchAnimation = ref(false)
 const matchedProfile = ref(null)
@@ -615,6 +590,57 @@ const selectedMatch = ref(null)
 // Disconnect/unmatch state
 const showDisconnectConfirm = ref(false)
 const isDisconnecting = ref(false)
+
+// Report state
+const showReportConfirm = ref(false)
+const isReporting = ref(false)
+
+// Feedback state
+const showFeedbackModal = ref(false)
+const feedbackText = ref('')
+const feedbackSent = ref(false)
+
+const sendFeedback = () => {
+  if (!feedbackText.value?.trim()) return
+  const subject = encodeURIComponent(t('feedback.emailSubject'))
+  const body = encodeURIComponent(feedbackText.value.trim())
+  window.open(`mailto:hello@nomi.app?subject=${subject}&body=${body}`, '_self')
+  feedbackSent.value = true
+  setTimeout(() => {
+    showFeedbackModal.value = false
+    feedbackText.value = ''
+    feedbackSent.value = false
+  }, 2000)
+}
+
+// Handle report - blocks user and disconnects
+const handleReport = async () => {
+  if (!selectedMatch.value || isReporting.value) return
+  
+  isReporting.value = true
+  try {
+    const partnerId = selectedMatch.value.user1 === user.value?.id
+      ? selectedMatch.value.user2
+      : selectedMatch.value.user1
+    
+    await matchingApi.blockUser(partnerId, 'harassment', '')
+    await matchingApi.unmatch(selectedMatch.value.id)
+    
+    matches.value = matches.value.filter(m => m.id !== selectedMatch.value.id)
+    conversations.value = conversations.value.filter(c => c.match !== selectedMatch.value.id)
+    
+    showReportConfirm.value = false
+    selectedMatch.value = null
+    currentConversation.value = null
+    chatMessages.value = []
+    
+    navigateTo('matches')
+  } catch (err) {
+    console.error('Failed to report:', err)
+  } finally {
+    isReporting.value = false
+  }
+}
 
 // Handle disconnect from match
 const handleDisconnect = async () => {
@@ -663,9 +689,15 @@ const viewingProfileData = computed(() => {
     tags: profile.tags || profile.disability_tags || [],
     interests: profile.interests || [],
     relationshipIntent: profile.relationshipIntent || profile.relationship_intent || '',
-    opennessTags: profile.opennessTags || profile.openness_tags || [],
+    preferredTimes: profile.preferredTimes || profile.preferred_times || [],
     responsePace: profile.responsePace || profile.response_pace || '',
-    datePace: profile.datePace || profile.date_pace || '',
+    lookingFor: profile.lookingFor || (profile.looking_for ? {
+      genders: profile.looking_for.genders || [],
+      minAge: profile.looking_for.min_age || null,
+      maxAge: profile.looking_for.max_age || null,
+      maxDistance: profile.looking_for.max_distance || null,
+      location: profile.looking_for.preferred_location || '',
+    } : null),
   }
 })
 
@@ -798,6 +830,7 @@ const mockChat = computed(() => ({
     messageType: msg.message_type || 'text',
     audioUrl: msg.audio_url,
     audioDuration: msg.audio_duration || 0,
+    transcript: msg.transcript || '',
     isUploading: msg._uploading || false,
   })),
 }))
@@ -904,9 +937,99 @@ const getSupportedMimeType = () => {
 // Voice recording error state
 const voiceRecordingError = ref(null)
 
+// Speech-to-text (runs during voice recording)
+const speechRecognition = ref(null)
+const recordingTranscript = ref('')
+
+const speechLangMap = {
+  en: 'en-US',
+  he: 'he-IL',
+  es: 'es-ES',
+  fr: 'fr-FR',
+  ar: 'ar-SA',
+}
+
+const startSpeechRecognition = () => {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+  if (!SpeechRecognition) {
+    console.warn('SpeechRecognition not supported in this browser')
+    return
+  }
+
+  try {
+    const recognition = new SpeechRecognition()
+    recognition.lang = speechLangMap[locale.value] || 'en-US'
+    recognition.interimResults = true
+    recognition.continuous = true
+    recognition.maxAlternatives = 1
+
+    let finalTranscript = ''
+
+    recognition.onresult = (event) => {
+      let interimTranscript = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript
+        if (event.results[i].isFinal) {
+          finalTranscript += (finalTranscript ? ' ' : '') + transcript
+        } else {
+          interimTranscript += transcript
+        }
+      }
+      recordingTranscript.value = (finalTranscript + (interimTranscript ? ' ' + interimTranscript : '')).trim()
+    }
+
+    recognition.onerror = (event) => {
+      console.warn('Speech recognition error during recording:', event.error)
+      // Don't show error to user — transcription is a bonus feature, not critical
+    }
+
+    recognition.onend = () => {
+      // If still recording and recognition ended (e.g. silence timeout), restart it
+      if (isRecording.value && speechRecognition.value) {
+        try {
+          recognition.start()
+        } catch (e) {
+          // Ignore restart errors
+        }
+      }
+    }
+
+    recognition.start()
+    speechRecognition.value = recognition
+  } catch (e) {
+    console.warn('Failed to start speech recognition:', e)
+  }
+}
+
+const stopSpeechRecognition = () => {
+  if (speechRecognition.value) {
+    try {
+      speechRecognition.value.onend = null // Prevent auto-restart
+      speechRecognition.value.stop()
+    } catch (e) {
+      // Ignore
+    }
+    speechRecognition.value = null
+  }
+}
+
+// Track which voice messages have their transcript expanded
+const expandedTranscripts = ref(new Set())
+
+const toggleTranscript = (messageId) => {
+  const next = new Set(expandedTranscripts.value)
+  if (next.has(messageId)) {
+    next.delete(messageId)
+  } else {
+    next.add(messageId)
+  }
+  expandedTranscripts.value = next
+}
+
 // Voice recording functions
 const startRecording = async () => {
   voiceRecordingError.value = null
+  recordingTranscript.value = ''
   
   // Check if MediaRecorder is supported
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -992,6 +1115,9 @@ const startRecording = async () => {
     isRecording.value = true
     recordingDuration.value = 0
     
+    // Start speech-to-text transcription alongside recording
+    startSpeechRecognition()
+    
     // Start timer
     recordingTimer.value = setInterval(() => {
       recordingDuration.value++
@@ -1023,6 +1149,7 @@ const stopRecording = () => {
   if (mediaRecorder.value && isRecording.value) {
     clearInterval(recordingTimer.value)
     recordingTimer.value = null
+    stopSpeechRecognition()
     mediaRecorder.value.stop()
     isRecording.value = false
   }
@@ -1032,6 +1159,8 @@ const cancelRecording = () => {
   if (mediaRecorder.value && isRecording.value) {
     clearInterval(recordingTimer.value)
     recordingTimer.value = null
+    stopSpeechRecognition()
+    recordingTranscript.value = ''
     
     // Stop the recorder but don't upload
     mediaRecorder.value.onstop = () => {
@@ -1058,6 +1187,10 @@ const uploadVoiceMessage = async (audioBlob, duration) => {
   isUploadingVoice.value = true
   voiceRecordingError.value = null
   
+  // Capture transcript before clearing
+  const transcript = recordingTranscript.value.trim()
+  recordingTranscript.value = ''
+  
   // Add optimistic message
   const tempId = -Date.now()
   const optimisticMsg = {
@@ -1067,6 +1200,7 @@ const uploadVoiceMessage = async (audioBlob, duration) => {
     content: '🎤 Voice message',
     audio_url: null,
     audio_duration: duration,
+    transcript: transcript,
     sent_at: new Date().toISOString(),
     is_read: false,
     _uploading: true,
@@ -1075,7 +1209,7 @@ const uploadVoiceMessage = async (audioBlob, duration) => {
   await scrollChatToBottom('smooth')
   
   try {
-    const serverMsg = await chatApi.sendVoiceMessage(currentConversation.value, audioBlob, duration)
+    const serverMsg = await chatApi.sendVoiceMessage(currentConversation.value, audioBlob, duration, transcript)
     
     // Replace optimistic message with server response
     chatMessages.value = chatMessages.value.map(m => 
@@ -1099,6 +1233,49 @@ const formatRecordingTime = (seconds) => {
   const mins = Math.floor(seconds / 60)
   const secs = seconds % 60
   return `${mins}:${secs.toString().padStart(2, '0')}`
+}
+
+const openImageInNewTab = (imageUrl) => {
+  if (!imageUrl) return
+  const url = imageUrl.startsWith?.('blob:') ? imageUrl : getPhotoUrl(imageUrl)
+  window.open(url, '_blank')
+}
+
+const handleChatImageUpload = async (event) => {
+  const file = event.target.files?.[0]
+  if (!file || !currentConversation.value) return
+
+  if (!file.type.startsWith('image/')) return
+  if (file.size > 5 * 1024 * 1024) return
+
+  const tempId = -Date.now()
+  const previewUrl = URL.createObjectURL(file)
+  const optimisticMsg = {
+    id: tempId,
+    content: '',
+    message_type: 'image',
+    image: previewUrl,
+    is_mine: true,
+    sent_at: new Date().toISOString(),
+    is_read: false,
+    _uploading: true,
+  }
+  chatMessages.value = [...chatMessages.value, optimisticMsg]
+  await scrollChatToBottom('smooth')
+
+  try {
+    const serverMsg = await chatApi.sendImage(currentConversation.value, file)
+    chatMessages.value = chatMessages.value.map(m =>
+      m.id === tempId ? serverMsg : m
+    )
+  } catch (error) {
+    console.error('Failed to send image:', error)
+    chatMessages.value = chatMessages.value.map(m =>
+      m.id === tempId ? { ...m, _failed: true, _uploading: false } : m
+    )
+  }
+
+  event.target.value = ''
 }
 
 // Message reactions
@@ -1130,6 +1307,8 @@ const tagGradients = {
   sensoryOverload: 'from-violet-500 to-purple-400',
   slowClearPace: 'from-violet-500 to-purple-400',
   calmSafeSpace: 'from-violet-500 to-purple-400',
+  noiseSensitivity: 'from-violet-500 to-purple-400',
+  socialCommunicationDifficulty: 'from-blue-500 to-indigo-400',
 }
 
 const fallbackDisabilityTags = [
@@ -1223,7 +1402,7 @@ const fallbackDisabilityTags = [
   },
   {
     code: 'needsAccessibility',
-    icon: '🧩',
+    icon: '🔧',
     name_en: 'Need physical accommodations',
     name_he: 'זקוק/ה להתאמות פיזיות',
     disclosure_level: 'functional',
@@ -1285,6 +1464,24 @@ const fallbackDisabilityTags = [
     disclosure_level: 'functional',
     category: 'cognitive_emotional',
   },
+  {
+    code: 'noiseSensitivity',
+    icon: '🔊',
+    name_en: 'Sensitivity to loud noises',
+    name_he: 'רגישות לרעשים חזקים',
+    category: 'cognitive_emotional',
+    disclosure_level: 'functional',
+    order: 20,
+  },
+  {
+    code: 'socialCommunicationDifficulty',
+    icon: '🧩',
+    name_en: 'Difficulty with social communication',
+    name_he: 'קושי בתקשורת חברתית',
+    category: 'communication',
+    disclosure_level: 'functional',
+    order: 21,
+  },
 ]
 
 
@@ -1314,9 +1511,9 @@ const savedShortcutItems = computed(() => savedShortcuts.value.map((shortcut) =>
 // Text size class based on settings
 const textSizeClass = computed(() => {
   switch (a11ySettings.value.textSize) {
-    case 'large': return 'text-lg'
-    case 'xl': return 'text-xl'
-    default: return 'text-base'
+    case 'large': return 'text-scale-large'
+    case 'xl': return 'text-scale-xl'
+    default: return 'text-scale-normal'
   }
 })
 
@@ -1683,17 +1880,22 @@ const connectProfile = async () => {
         return
       }
       
-      // Like recorded but no match - still advance to next profile
+      // Like recorded but no match yet - advance to next profile
       advanceToNextProfile()
       return
     } catch (err) {
       console.warn('Could not record like:', err.message)
+      // On error, still advance to next profile (don't show fake match)
+      advanceToNextProfile()
+      return
     }
   }
   
-  // Fallback to mock match animation (for demo purposes)
-  matchedProfile.value = currentProfile.value
-  showMatchAnimation.value = true
+  // Guest mode only: show demo match animation
+  if (!isAuthenticated.value) {
+    matchedProfile.value = currentProfile.value
+    showMatchAnimation.value = true
+  }
 }
 
 // Helper to advance to next discovery profile
@@ -1708,6 +1910,22 @@ const advanceToNextProfile = async () => {
     if (isAuthenticated.value) {
       await fetchDiscoveryProfiles()
     }
+  }
+}
+
+// Reset passes and re-fetch discovery profiles
+const isResettingPasses = ref(false)
+const handleReviewAgain = async () => {
+  if (isResettingPasses.value) return
+  isResettingPasses.value = true
+  try {
+    await matchingApi.resetPasses()
+    clearCache('/discover')
+    await fetchDiscoveryProfiles()
+  } catch (err) {
+    console.error('Failed to reset passes:', err)
+  } finally {
+    isResettingPasses.value = false
   }
 }
 
@@ -1838,23 +2056,32 @@ const closeMatchAndChat = async () => {
   }
   
   // Get conversation ID from the match data
+  currentConversation.value = null
   if (profile.matchData?.conversation_id) {
     currentConversation.value = profile.matchData.conversation_id
   } else if (profile.matchData?.id) {
-    // Try to find the conversation from the matches list
+    // Try to find the conversation from the matches list (triggers auto-creation on backend)
+    console.warn(`Match ${profile.matchData.id} has no conversation_id, re-fetching...`)
     await fetchMatches()
     const match = matches.value.find(m => m.id === profile.matchData.id)
     if (match?.conversation_id) {
       currentConversation.value = match.conversation_id
+    } else {
+      console.error(`Failed to get conversation for match ${profile.matchData.id}`)
     }
+  }
+  
+  // If no conversation could be found, go back to discovery instead of broken chat
+  if (!currentConversation.value) {
+    console.error('No conversation available for this match, returning to discovery')
+    navigateTo('discovery')
+    return
   }
   
   // Initialize chat state and load messages
   chatMessages.value = []
   lastSeenMessageId.value = 0
-  if (currentConversation.value) {
-    await refreshMessages()
-  }
+  await refreshMessages()
   await ensureShortcutsLoaded()
   
   navigateTo('chat')
@@ -2096,6 +2323,19 @@ const openChat = async (match) => {
   chatMessages.value = []
   lastSeenMessageId.value = 0
   
+  // If no conversation_id, re-fetch matches to trigger auto-creation on the backend
+  if (!currentConversation.value && match.id) {
+    console.warn(`Match ${match.id} has no conversation_id, re-fetching matches...`)
+    await fetchMatches()
+    const refreshedMatch = matches.value.find(m => m.id === match.id)
+    if (refreshedMatch?.conversation_id) {
+      currentConversation.value = refreshedMatch.conversation_id
+      console.warn(`Conversation auto-created: ${refreshedMatch.conversation_id}`)
+    } else {
+      console.error(`Failed to get conversation for match ${match.id}`)
+    }
+  }
+  
   navigateTo('chat')
 
   // Load messages
@@ -2241,7 +2481,11 @@ const sendMessage = async (overrideText = null) => {
     ? String(overrideText)
     : newMessage.value
   const text = rawText.trim()
-  if (!text || !currentConversation.value) return
+  if (!text) return
+  if (!currentConversation.value) {
+    console.error('Cannot send message: no conversation ID set for this match')
+    return
+  }
   
   // Clear input immediately
   newMessage.value = ''
@@ -2399,6 +2643,7 @@ watch(() => currentView.value, (newView, oldView) => {
     startPolling()
   } else if (oldView === 'chat') {
     stopPolling()
+    stopSpeechRecognition()
   }
 }, { immediate: true })
 
@@ -2415,16 +2660,48 @@ const toggleReactionMenu = (messageId) => {
   showReactionMenu.value = showReactionMenu.value === messageId ? null : messageId
 }
 
-const addInterest = () => {
-  const interest = prompt(t('profile.addInterest'))
-  if (interest && interest.trim()) {
-    userProfile.value.interests.push(interest.trim())
+const newCustomInterest = ref('')
+
+const addCustomInterest = () => {
+  const val = (newCustomInterest.value || '').trim().slice(0, 20)
+  if (!val) return
+  if (!userProfile.value.customInterests) userProfile.value.customInterests = []
+  if (userProfile.value.customInterests.length >= 5) return
+  if (userProfile.value.customInterests.includes(val)) return
+  userProfile.value.customInterests = [...userProfile.value.customInterests, val]
+  newCustomInterest.value = ''
+}
+
+const toggleInterest = (interestName) => {
+  const interests = userProfile.value.interests || []
+  const index = interests.indexOf(interestName)
+  if (index > -1) {
+    interests.splice(index, 1)
+  } else {
+    interests.push(interestName)
   }
+  userProfile.value.interests = interests
 }
 
 const removeInterest = (index) => {
   userProfile.value.interests.splice(index, 1)
 }
+
+// Available interests grouped by category
+const availableInterestGroups = computed(() => {
+  const interests = backendInterests.value.length
+    ? backendInterests.value
+    : []
+  if (!interests.length) return []
+  
+  const groups = {}
+  for (const interest of interests) {
+    const cat = interest.category || 'Other'
+    if (!groups[cat]) groups[cat] = []
+    groups[cat].push(interest)
+  }
+  return Object.entries(groups).map(([category, items]) => ({ category, items }))
+})
 
 const saveProfile = async () => {
   // Prevent double-click
@@ -2452,21 +2729,31 @@ const saveProfile = async () => {
         })
         .filter(Boolean)
       
+      // Find interest IDs from names
+      const interestIds = backendInterests.value
+        .filter(i => (userProfile.value.interests || []).includes(i.name))
+        .map(i => i.id)
+
       await profileApi.updateProfile({
         display_name: userProfile.value.name,
         bio: userProfile.value.bio,
         city: userProfile.value.location,
         disability_tag_ids: tagIds,
         disability_tag_visibilities: tagVisibilityPayload,
-        prompt_id: userProfile.value.promptId,
+        interest_ids: interestIds,
+        custom_interests: (userProfile.value.customInterests || []).slice(0, 5),
+        prompt_id: 'custom',
         prompt_answer: userProfile.value.promptAnswer,
-        // Time Preferences
+        // Ask Me About It
+        ask_me_prompt_id: userProfile.value.askMePromptId || '',
+        ask_me_answer: userProfile.value.askMeAnswer || '',
+        // Mood
+        current_mood: currentMood.value || 'open',
+        // Availability
         preferred_times: userProfile.value.preferredTimes || [],
         response_pace: userProfile.value.responsePace,
-        date_pace: userProfile.value.datePace,
         time_notes: userProfile.value.timeNotes,
         relationship_intent: userProfile.value.relationshipIntent || '',
-        openness_tags: userProfile.value.opennessTags || [],
       })
       
       // Save looking for preferences
@@ -2569,12 +2856,9 @@ const handleGuestLogin = async () => {
     if (result.success) {
       loggedInWith.value = 'guest'
       
-      // Guest user (mock_maya) is already onboarded with a complete profile
-      // Go directly to discovery
-      navigateTo('discovery')
-      await fetchDiscoveryProfiles()
-      await fetchMatches()
-      await fetchShortcuts()
+      // Load full profile data from backend (tags, preferences, etc.)
+      // This is the same initialization flow as Facebook login
+      await initializeApp()
     } else {
       // Report guest login failure
       handleError(new Error(result.error || 'Guest login failed'), { 
@@ -2592,8 +2876,12 @@ const handleGuestLogin = async () => {
 
 // Backend data state
 const backendTags = ref([])
+const backendInterests = ref([])
 const backendProfiles = ref([])
 const useBackendData = ref(false)
+
+// Interest picker state
+const showInterestPicker = ref(false)
 
 const availableDisabilityTags = computed(() => {
   const sourceTags = useBackendData.value && backendTags.value.length
@@ -2692,9 +2980,13 @@ const initializeApp = async () => {
   globalError.value = null
   
   try {
-    // Start fetching tags immediately (doesn't require auth)
+    // Start fetching tags and interests immediately (doesn't require auth)
     const tagsPromise = profileApi.getTags().catch((err) => {
       handleError(err, { source: 'initializeApp', action: 'fetchTags' })
+      return null
+    })
+    const interestsPromise = profileApi.getInterests().catch((err) => {
+      handleError(err, { source: 'initializeApp', action: 'fetchInterests' })
       return null
     })
     
@@ -2785,6 +3077,12 @@ const initializeApp = async () => {
         useBackendData.value = true
       }
       
+      // Process interests
+      const interestsResponse = await interestsPromise
+      if (interestsResponse && (interestsResponse.results || interestsResponse.length)) {
+        backendInterests.value = interestsResponse.results || interestsResponse
+      }
+      
       // Process discovery profiles (empty state is OK)
       if (discoverResponse && discoverResponse.length > 0) {
         discoveryProfiles.value = discoverResponse
@@ -2823,8 +3121,8 @@ const initializeApp = async () => {
           tags: (profile.disability_tags || []).map(t => t.code),
           tagVisibilities: visibilityMap,
           interests: (profile.interests || []).map(i => i.name),
+          customInterests: profile.custom_interests || [],
           relationshipIntent: profile.relationship_intent || '',
-          opennessTags: profile.openness_tags || [],
           promptId: profile.prompt_id || userProfile.value.promptId,
           promptAnswer: profile.prompt_answer || '',
           age: profile.age || userProfile.value.age,
@@ -2832,10 +3130,9 @@ const initializeApp = async () => {
           // Ask Me About It
           askMePromptId: profile.ask_me_prompt_id || '',
           askMeAnswer: profile.ask_me_answer || '',
-          // Time Preferences
+          // Availability
           preferredTimes: profile.preferred_times || [],
           responsePace: profile.response_pace || '',
-          datePace: profile.date_pace || '',
           timeNotes: profile.time_notes || '',
           // Photos
           photos: profile.photos || [],
@@ -2844,7 +3141,7 @@ const initializeApp = async () => {
         selectedTags.value.forEach(tagCode => ensureTagVisibility(tagCode))
         currentMood.value = profile.current_mood || 'open'
         
-        // Load looking for preferences
+        // Load search preferences
         if (profile.looking_for) {
           userProfile.value.lookingFor = {
             genders: normalizeGenderList(profile.looking_for.genders || []),
@@ -2865,11 +3162,15 @@ const initializeApp = async () => {
         navigateTo('onboarding')
       }
     } else {
-      // Not authenticated, just fetch tags
+      // Not authenticated, just fetch tags and interests
       const tagsResponse = await tagsPromise
       if (tagsResponse && (tagsResponse.results || tagsResponse.length)) {
         backendTags.value = tagsResponse.results || tagsResponse
         useBackendData.value = true
+      }
+      const interestsResponse = await interestsPromise
+      if (interestsResponse && (interestsResponse.results || interestsResponse.length)) {
+        backendInterests.value = interestsResponse.results || interestsResponse
       }
     }
   } catch (err) {
@@ -3381,6 +3682,11 @@ const constellationPoints = computed(() => {
             {{ t('auth.aboutUs') }} →
           </a>
         </p>
+        
+        <!-- Ownership note -->
+        <p class="mt-6 text-xs text-text-light/60 animate-slide-up stagger-6">
+          {{ locale === 'he' ? 'אתר זה בבעלות אילון לוטם נסים' : 'This site is owned by Eilon Lotem Nasim' }}
+        </p>
       </div>
     </div>
 
@@ -3548,10 +3854,10 @@ const constellationPoints = computed(() => {
                     :key="tag.code"
                     @click="toggleTag(tag.code)"
                     :class="[
-                      'group relative rounded-[18px] transition-all duration-300 animate-scale-in touch-manipulation active:scale-[0.97] overflow-hidden',
+                      'group relative rounded-[18px] transition-all duration-300 animate-scale-in touch-manipulation active:scale-[0.97] overflow-hidden border',
                       selectedTags.includes(tag.code) 
-                        ? 'shadow-card' 
-                        : 'shadow-soft hover:shadow-card',
+                        ? 'shadow-card border-primary/40' 
+                        : 'shadow-soft hover:shadow-card border-border',
                       `stagger-${(index % 8) + 1}`
                     ]"
                     :aria-pressed="selectedTags.includes(tag.code)"
@@ -3562,7 +3868,9 @@ const constellationPoints = computed(() => {
                         'absolute inset-0 transition-opacity duration-300',
                         selectedTags.includes(tag.code) ? 'opacity-100' : 'opacity-0'
                       ]"
-                      :style="`background: linear-gradient(135deg, ${tag.gradient.includes('pink') ? '#FAE5E0' : tag.gradient.includes('green') ? '#D8EBE2' : tag.gradient.includes('amber') ? '#FEF3C7' : '#E0E7FF'}, #fff)`"
+                      :style="a11ySettings.darkMode
+                        ? `background: linear-gradient(135deg, ${tag.gradient.includes('pink') ? '#301A26' : tag.gradient.includes('green') ? '#0F2F20' : tag.gradient.includes('amber') ? '#2D2210' : '#1A1A32'}, #1A1A1A)`
+                        : `background: linear-gradient(135deg, ${tag.gradient.includes('pink') ? '#FAE5E0' : tag.gradient.includes('green') ? '#D8EBE2' : tag.gradient.includes('amber') ? '#FEF3C7' : '#E0E7FF'}, #fff)`"
                     ></div>
                     
                     <div 
@@ -3658,8 +3966,6 @@ const constellationPoints = computed(() => {
         <button
           @click="goToPreferences"
           class="w-full bg-primary text-white text-base xs:text-lg py-4 xs:py-5 rounded-[20px] font-semibold shadow-button touch-manipulation active:scale-[0.98] transition-all duration-300"
-          :disabled="selectedTags.length === 0"
-          :class="{ 'opacity-50 grayscale': selectedTags.length === 0 }"
         >
           {{ t('next') }} →
         </button>
@@ -3738,33 +4044,6 @@ const constellationPoints = computed(() => {
                 <span class="text-base">{{ intent.emoji }}</span>
                 <span class="text-xs xs:text-sm font-medium">{{ t(`intent.options.${intent.id}`) }}</span>
                 <span v-if="userProfile.relationshipIntent === intent.id" class="text-sm">✓</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Openness Tags -->
-          <div class="card p-4 xs:p-5 animate-slide-up stagger-1">
-            <h3 class="text-sm xs:text-base font-semibold text-text-deep mb-3 flex items-center gap-2">
-              <span>🤗</span> {{ t('openness.title') }}
-            </h3>
-            <p class="text-xs xs:text-sm text-text-muted mb-3">
-              {{ t('openness.subtitle') }}
-            </p>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="option in opennessOptions"
-                :key="option.id"
-                @click="toggleOpennessTag(option.id)"
-                :class="[
-                  'flex items-center gap-2 px-3 xs:px-4 py-2 xs:py-2.5 rounded-full transition-all touch-manipulation active:scale-95',
-                  userProfile.opennessTags.includes(option.id)
-                    ? 'bg-secondary text-white shadow-button'
-                    : 'bg-surface border-2 border-border text-text-muted hover:border-secondary/50'
-                ]"
-              >
-                <span class="text-base">{{ option.emoji }}</span>
-                <span class="text-xs xs:text-sm font-medium">{{ t(`openness.options.${option.id}`) }}</span>
-                <span v-if="userProfile.opennessTags.includes(option.id)" class="text-sm">✓</span>
               </button>
             </div>
           </div>
@@ -3933,7 +4212,6 @@ const constellationPoints = computed(() => {
           
           <div class="text-center">
             <h1 class="text-xs xs:text-sm font-semibold text-text-deep">{{ t('discovery.title') }}</h1>
-            <p class="text-[8px] xs:text-[9px] text-text-muted">{{ t('discovery.subtitle') }}</p>
           </div>
           
           <div class="flex items-center gap-1">
@@ -4061,9 +4339,9 @@ const constellationPoints = computed(() => {
                   <span class="flex-1">{{ t('discovery.nearby') }}</span>
                   <span class="font-semibold text-emerald">+15%</span>
                 </li>
-                <li class="flex items-center gap-2">
+                <li v-if="sharedInterests.length > 0" class="flex items-center gap-2">
                   <span class="w-6 h-6 bg-amber-light rounded-full flex items-center justify-center">🎯</span>
-                  <span class="flex-1">{{ t('discovery.sharedInterests') }}</span>
+                  <span class="flex-1">{{ sharedInterests.length }} {{ t('discovery.sharedInterests') }}</span>
                   <span class="font-semibold text-amber">+15%</span>
                 </li>
               </ul>
@@ -4074,15 +4352,6 @@ const constellationPoints = computed(() => {
             </div>
           </Transition>
 
-          <!-- Shared Tags Sparkles -->
-          <div 
-            v-if="sharedTags.length > 0"
-            class="absolute top-4 start-4 z-10 flex items-center gap-1 px-2.5 xs:px-3 py-1 xs:py-1.5 bg-primary text-white rounded-full text-[10px] xs:text-xs font-medium shadow-soft transition-opacity"
-            :class="swipeDirection ? 'opacity-0' : 'opacity-100'"
-          >
-            <span>✨</span>
-            {{ sharedTags.length }} {{ t('discovery.shared') }}
-          </div>
 
           <!-- Scrollable Content Area (Photo + Details) -->
           <div 
@@ -4133,22 +4402,20 @@ const constellationPoints = computed(() => {
               <!-- Gradient Overlay -->
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none"></div>
               
-              <!-- Bot Badge -->
-              <div 
-                v-if="currentProfile.isBot"
-                class="absolute top-3 start-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-cyan-500/90 to-blue-500/90 backdrop-blur-sm border border-white/20 shadow-lg"
-                :aria-label="t('bot.badge')"
-              >
-                <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zm-3 10a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z"/>
-                </svg>
-                <span class="text-[10px] xs:text-xs font-semibold text-white tracking-wide">{{ t('bot.badge') }}</span>
-              </div>
-
               <!-- Profile Info -->
               <div class="absolute bottom-0 inset-x-0 p-3 xs:p-4 text-white">
                 <h2 class="text-lg xs:text-xl font-bold mb-0.5 flex items-center gap-2">
                   {{ currentProfile.name }}, {{ currentProfile.age }}
+                  <span 
+                    v-if="currentProfile.isBot"
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-cyan-500/90 to-blue-500/90 backdrop-blur-sm border border-white/20 text-[10px] xs:text-xs font-semibold"
+                    :aria-label="t('bot.badge')"
+                  >
+                    <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2zm-3 10a2 2 0 100 4 2 2 0 000-4zm6 0a2 2 0 100 4 2 2 0 000-4z"/>
+                    </svg>
+                    <span>{{ t('bot.badge') }}</span>
+                  </span>
                 </h2>
                 <p class="text-[10px] xs:text-xs text-white/80 mb-1.5 xs:mb-2">
                   📍 {{ t('discovery.distance', { km: currentProfile.distance }) }}
@@ -4181,10 +4448,10 @@ const constellationPoints = computed(() => {
             <!-- Bio & Prompt - Progressive Disclosure -->
             <div class="p-3 xs:p-4 sm:p-5 pb-2 space-y-2.5 xs:space-y-3">
             <!-- LAYER 1: Essential - Always visible -->
-            <!-- Profile Prompt (headline/hook) -->
-            <div class="bg-gradient-to-br from-primary-light via-peach/40 to-accent/20 rounded-xl p-3 xs:p-4 mb-3 xs:mb-4 border border-primary/25 shadow-sm">
+            <!-- A Bit About Me -->
+            <div v-if="currentProfile.promptAnswer" class="bg-gradient-to-br from-primary-light via-peach/40 to-accent/20 rounded-xl p-3 xs:p-4 mb-3 xs:mb-4 border border-primary/25 shadow-sm">
               <p class="text-xs xs:text-sm font-bold text-primary uppercase tracking-wider mb-1.5">
-                {{ t(`profilePrompts.${currentProfile.promptId}`) }}
+                {{ t('profile.prompt') }}
               </p>
               <p class="text-sm xs:text-base text-text-deep font-medium leading-relaxed">
                 "{{ getLocalized(currentProfile.promptAnswer) }}"
@@ -4210,16 +4477,25 @@ const constellationPoints = computed(() => {
                   :key="interest"
                   :class="[
                     'px-2.5 xs:px-3 py-1 xs:py-1.5 rounded-full text-xs xs:text-sm font-medium border transition-transform hover:scale-105',
-                    interestColorClasses[idx % interestColorClasses.length]
+                    sharedInterests.includes(interest)
+                      ? 'bg-secondary text-white border-secondary shadow-sm'
+                      : interestColorClasses[idx % interestColorClasses.length]
                   ]"
                 >
                   {{ translateInterest(interest) }}
                 </span>
+                <span
+                  v-for="(ci, ciIdx) in (currentProfile.custom_interests || [])"
+                  :key="'ci-' + ciIdx"
+                  class="px-2.5 xs:px-3 py-1 xs:py-1.5 rounded-full text-xs xs:text-sm font-medium border bg-accent/20 text-accent border-accent/30"
+                >
+                  {{ ci }}
+                </span>
               </div>
             </div>
             
-            <!-- Time Preferences -->
-            <div v-if="currentProfile.responsePace || currentProfile.datePace || (currentProfile.preferredTimes && currentProfile.preferredTimes.length > 0)" class="mt-4 xs:mt-5">
+            <!-- Availability -->
+            <div v-if="currentProfile.responsePace || (currentProfile.preferredTimes && currentProfile.preferredTimes.length > 0)" class="mt-4 xs:mt-5">
               <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-1.5">
                 <span class="text-sm">🕐</span>
                 {{ t('timePreferences.title') }}
@@ -4242,14 +4518,38 @@ const constellationPoints = computed(() => {
                   <span>{{ responsePaceOptions.find(p => p.id === currentProfile.responsePace)?.emoji }}</span>
                   <span>{{ t(`timePreferences.responsePaceOptions.${currentProfile.responsePace}`) }}</span>
                 </span>
-                <!-- Date Pace -->
-                <span 
-                  v-if="currentProfile.datePace"
-                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-light text-emerald border border-emerald/20 rounded-full text-xs font-medium"
-                >
-                  <span>{{ datePaceOptions.find(p => p.id === currentProfile.datePace)?.emoji }}</span>
-                  <span>{{ t(`timePreferences.datePaceOptions.${currentProfile.datePace}`) }}</span>
+              </div>
+            </div>
+
+            <!-- Relationship Goal -->
+            <div v-if="currentProfile.relationshipIntent" class="mt-4 xs:mt-5 bg-gradient-to-br from-primary-light/40 via-secondary-light/30 to-accent/10 rounded-xl p-3 xs:p-4 border border-primary/15">
+              <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2.5 flex items-center gap-1.5">
+                <span class="text-sm">🎯</span>
+                {{ t('intent.title') }}
+              </h3>
+
+              <!-- Relationship Intent -->
+              <div v-if="currentProfile.relationshipIntent" class="mb-2.5">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-white text-xs xs:text-sm font-semibold shadow-sm">
+                  <span>{{ relationshipIntentOptions.find(i => i.id === currentProfile.relationshipIntent)?.emoji }}</span>
+                  <span>{{ t(`intent.options.${currentProfile.relationshipIntent}`) }}</span>
                 </span>
+              </div>
+            </div>
+
+            <!-- Ask Me About It -->
+            <div v-if="currentProfile.askMePromptId && currentProfile.askMeAnswer" class="mt-4 xs:mt-5">
+              <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <span class="text-sm">💬</span>
+                {{ t('askMeAboutIt.title') }}
+              </h3>
+              <div class="bg-gradient-to-br from-secondary-light/50 to-accent/10 rounded-xl p-3 xs:p-4 border border-secondary/20">
+                <p class="text-xs xs:text-sm font-bold text-secondary uppercase tracking-wider mb-1.5">
+                  {{ t(`askMeAboutIt.prompts.${currentProfile.askMePromptId}`) }}
+                </p>
+                <p class="text-sm xs:text-base text-text-deep font-medium leading-relaxed">
+                  "{{ getLocalized(currentProfile.askMeAnswer) }}"
+                </p>
               </div>
             </div>
             </div>
@@ -4270,13 +4570,27 @@ const constellationPoints = computed(() => {
           <p class="text-sm xs:text-base text-text-muted mb-4">
             {{ t('discovery.noMoreExplanation') }}
           </p>
-          <!-- Action to adjust preferences -->
-          <button
-            @click="goToProfile"
-            class="inline-flex items-center gap-2 px-4 py-2 bg-primary-light text-primary rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-colors"
-          >
-            ⚙️ {{ t('lookingFor.title') }}
-          </button>
+          <!-- Action buttons -->
+          <div class="flex flex-col items-center gap-3">
+            <!-- Review again button -->
+            <button
+              @click="handleReviewAgain"
+              :disabled="isResettingPasses"
+              class="inline-flex items-center gap-2 px-5 py-3 bg-primary text-white rounded-full text-sm font-semibold shadow-button hover:bg-primary-dark transition-colors active:scale-95 disabled:opacity-50"
+            >
+              <span>🔄</span>
+              {{ isResettingPasses ? '...' : t('discovery.reviewAgain') }}
+            </button>
+            <p class="text-xs text-text-muted">{{ t('discovery.reviewAgainHint') }}</p>
+            
+            <!-- Adjust preferences -->
+            <button
+              @click="goToProfile"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-primary-light text-primary rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-colors"
+            >
+              ⚙️ {{ t('lookingFor.title') }}
+            </button>
+          </div>
         </div>
       </main>
       
@@ -4285,7 +4599,7 @@ const constellationPoints = computed(() => {
         v-if="currentProfile"
         class="sticky bottom-0 bg-surface/90 backdrop-blur-lg p-1 xs:p-1.5 bottom-bar-safe"
       >
-        <div class="flex items-center justify-center gap-2 xs:gap-2.5">
+        <div class="flex items-center justify-center gap-2 xs:gap-2.5" dir="ltr">
           <!-- Pass Button -->
           <button
             @click="passProfile"
@@ -4536,6 +4850,19 @@ const constellationPoints = computed(() => {
             </svg>
           </button>
 
+          <!-- Report Button - prominent -->
+          <button
+            @click="showReportConfirm = true"
+            class="flex items-center gap-1 px-2.5 py-1.5 bg-danger/10 border border-danger/30 rounded-full touch-manipulation text-danger hover:bg-danger/20 active:scale-95 min-h-[40px]"
+            :aria-label="t('report.button')"
+            :title="t('report.button')"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            <span class="text-xs font-bold hidden xs:inline">{{ t('report.button') }}</span>
+          </button>
+
           <!-- Disconnect Button -->
           <button
             @click="showDisconnectConfirm = true"
@@ -4584,6 +4911,40 @@ const constellationPoints = computed(() => {
         </div>
       </Transition>
       
+      <!-- Report Confirmation Dialog -->
+      <Transition name="fade">
+        <div 
+          v-if="showReportConfirm"
+          class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          @click.self="showReportConfirm = false"
+        >
+          <div class="bg-surface rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-scale-in text-center">
+            <div class="w-16 h-16 mx-auto mb-4 bg-danger/10 rounded-full flex items-center justify-center">
+              <span class="text-3xl">🚨</span>
+            </div>
+            <h3 class="text-xl font-bold text-text-deep mb-2">{{ t('report.confirmTitle') }}</h3>
+            <p class="text-text-muted mb-6">{{ t('report.confirmMessage') }}</p>
+            
+            <div class="flex gap-3">
+              <button
+                @click="showReportConfirm = false"
+                class="flex-1 btn-secondary py-3"
+                :disabled="isReporting"
+              >
+                {{ t('cancel') }}
+              </button>
+              <button
+                @click="handleReport"
+                class="flex-1 bg-danger text-white font-semibold py-3 rounded-xl active:scale-[0.98] disabled:opacity-50"
+                :disabled="isReporting"
+              >
+                {{ isReporting ? '...' : t('report.confirmAction') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+
       <!-- Conversation Summary Modal -->
       <Transition name="fade">
         <div 
@@ -4690,7 +5051,7 @@ const constellationPoints = computed(() => {
             </div>
             
             <!-- Messages -->
-            <div class="divide-y divide-border/60">
+            <div>
               <div 
                 v-for="(message, index) in mockChat.messages" 
                 :key="message.id"
@@ -4732,57 +5093,101 @@ const constellationPoints = computed(() => {
                       </span>
 
                       <!-- Voice Message -->
-                      <div v-if="message.messageType === 'voice'" class="flex items-center gap-3">
-                        <!-- Play/Pause Button -->
-                        <button
-                          v-if="message.audioUrl && !message.isUploading"
-                          @click.stop="playVoiceMessage(message.id, message.audioUrl)"
-                          class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors bg-surface border border-border text-text-muted hover:text-text-deep"
-                          :aria-label="playingAudioId === message.id ? t('chat.pauseVoice') : t('chat.playVoice')"
-                        >
-                          <!-- Playing indicator -->
-                          <svg v-if="playingAudioId === message.id" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <rect x="6" y="5" width="4" height="14" rx="1"/>
-                            <rect x="14" y="5" width="4" height="14" rx="1"/>
-                          </svg>
-                          <!-- Play icon -->
-                          <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z"/>
-                          </svg>
-                        </button>
-                        
-                        <!-- Uploading indicator -->
-                        <div v-else-if="message.isUploading" class="w-10 h-10 flex items-center justify-center">
-                          <svg class="w-5 h-5 animate-spin text-text-muted" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
+                      <div v-if="message.messageType === 'voice'">
+                        <div class="flex items-center gap-3">
+                          <!-- Play/Pause Button -->
+                          <button
+                            v-if="message.audioUrl && !message.isUploading"
+                            @click.stop="playVoiceMessage(message.id, message.audioUrl)"
+                            class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors bg-surface border border-border text-text-muted hover:text-text-deep"
+                            :aria-label="playingAudioId === message.id ? t('chat.pauseVoice') : t('chat.playVoice')"
+                          >
+                            <!-- Playing indicator -->
+                            <svg v-if="playingAudioId === message.id" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                              <rect x="6" y="5" width="4" height="14" rx="1"/>
+                              <rect x="14" y="5" width="4" height="14" rx="1"/>
+                            </svg>
+                            <!-- Play icon -->
+                            <svg v-else class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </button>
+                          
+                          <!-- Uploading indicator -->
+                          <div v-else-if="message.isUploading" class="w-10 h-10 flex items-center justify-center">
+                            <svg class="w-5 h-5 animate-spin text-text-muted" fill="none" viewBox="0 0 24 24">
+                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                          </div>
+                          
+                          <!-- Waveform visualization (decorative) -->
+                          <div class="flex items-center gap-0.5 flex-1">
+                            <div 
+                              v-for="i in 20" 
+                              :key="i"
+                              :class="[
+                                'w-1 rounded-full transition-all duration-100 bg-border',
+                                playingAudioId === message.id ? 'animate-pulse' : ''
+                              ]"
+                              :style="{ height: `${Math.random() * 16 + 8}px` }"
+                            ></div>
+                          </div>
+                          
+                          <!-- Duration -->
+                          <span class="text-xs font-mono shrink-0 text-text-muted">
+                            {{ formatVoiceDuration(message.audioDuration) }}
+                          </span>
                         </div>
-                        
-                        <!-- Waveform visualization (decorative) -->
-                        <div class="flex items-center gap-0.5 flex-1">
-                          <div 
-                            v-for="i in 20" 
-                            :key="i"
+
+                        <!-- Transcript toggle & display -->
+                        <div v-if="message.transcript" class="mt-2">
+                          <button
+                            @click.stop="toggleTranscript(message.id)"
                             :class="[
-                              'w-1 rounded-full transition-all duration-100 bg-border',
-                              playingAudioId === message.id ? 'animate-pulse' : ''
+                              'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] xs:text-xs font-medium transition-colors touch-manipulation',
+                              message.sender === 'me' 
+                                ? 'bg-white/20 text-white/80 hover:bg-white/30' 
+                                : 'bg-border/60 text-text-muted hover:bg-border'
                             ]"
-                            :style="{ height: `${Math.random() * 16 + 8}px` }"
-                          ></div>
+                            :aria-label="t('chat.showTranscript')"
+                            :aria-expanded="expandedTranscripts.has(message.id)"
+                          >
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            {{ expandedTranscripts.has(message.id) ? t('chat.hideTranscript') : t('chat.showTranscript') }}
+                          </button>
+                          <Transition name="slide-up">
+                            <p 
+                              v-if="expandedTranscripts.has(message.id)"
+                              :class="[
+                                'mt-1.5 text-xs xs:text-sm leading-relaxed whitespace-pre-wrap',
+                                message.sender === 'me' ? 'text-white/80' : 'text-text-deep/80'
+                              ]"
+                            >
+                              {{ message.transcript }}
+                            </p>
+                          </Transition>
                         </div>
-                        
-                        <!-- Duration -->
-                        <span class="text-xs font-mono shrink-0 text-text-muted">
-                          {{ formatVoiceDuration(message.audioDuration) }}
-                        </span>
+                      </div>
+
+                      <!-- Image Message -->
+                      <div v-else-if="message.messageType === 'image' && (message.image || message.imageUrl)">
+                        <img
+                          :src="message.image?.startsWith?.('blob:') ? message.image : getPhotoUrl(message.image || message.imageUrl)"
+                          class="rounded-lg max-w-[240px] max-h-[320px] object-cover cursor-pointer"
+                          :class="{ 'opacity-50': message.isUploading }"
+                          @click="openImageInNewTab(message.image || message.imageUrl)"
+                          :alt="t('chat.imageMessage')"
+                        />
                       </div>
 
                       <!-- Text Message -->
                       <p
                         v-else
                         :class="[
-                          'text-sm xs:text-base leading-relaxed whitespace-pre-wrap',
+                          'text-base xs:text-lg leading-relaxed whitespace-pre-wrap',
                           message.sender === 'me' ? 'text-white' : 'text-text-deep'
                         ]"
                       >
@@ -4988,35 +5393,48 @@ const constellationPoints = computed(() => {
           v-if="isRecording"
           class="sticky bottom-0 bg-red-50 border-t border-red-200 p-3 xs:p-4 bottom-bar-safe"
         >
-          <div class="max-w-3xl mx-auto flex items-center gap-3">
-            <!-- Cancel Button -->
-            <button
-              @click="cancelRecording"
-              class="w-10 h-10 xs:w-11 xs:h-11 rounded-full bg-white text-red-500 shadow-soft flex items-center justify-center shrink-0 touch-manipulation active:scale-90"
-              :aria-label="t('chat.cancelRecording')"
-            >
-              <svg class="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-            
-            <!-- Recording Indicator -->
-            <div class="flex-1 flex items-center gap-3">
-              <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-              <span class="text-red-600 font-medium text-sm xs:text-base">{{ t('chat.recording') }}</span>
-              <span class="text-red-500 font-mono text-sm xs:text-base">{{ formatRecordingTime(recordingDuration) }}</span>
+          <div class="max-w-3xl mx-auto space-y-2">
+            <!-- Live transcript preview -->
+            <div v-if="recordingTranscript" class="px-2 py-1.5 bg-white/60 rounded-lg">
+              <p class="text-xs text-text-muted flex items-center gap-1 mb-0.5">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                {{ t('chat.liveTranscript') }}
+              </p>
+              <p class="text-sm text-text-deep leading-relaxed">{{ recordingTranscript }}</p>
             </div>
-            
-            <!-- Stop/Send Button -->
-            <button
-              @click="stopRecording"
-              class="w-12 h-12 xs:w-14 xs:h-14 rounded-full bg-red-500 text-white shadow-button flex items-center justify-center shrink-0 touch-manipulation active:scale-90 animate-pulse"
-              :aria-label="t('chat.stopRecording')"
-            >
-              <svg class="w-6 h-6 xs:w-7 xs:h-7" fill="currentColor" viewBox="0 0 24 24">
-                <rect x="6" y="6" width="12" height="12" rx="2"/>
-              </svg>
-            </button>
+
+            <div class="flex items-center gap-3">
+              <!-- Cancel Button -->
+              <button
+                @click="cancelRecording"
+                class="w-10 h-10 xs:w-11 xs:h-11 rounded-full bg-white text-red-500 shadow-soft flex items-center justify-center shrink-0 touch-manipulation active:scale-90"
+                :aria-label="t('chat.cancelRecording')"
+              >
+                <svg class="w-5 h-5 xs:w-6 xs:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+              
+              <!-- Recording Indicator -->
+              <div class="flex-1 flex items-center gap-3">
+                <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                <span class="text-red-600 font-medium text-sm xs:text-base">{{ t('chat.recording') }}</span>
+                <span class="text-red-500 font-mono text-sm xs:text-base">{{ formatRecordingTime(recordingDuration) }}</span>
+              </div>
+              
+              <!-- Stop/Send Button -->
+              <button
+                @click="stopRecording"
+                class="w-12 h-12 xs:w-14 xs:h-14 rounded-full bg-red-500 text-white shadow-button flex items-center justify-center shrink-0 touch-manipulation active:scale-90 animate-pulse"
+                :aria-label="t('chat.stopRecording')"
+              >
+                <svg class="w-6 h-6 xs:w-7 xs:h-7" fill="currentColor" viewBox="0 0 24 24">
+                  <rect x="6" y="6" width="12" height="12" rx="2"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
         
@@ -5057,6 +5475,22 @@ const constellationPoints = computed(() => {
               >
                 <span class="text-sm">✨</span>
               </button>
+
+              <!-- Image Attachment Button -->
+              <label
+                class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 touch-manipulation active:scale-90 transition-colors bg-border/50 text-text-muted hover:text-text-deep cursor-pointer"
+                :aria-label="t('chat.sendImage')"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <input
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  @change="handleChatImageUpload"
+                />
+              </label>
 
               <!-- Voice Note Button -->
               <div class="relative">
@@ -5349,50 +5783,59 @@ const constellationPoints = computed(() => {
             </div>
           </div>
 
-          <!-- Profile Prompt -->
-          <div class="card p-4 xs:p-5 animate-slide-up stagger-2">
+          <!-- Relationship Goal -->
+          <div class="card p-4 xs:p-5 animate-slide-up stagger-1">
             <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-3 xs:mb-4 flex items-center gap-2">
-              <span>💬</span>
-              {{ t('profile.prompt') }}
+              <span>🎯</span>
+              {{ t('intent.title') }}
             </h3>
-            
-            <div class="space-y-3 xs:space-y-4">
-              <!-- Prompt Selector -->
-              <div class="flex flex-col gap-2">
-                <button
-                  v-for="promptId in profilePromptOptions"
-                  :key="promptId"
-                  @click="userProfile.promptId = promptId"
-                  :class="[
-                    'px-4 py-3 rounded-xl text-xs xs:text-sm font-medium transition-all touch-manipulation active:scale-[0.98] text-start',
-                    userProfile.promptId === promptId 
-                      ? 'bg-primary text-white shadow-md' 
-                      : 'bg-primary-light text-primary border border-primary/20 hover:border-primary/40'
-                  ]"
-                >
-                  <span class="flex items-center gap-2">
-                    <span v-if="userProfile.promptId === promptId" class="text-base">✓</span>
-                    <span>{{ t(`profilePrompts.${promptId}`) }}</span>
-                  </span>
-                </button>
-              </div>
-              
-              <!-- Answer -->
-              <div>
-                <label class="block text-xs xs:text-sm font-medium text-text-deep mb-1 xs:mb-1.5">
-                  {{ t('profile.promptAnswer') }}
-                </label>
-                <input 
-                  v-model="userProfile.promptAnswer"
-                  type="text"
-                  class="input-field"
-                  :placeholder="t(`profilePrompts.${userProfile.promptId}`)"
-                />
-              </div>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="intent in relationshipIntentOptions"
+                :key="intent.id"
+                @click="setRelationshipIntent(intent.id)"
+                :class="[
+                  'flex items-center gap-2 px-3 xs:px-4 py-2 xs:py-2.5 rounded-full transition-all touch-manipulation active:scale-95',
+                  userProfile.relationshipIntent === intent.id
+                    ? 'bg-primary text-white shadow-button'
+                    : 'bg-surface border-2 border-border text-text-muted hover:border-primary/50'
+                ]"
+              >
+                <span class="text-base">{{ intent.emoji }}</span>
+                <span class="text-xs xs:text-sm font-medium">{{ t(`intent.options.${intent.id}`) }}</span>
+                <span v-if="userProfile.relationshipIntent === intent.id" class="text-sm">✓</span>
+              </button>
             </div>
           </div>
 
-          <!-- Time Preferences -->
+          <!-- A Bit About Me -->
+          <div class="card p-4 xs:p-5 animate-slide-up stagger-2">
+            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-1 flex items-center gap-2">
+              <span>💬</span>
+              {{ t('profile.prompt') }}
+            </h3>
+            <p class="text-xs xs:text-sm text-primary font-medium mb-1">
+              {{ t('profile.promptSubtitle') }}
+            </p>
+            <p class="text-xs text-text-muted/70 italic mb-3 xs:mb-4">
+              {{ t('profile.promptEncouragement') }}
+            </p>
+            
+            <div>
+              <textarea
+                v-model="userProfile.promptAnswer"
+                class="input-field resize-none"
+                rows="3"
+                maxlength="300"
+                :placeholder="t('profile.promptPlaceholder')"
+              ></textarea>
+              <p class="text-xs text-text-muted mt-1 text-end">
+                {{ (userProfile.promptAnswer || '').length }}/300
+              </p>
+            </div>
+          </div>
+
+          <!-- Availability -->
           <div class="card p-4 xs:p-5 animate-slide-up stagger-2">
             <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-2">
               <span>⏰</span>
@@ -5443,27 +5886,6 @@ const constellationPoints = computed(() => {
                 </div>
               </div>
               
-              <!-- Date Pace -->
-              <div>
-                <p class="text-xs xs:text-sm text-text-muted mb-2">{{ t('timePreferences.datePace') }}</p>
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-for="pace in datePaceOptions"
-                    :key="pace.id"
-                    @click="userProfile.datePace = pace.id"
-                    :class="[
-                      'flex items-center gap-1.5 px-3 py-2 rounded-full text-xs xs:text-sm transition-all touch-manipulation active:scale-95',
-                      userProfile.datePace === pace.id
-                        ? 'bg-success text-white'
-                        : 'bg-surface border border-border text-text-muted'
-                    ]"
-                  >
-                    <span>{{ pace.emoji }}</span>
-                    <span>{{ t(`timePreferences.datePaceOptions.${pace.id}`) }}</span>
-                  </button>
-                </div>
-              </div>
-              
               <!-- Time Notes -->
               <div>
                 <label class="block text-xs xs:text-sm font-medium text-text-deep mb-1.5">
@@ -5486,7 +5908,7 @@ const constellationPoints = computed(() => {
               {{ t('profile.myTags') }}
             </h3>
             
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button
                 v-for="tag in availableDisabilityTags"
                 :key="tag.code"
@@ -5499,7 +5921,7 @@ const constellationPoints = computed(() => {
                 ]"
               >
                 <span>{{ tag.icon }}</span>
-                <span class="flex-1 text-start truncate">{{ getTagLabel(tag) }}</span>
+                <span class="flex-1 text-start leading-tight">{{ getTagLabel(tag) }}</span>
                 <span v-if="userProfile.tags.includes(tag.code)" class="text-xs">✓</span>
               </button>
             </div>
@@ -5559,54 +5981,7 @@ const constellationPoints = computed(() => {
             <p v-else class="text-xs text-text-muted">{{ t('tagVisibility.noneSelected') }}</p>
           </div>
 
-          <!-- Intent & Openness -->
-          <div class="card p-4 xs:p-5 animate-slide-up stagger-3">
-            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-3 xs:mb-4 flex items-center gap-2">
-              <span>🎯</span>
-              {{ t('intent.title') }}
-            </h3>
-            <div class="flex flex-wrap gap-2 mb-4">
-              <button
-                v-for="intent in relationshipIntentOptions"
-                :key="intent.id"
-                @click="setRelationshipIntent(intent.id)"
-                :class="[
-                  'flex items-center gap-2 px-3 xs:px-4 py-2 xs:py-2.5 rounded-full transition-all touch-manipulation active:scale-95',
-                  userProfile.relationshipIntent === intent.id
-                    ? 'bg-primary text-white shadow-button'
-                    : 'bg-surface border-2 border-border text-text-muted hover:border-primary/50'
-                ]"
-              >
-                <span class="text-base">{{ intent.emoji }}</span>
-                <span class="text-xs xs:text-sm font-medium">{{ t(`intent.options.${intent.id}`) }}</span>
-                <span v-if="userProfile.relationshipIntent === intent.id" class="text-sm">✓</span>
-              </button>
-            </div>
-
-            <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-3 flex items-center gap-2">
-              <span>🤗</span>
-              {{ t('openness.title') }}
-            </h3>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="option in opennessOptions"
-                :key="option.id"
-                @click="toggleOpennessTag(option.id)"
-                :class="[
-                  'flex items-center gap-2 px-3 xs:px-4 py-2 xs:py-2.5 rounded-full transition-all touch-manipulation active:scale-95',
-                  userProfile.opennessTags.includes(option.id)
-                    ? 'bg-secondary text-white shadow-button'
-                    : 'bg-surface border-2 border-border text-text-muted hover:border-secondary/50'
-                ]"
-              >
-                <span class="text-base">{{ option.emoji }}</span>
-                <span class="text-xs xs:text-sm font-medium">{{ t(`openness.options.${option.id}`) }}</span>
-                <span v-if="userProfile.opennessTags.includes(option.id)" class="text-sm">✓</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Looking For -->
+          <!-- Search Preferences -->
           <div class="card p-4 xs:p-5 animate-slide-up stagger-4">
             <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-3 xs:mb-4 flex items-center gap-2">
               <span>💝</span>
@@ -5770,10 +6145,11 @@ const constellationPoints = computed(() => {
               {{ t('profile.myInterests') }}
             </h3>
             
-            <div class="flex flex-wrap gap-2 mb-3 xs:mb-4">
+            <!-- Selected interests -->
+            <div v-if="userProfile.interests.length" class="flex flex-wrap gap-2 mb-3 xs:mb-4">
               <span 
                 v-for="(interest, index) in userProfile.interests"
-                :key="index"
+                :key="interest"
                 :class="[
                   'inline-flex items-center gap-1.5 xs:gap-2 px-3 xs:px-4 py-1.5 xs:py-2 rounded-full text-xs xs:text-sm font-medium border transition-all',
                   interestColorClasses[index % interestColorClasses.length]
@@ -5787,15 +6163,80 @@ const constellationPoints = computed(() => {
                   ×
                 </button>
               </span>
+            </div>
+            
+            <!-- Toggle picker button -->
+            <button
+              @click="showInterestPicker = !showInterestPicker"
+              class="inline-flex items-center gap-1 px-3 xs:px-4 py-1.5 xs:py-2 border-2 border-dashed border-text-muted/30 text-text-muted rounded-full text-xs xs:text-sm font-medium touch-manipulation hover:border-primary hover:text-primary hover:bg-primary-light/50 active:border-primary active:bg-primary-light transition-all mb-3"
+            >
+              <span>{{ showInterestPicker ? '−' : '+' }}</span>
+              {{ t('profile.addInterest') }}
+            </button>
+            
+            <!-- Interest picker grid -->
+            <div v-if="showInterestPicker" class="space-y-3 mt-2">
+              <div v-for="group in availableInterestGroups" :key="group.category">
+                <p class="text-[10px] xs:text-xs font-semibold text-text-muted uppercase tracking-wider mb-1.5">
+                  {{ t(`interestCategories.${group.category}`, group.category) }}
+                </p>
+                <div class="flex flex-wrap gap-1.5">
+                  <button
+                    v-for="interest in group.items"
+                    :key="interest.name"
+                    @click="toggleInterest(interest.name)"
+                    :class="[
+                      'inline-flex items-center gap-1 px-2.5 xs:px-3 py-1 xs:py-1.5 rounded-full text-[11px] xs:text-xs font-medium border transition-all touch-manipulation active:scale-95',
+                      userProfile.interests.includes(interest.name)
+                        ? 'bg-primary text-white border-primary shadow-sm'
+                        : 'bg-surface border-border text-text-muted hover:border-primary/50'
+                    ]"
+                  >
+                    <span>{{ interest.icon }}</span>
+                    <span>{{ translateInterest(interest.name) }}</span>
+                    <span v-if="userProfile.interests.includes(interest.name)" class="text-xs">✓</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Custom Interests -->
+            <div class="mt-4 pt-4 border-t border-border">
+              <p class="text-xs text-text-muted mb-2">{{ t('profile.addCustomInterest') }}</p>
+              <p class="text-xs text-text-muted/70 mb-2">{{ t('profile.customInterestHint') }}</p>
               
-              <!-- Add Interest Button -->
-              <button
-                @click="addInterest"
-                class="inline-flex items-center gap-1 px-3 xs:px-4 py-1.5 xs:py-2 border-2 border-dashed border-text-muted/30 text-text-muted rounded-full text-xs xs:text-sm font-medium touch-manipulation hover:border-primary hover:text-primary hover:bg-primary-light/50 active:border-primary active:bg-primary-light transition-all"
-              >
-                <span>+</span>
-                {{ t('profile.addInterest') }}
-              </button>
+              <!-- Existing custom interests -->
+              <div v-if="(userProfile.customInterests || []).length > 0" class="flex flex-wrap gap-1.5 mb-2">
+                <span
+                  v-for="(ci, idx) in userProfile.customInterests"
+                  :key="'ci-' + idx"
+                  class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-accent/20 text-accent border border-accent/30 rounded-full text-xs font-medium"
+                >
+                  {{ ci }}
+                  <button
+                    @click="userProfile.customInterests = userProfile.customInterests.filter((_, i) => i !== idx)"
+                    class="text-accent/60 hover:text-accent ml-0.5"
+                    :aria-label="t('delete') + ' ' + ci"
+                  >×</button>
+                </span>
+              </div>
+              
+              <!-- Add new custom interest -->
+              <div v-if="(userProfile.customInterests || []).length < 5" class="flex gap-2">
+                <input
+                  v-model="newCustomInterest"
+                  type="text"
+                  maxlength="20"
+                  class="input-field flex-1 text-sm"
+                  :placeholder="t('profile.customInterestPlaceholder')"
+                  @keyup.enter="addCustomInterest"
+                />
+                <button
+                  @click="addCustomInterest"
+                  :disabled="!newCustomInterest?.trim()"
+                  class="px-3 py-2 bg-accent text-white rounded-lg text-sm font-medium touch-manipulation active:scale-95 disabled:opacity-50"
+                >+</button>
+              </div>
             </div>
           </div>
 
@@ -5820,6 +6261,15 @@ const constellationPoints = computed(() => {
           >
             <span class="text-xl">👥</span>
             {{ t('inviteFriends.inviteButton') }}
+          </button>
+
+          <!-- Feedback Button -->
+          <button
+            @click="showFeedbackModal = true"
+            class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-base xs:text-lg py-3.5 xs:py-4 rounded-xl xs:rounded-2xl font-medium shadow-button touch-manipulation active:scale-[0.98] mt-4 animate-slide-up stagger-7b flex items-center justify-center gap-2"
+          >
+            <span class="text-xl">💬</span>
+            {{ t('feedback.button') }}
           </button>
 
           <button
@@ -5959,21 +6409,6 @@ const constellationPoints = computed(() => {
               </span>
             </div>
 
-            <!-- Openness -->
-            <div v-if="viewingProfileData.opennessTags?.length" class="mb-4">
-              <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">{{ t('openness.title') }}</h3>
-              <div class="flex flex-wrap gap-1.5">
-                <span 
-                  v-for="tag in viewingProfileData.opennessTags"
-                  :key="tag"
-                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-secondary-light text-secondary border border-secondary/20 rounded-full text-xs font-medium"
-                >
-                  <span>{{ opennessOptions.find(o => o.id === tag)?.emoji }}</span>
-                  <span>{{ t(`openness.options.${tag}`) }}</span>
-                </span>
-              </div>
-            </div>
-            
             <!-- Tags -->
             <div v-if="viewingProfileData.tags?.length" class="mb-4">
               <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2">{{ t('profile.myTags') }}</h3>
@@ -6005,16 +6440,33 @@ const constellationPoints = computed(() => {
                 >
                   {{ translateInterest(typeof interest === 'string' ? interest : interest.name) }}
                 </span>
+                <span
+                  v-for="(ci, ciIdx) in (viewingProfileData.custom_interests || [])"
+                  :key="'ci-' + ciIdx"
+                  class="px-2.5 py-1 rounded-full text-xs font-medium border bg-accent/20 text-accent border-accent/30"
+                >
+                  {{ ci }}
+                </span>
               </div>
             </div>
             
-            <!-- Time Preferences -->
-            <div v-if="viewingProfileData.responsePace || viewingProfileData.datePace" class="mb-4">
+            <!-- Availability -->
+            <div v-if="viewingProfileData.responsePace || (viewingProfileData.preferredTimes && viewingProfileData.preferredTimes.length > 0)" class="mb-4">
               <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wide mb-2 flex items-center gap-1.5">
                 <span class="text-sm">🕐</span>
                 {{ t('timePreferences.title') }}
               </h3>
               <div class="flex flex-wrap gap-1.5">
+                <!-- Preferred Times -->
+                <span 
+                  v-for="time in (viewingProfileData.preferredTimes || [])"
+                  :key="time"
+                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-light text-indigo border border-indigo/20 rounded-full text-xs font-medium"
+                >
+                  <span>{{ timeOptions.find(t => t.id === time)?.emoji }}</span>
+                  <span>{{ t(`timePreferences.times.${time}`) }}</span>
+                </span>
+                <!-- Response Pace -->
                 <span 
                   v-if="viewingProfileData.responsePace"
                   class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-light text-amber border border-amber/20 rounded-full text-xs font-medium"
@@ -6022,15 +6474,9 @@ const constellationPoints = computed(() => {
                   <span>{{ responsePaceOptions.find(p => p.id === viewingProfileData.responsePace)?.emoji }}</span>
                   <span>{{ t(`timePreferences.responsePaceOptions.${viewingProfileData.responsePace}`) }}</span>
                 </span>
-                <span 
-                  v-if="viewingProfileData.datePace"
-                  class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-light text-emerald border border-emerald/20 rounded-full text-xs font-medium"
-                >
-                  <span>{{ datePaceOptions.find(p => p.id === viewingProfileData.datePace)?.emoji }}</span>
-                  <span>{{ t(`timePreferences.datePaceOptions.${viewingProfileData.datePace}`) }}</span>
-                </span>
               </div>
             </div>
+
           </div>
           
           <!-- Actions -->
@@ -6267,6 +6713,52 @@ const constellationPoints = computed(() => {
         </div>
       </div>
     </Transition>
+
+    <!-- Feedback Modal -->
+    <Transition name="fade">
+      <div
+        v-if="showFeedbackModal"
+        class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+        @click.self="showFeedbackModal = false"
+      >
+        <div class="bg-surface rounded-2xl max-w-md w-full p-6 shadow-2xl animate-scale-in">
+          <div class="text-center mb-4">
+            <div class="w-16 h-16 mx-auto mb-3 bg-emerald-100 rounded-full flex items-center justify-center">
+              <span class="text-3xl">💬</span>
+            </div>
+            <h3 class="text-xl font-bold text-text-deep">{{ t('feedback.title') }}</h3>
+            <p class="text-sm text-text-muted mt-1">{{ t('feedback.subtitle') }}</p>
+          </div>
+          
+          <textarea
+            v-model="feedbackText"
+            class="input-field resize-none w-full"
+            rows="4"
+            :placeholder="t('feedback.placeholder')"
+          ></textarea>
+          
+          <div v-if="feedbackSent" class="text-center text-emerald-600 font-medium py-3">
+            {{ t('feedback.thanks') }}
+          </div>
+          
+          <div class="flex gap-3 mt-4">
+            <button
+              @click="showFeedbackModal = false; feedbackText = ''; feedbackSent = false"
+              class="flex-1 btn-secondary py-3"
+            >
+              {{ t('cancel') }}
+            </button>
+            <button
+              @click="sendFeedback"
+              :disabled="!feedbackText?.trim() || feedbackSent"
+              class="flex-1 bg-emerald-600 text-white font-semibold py-3 rounded-xl active:scale-[0.98] disabled:opacity-50"
+            >
+              {{ t('feedback.send') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -6398,6 +6890,10 @@ const constellationPoints = computed(() => {
 
 .dark-mode .bg-white {
   background: #0A0A0A !important;
+}
+
+.dark-mode .bg-surface-warm {
+  background: #1A1A1A !important;
 }
 
 .dark-mode .bg-border {
@@ -6736,5 +7232,16 @@ body.dark-mode {
 /* Bottom bar safe area */
 .bottom-bar-safe {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/* Text scaling for accessibility - proportional scaling of all text */
+.text-scale-normal {
+  font-size: 1rem;
+}
+.text-scale-large {
+  font-size: 1.25rem;
+}
+.text-scale-xl {
+  font-size: 1.5rem;
 }
 </style>

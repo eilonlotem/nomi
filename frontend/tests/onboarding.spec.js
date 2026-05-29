@@ -65,7 +65,7 @@ test.describe('Onboarding Flow', () => {
   test('Skip button goes to discovery', async ({ page }) => {
     await page.getByRole('button', { name: 'Skip' }).click();
     
-    await expect(page.getByRole('heading', { name: 'Nomi Match' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'KnowMe' })).toBeVisible();
   });
 
   test('Next button proceeds to preferences', async ({ page }) => {

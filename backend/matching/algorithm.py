@@ -344,17 +344,20 @@ class MatchingAlgorithm:
             breakdown.gender_match_score = 50.0
             return
         
+        # "everyone" matches all genders
+        if "everyone" in preferred_genders:
+            breakdown.gender_match_score = 100.0
+            return
+        
         # Map candidate gender to preference categories
         gender_mapping = {
             "male": "men",
             "female": "women",
-            "nonbinary": "nonbinary",
-            "other": "nonbinary",  # Group with nonbinary for matching
         }
         
-        candidate_category = gender_mapping.get(candidate_gender, candidate_gender)
+        candidate_category = gender_mapping.get(candidate_gender)
         
-        if candidate_category in preferred_genders:
+        if candidate_category and candidate_category in preferred_genders:
             breakdown.gender_match_score = 100.0
         else:
             # Gender doesn't match preference - significant penalty
@@ -381,16 +384,9 @@ class MatchingAlgorithm:
             return
         
         # Define compatibility between different intents
-        # 'open' and 'unsure' are compatible with everything
-        flexible_intents = {"open", "unsure"}
-        
-        if user_intent in flexible_intents or candidate_intent in flexible_intents:
+        # 'unsure' is compatible with everything
+        if user_intent == "unsure" or candidate_intent == "unsure":
             breakdown.relationship_type_score = 75.0
-            return
-        
-        # 'slow' is compatible with most intents
-        if user_intent == "slow" or candidate_intent == "slow":
-            breakdown.relationship_type_score = 60.0
             return
         
         # 'relationship' and 'friendship' are somewhat compatible (friends can become more)
@@ -459,14 +455,6 @@ class MatchingAlgorithm:
             response_compat = self._get_pace_compatibility(user_response, candidate_response)
             scores.append(response_compat)
         
-        # Date pace compatibility
-        user_date = user_profile.date_pace or ""
-        candidate_date = candidate_profile.date_pace or ""
-        
-        if user_date and candidate_date:
-            date_compat = self._get_date_pace_compatibility(user_date, candidate_date)
-            scores.append(date_compat)
-        
         if scores:
             breakdown.pace_compatibility_score = sum(scores) / len(scores)
         else:
@@ -495,28 +483,6 @@ class MatchingAlgorithm:
             return 75.0
         else:
             return 50.0
-    
-    def _get_date_pace_compatibility(self, pace1: str, pace2: str) -> float:
-        """Calculate compatibility between dating paces."""
-        # Direct matches score highest
-        if pace1 == pace2:
-            return 100.0
-        
-        # Flexible is compatible with everything
-        if "flexible" in (pace1, pace2):
-            return 85.0
-        
-        # Compatible combinations
-        compatible_pairs = {
-            ("ready", "slow"): 60,       # Slightly mismatched but workable
-            ("slow", "ready"): 60,
-            ("ready", "virtual"): 50,    # Different expectations
-            ("virtual", "ready"): 50,
-            ("slow", "virtual"): 75,     # Both prefer to take it slow
-            ("virtual", "slow"): 75,
-        }
-        
-        return float(compatible_pairs.get((pace1, pace2), 50))
     
     def _calculate_time_preferences_score(
         self,

@@ -10,26 +10,17 @@
 
 import en from './locales/en.js'
 import he from './locales/he.js'
-import es from './locales/es.js'
-import fr from './locales/fr.js'
-import ar from './locales/ar.js'
 
 // Available languages configuration
 export const languages = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧', dir: 'ltr' },
   { code: 'he', name: 'Hebrew', nativeName: 'עברית', flag: '🇮🇱', dir: 'rtl' },
-  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸', dir: 'ltr' },
-  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷', dir: 'ltr' },
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦', dir: 'rtl' },
 ]
 
 // All translations
 export const translations = {
   en,
   he,
-  es,
-  fr,
-  ar,
 }
 
 // Default language - Hebrew only

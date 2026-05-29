@@ -24,7 +24,8 @@ urlpatterns: list[Union[URLPattern, URLResolver]] = [
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]
 
-# Serve media files in development
+# Serve media files (needed for local voice message storage fallback)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

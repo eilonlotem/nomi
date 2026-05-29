@@ -78,8 +78,6 @@ class Profile(models.Model):
     GENDER_CHOICES: list[tuple[str, str]] = [
         ("male", "Male"),
         ("female", "Female"),
-        ("nonbinary", "Non-binary"),
-        ("other", "Other"),
         ("prefer_not_to_say", "Prefer not to say"),
     ]
     gender = models.CharField(max_length=20, choices=GENDER_CHOICES, blank=True)
@@ -102,8 +100,6 @@ class Profile(models.Model):
     RELATIONSHIP_INTENT_CHOICES: list[tuple[str, str]] = [
         ("relationship", "Looking for a relationship"),
         ("friendship", "Looking for friends"),
-        ("open", "Open to anything"),
-        ("slow", "Prefer a calm introduction"),
         ("unsure", "Not sure yet"),
     ]
     relationship_intent = models.CharField(
@@ -112,11 +108,9 @@ class Profile(models.Model):
         blank=True,
     )
 
-    # Openness tags (who I'm open to connect with)
-    openness_tags = models.JSONField(default=list)
-
     # Interests
     interests = models.ManyToManyField(Interest, blank=True, related_name="profiles")
+    custom_interests = models.JSONField(default=list, blank=True, help_text="User-defined interests, max 5 items, max 20 chars each")
 
     # Current mood/energy
     MOOD_CHOICES: list[tuple[str, str]] = [
@@ -136,6 +130,7 @@ class Profile(models.Model):
         ("laughMost", "The thing that makes me laugh most is..."),
         ("perfectSunday", "My perfect Sunday looks like..."),
         ("convinced", "I'm convinced that..."),
+        ("custom", "Write your own"),
     ]
     prompt_id = models.CharField(max_length=50, choices=PROMPT_CHOICES, blank=True)
     prompt_answer = models.CharField(max_length=300, blank=True)
@@ -173,20 +168,10 @@ class Profile(models.Model):
         ],
         blank=True,
     )
-    date_pace = models.CharField(
-        max_length=50,
-        choices=[
-            ("ready", "Ready to meet soon"),
-            ("slow", "Prefer to chat first"),
-            ("virtual", "Virtual dates preferred"),
-            ("flexible", "Open to whatever feels right"),
-        ],
-        blank=True,
-    )
     time_notes = models.CharField(
         max_length=200,
         blank=True,
-        help_text="Additional notes about scheduling (e.g., 'I have PT on Tuesdays')",
+        help_text="Additional notes about scheduling (e.g., 'I'm a night owl, Fridays work best')",
     )
 
     # Visibility
@@ -290,7 +275,6 @@ class LookingFor(models.Model):
     GENDER_CHOICES: list[tuple[str, str]] = [
         ("men", "Men"),
         ("women", "Women"),
-        ("nonbinary", "Non-binary"),
         ("everyone", "Everyone"),
     ]
     genders = models.JSONField(default=list)  # List of gender codes

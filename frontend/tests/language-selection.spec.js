@@ -10,17 +10,11 @@ test.describe('Language Selection', () => {
   test('displays all available languages', async ({ page }) => {
     await expect(page.getByText('English')).toBeVisible();
     await expect(page.getByText('עברית')).toBeVisible();
-    await expect(page.getByText('Español')).toBeVisible();
-    await expect(page.getByText('Français')).toBeVisible();
-    await expect(page.getByText('العربية')).toBeVisible();
   });
 
   test('shows language flags', async ({ page }) => {
     await expect(page.getByText('🇬🇧')).toBeVisible();
     await expect(page.getByText('🇮🇱')).toBeVisible();
-    await expect(page.getByText('🇪🇸')).toBeVisible();
-    await expect(page.getByText('🇫🇷')).toBeVisible();
-    await expect(page.getByText('🇸🇦')).toBeVisible();
   });
 
   test('selecting English proceeds to onboarding', async ({ page }) => {
@@ -33,14 +27,6 @@ test.describe('Language Selection', () => {
 
   test('selecting Hebrew sets RTL direction', async ({ page }) => {
     await page.getByRole('button', { name: /Switch language.*עברית/i }).click();
-    
-    // Check RTL is applied
-    const body = page.locator('body');
-    await expect(body).toHaveAttribute('dir', 'rtl');
-  });
-
-  test('selecting Arabic sets RTL direction', async ({ page }) => {
-    await page.getByRole('button', { name: /Switch language.*العربية/i }).click();
     
     // Check RTL is applied
     const body = page.locator('body');

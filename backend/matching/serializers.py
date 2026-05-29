@@ -55,9 +55,13 @@ class MatchSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
         return None
 
     def get_conversation_id(self, obj: Match) -> Optional[int]:
-        if hasattr(obj, "conversation"):
-            return obj.conversation.id
-        return None
+        try:
+            return obj.conversation.id  # type: ignore[attr-defined]
+        except Conversation.DoesNotExist:
+            # Auto-create conversation for matches that are missing one
+            # (e.g., due to data issues from deploys or legacy matches)
+            conversation = Conversation.objects.create(match=obj)
+            return conversation.id  # type: ignore[attr-defined]
 
 
 class MessageSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
@@ -77,6 +81,8 @@ class MessageSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
             "content",
             "audio_url",
             "audio_duration",
+            "transcript",
+            "image",
             "is_read",
             "read_at",
             "sent_at",
@@ -103,6 +109,7 @@ class VoiceMessageSerializer(serializers.Serializer):  # type: ignore[type-arg]
 
     audio = serializers.FileField(required=True)
     duration = serializers.IntegerField(required=False, default=0)
+    transcript = serializers.CharField(required=False, default="", allow_blank=True)
 
     def validate_audio(self, value: Any) -> Any:
         """Validate audio file."""

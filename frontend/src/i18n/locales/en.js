@@ -3,7 +3,7 @@
  */
 export default {
   // General
-  appName: 'Nomi',
+  appName: 'KnowMe',
   tagline: 'Find Your Connection',
   motto: 'Because everyone deserves love',
   back: 'Back',
@@ -66,29 +66,14 @@ export default {
     noneSelected: 'Select at least one tag to set visibility.',
   },
 
-  // Intent & openness
+  // Relationship Goal
   intent: {
-    title: "What I'm looking for",
-    subtitle: 'Make your intentions clear early on.',
+    title: 'Relationship Goal',
+    subtitle: 'What type of connection are you looking for?',
     options: {
-      relationship: 'Looking for a relationship',
-      friendship: 'Looking for friendship',
-      open: 'Open to anything',
-      slow: 'Prefer a calm introduction',
+      relationship: 'A romantic relationship',
+      friendship: 'Friendship',
       unsure: 'Not sure yet',
-    },
-  },
-  openness: {
-    title: 'Open to',
-    subtitle: 'Select all that apply.',
-    options: {
-      openToCaregiver: 'Open to a relationship with a caregiver',
-      openToMobility: 'Open to someone with mobility differences',
-      openToMentalHealth: 'Open to someone navigating mental health',
-      openToAll: 'Open to everyone',
-      notSure: "I'm not sure",
-      meetThenDecide: 'Prefer to meet and decide',
-      understandsDisability: 'Looking for someone who understands disability from within',
     },
   },
   
@@ -100,26 +85,40 @@ export default {
     adventurous: 'Feeling Bold',
   },
   
-  // Disability Tags
+  // Disability Tags (functional codes matching backend seed_data)
   tags: {
-    wheelchairUser: 'Wheelchair User',
-    neurodivergent: 'Neurodivergent',
-    deafHoh: 'Deaf/HOH',
-    blindLowVision: 'Blind/Low Vision',
-    chronicIllness: 'Chronic Illness',
-    mentalHealth: 'Mental Health',
-    mobility: 'Mobility Difference',
-    cognitive: 'Cognitive Difference',
-    invisible: 'Invisible Disability',
-    acquired: 'Acquired Disability',
-    caregiver: 'Caregiver/Ally',
-    autism: 'Autism',
+    // Vision
+    difficultySeeing: 'Difficulty seeing',
+    partialVision: 'Partial vision',
+    visionAids: 'Use vision aids',
+    lightSensitivity: 'Light sensitivity',
+    // Hearing
+    difficultyHearing: 'Difficulty hearing',
+    partialHearing: 'Partial hearing',
+    hearingAids: 'Use hearing aids',
+    noisyConversations: 'Hard to follow group conversations',
+    // Mobility
+    mobilityDifficulty: 'Mobility challenges',
+    wheelchairUser: 'Wheelchair user',
+    shortDistances: 'Can walk short distances',
+    needsAccessibility: 'Need physical accommodations',
+    // Communication
+    speechDifficulty: 'Speech difficulties',
+    alternativeCommunication: 'Use alternative communication',
+    needsTimeToSpeak: 'Need extra time to express myself',
+    // Cognitive / Emotional
+    processingDifficulty: 'Info processing challenges',
+    sensoryOverload: 'Sensitive to overload/stimuli',
+    slowClearPace: 'Need a slow, clear pace',
+    calmSafeSpace: 'Need a calm, safe space',
+    noiseSensitivity: 'Sensitivity to loud noises',
+    socialCommunicationDifficulty: 'Difficulty with social communication',
   },
   
   // Discovery
   discovery: {
-    title: 'Nomi Match',
-    subtitle: 'People who get you',
+    title: 'KnowMe',
+    subtitle: '',
     noMoreProfiles: "You've seen everyone for now!",
     checkBackLater: 'Check back later for new connections',
     noMoreExplanation: "You've viewed all available matches for your filters. Check back later for new profiles or adjust your preferences.",
@@ -143,10 +142,18 @@ export default {
     nearby: 'Nearby',
     sharedInterests: 'Shared interests',
     matchDisclaimer: 'Match scores are suggestions. Connection happens in unexpected ways! 💫',
+    // Shared / in common
+    inCommon: '{count} in common',
+    sharedTagsCount: '{count} shared tags',
+    sharedInterestsCount: '{count} shared interests',
+    thingsInCommon: 'Things in common',
     // Undo
     skipping: 'Skipping',
     connecting: 'Connecting with',
     undo: 'Undo',
+    // Review again
+    reviewAgain: 'Review profiles again',
+    reviewAgainHint: 'See profiles you previously passed on',
   },
   
   // Matches
@@ -202,6 +209,12 @@ export default {
     playVoice: 'Play voice message',
     pauseVoice: 'Pause voice message',
     voiceMessage: 'Voice message',
+    // Speech-to-text transcript
+    showTranscript: 'Show text',
+    hideTranscript: 'Hide text',
+    liveTranscript: 'Live transcript',
+    sendImage: 'Send image',
+    imageMessage: 'Image',
   },
 
   // Shortcuts
@@ -253,13 +266,6 @@ export default {
     laughMost: 'The thing that makes me laugh most is...',
     perfectSunday: 'My perfect Sunday looks like...',
     convinced: "I'm convinced that...",
-    // Additional prompts from Ask Me About It
-    coolestThing: 'The coolest thing about my condition is...',
-    superpower: 'My superpower from being different is...',
-    wishPeopleKnew: 'What I wish people knew is...',
-    proudOf: "Something I'm proud of overcoming is...",
-    dontLetStop: "I don't let anything stop me from...",
-    loveAboutCommunity: 'What I love about the disability community is...',
   },
   
   // Ask Me About It - Celebration prompts
@@ -276,10 +282,10 @@ export default {
     },
   },
   
-  // Time Preferences
+  // Availability
   timePreferences: {
-    title: 'Time Preferences',
-    subtitle: 'Help others know when you\'re available',
+    title: 'Availability',
+    subtitle: 'When are you typically free?',
     preferredTimes: 'Best times for me',
     times: {
       morning: 'Morning',
@@ -295,15 +301,8 @@ export default {
       slow: 'Within 1-2 days',
       variable: 'Varies by energy level',
     },
-    datePace: 'Meeting preferences',
-    datePaceOptions: {
-      ready: 'Ready to meet soon',
-      slow: 'Prefer to chat first',
-      virtual: 'Virtual dates preferred',
-      flexible: 'Open to whatever feels right',
-    },
     notes: 'Additional notes',
-    notesPlaceholder: 'e.g. I have PT on Tuesdays, I\'m a night owl...',
+    notesPlaceholder: 'e.g. I\'m a night owl, Fridays work best for me...',
   },
   
   // Profile
@@ -322,8 +321,14 @@ export default {
     myTags: 'My Identity Tags',
     myInterests: 'My Interests',
     addInterest: 'Add interest',
-    prompt: 'Profile Prompt',
-    promptAnswer: 'Write your answer...',
+    addCustomInterest: 'Add your own',
+    customInterestPlaceholder: 'Type an interest...',
+    customInterestHint: 'Up to 5 custom interests, max 20 characters each',
+    prompt: 'A Bit About Me',
+    promptSubtitle: 'This is the first thing people see on your profile',
+    promptEncouragement: 'There\'s no right or wrong answer — just be yourself.',
+    promptPlaceholder: 'Share a little about yourself...',
+    promptCharCount: '{count}/300',
     saveChanges: 'Save Changes',
     photoHint: 'Tap to manage',
     photoInstructions: 'Upload up to 6 photos. Recommended: 800x800px, JPG/PNG formats. Tap to reorder or delete.',
@@ -340,13 +345,13 @@ export default {
     unknownUser: 'User',
   },
   
-  // Looking For
+  // Search Preferences
   lookingFor: {
-    title: 'Looking For',
+    title: 'Search Preferences',
     step: 'Step 2 of 2',
     subtitle: 'Who catches your eye?',
-    description: 'Tell us what you\'re looking for so we can find your perfect matches.',
-    interestedIn: 'I\'m interested in...',
+    description: 'Tell us your preferences and we\'ll find the right matches for you.',
+    interestedIn: 'Gender',
     ageRange: 'Age Range',
     minAge: 'Min',
     maxAge: 'Max',
@@ -356,12 +361,12 @@ export default {
     locationPlaceholder: 'e.g. Tel Aviv, New York...',
     locationHint: 'Select a recognized city for accurate distance matching',
     maxDistance: 'Maximum distance',
+    maxDistanceUpTo: 'Up to {km} km',
     distanceRange: 'Range: 5-200 km',
     km: 'km',
     genders: {
       male: 'Men',
       female: 'Women',
-      nonbinary: 'Non-binary',
       everyone: 'Everyone',
     },
   },
@@ -374,6 +379,26 @@ export default {
     keepDiscovering: 'Keep Discovering',
   },
   
+  // Report
+  report: {
+    button: 'Report',
+    confirmTitle: 'Report this user?',
+    confirmMessage: 'This will block this person and remove them from your matches. They will not be able to contact you again.',
+    confirmAction: 'Report & Block',
+    success: 'User reported and blocked.',
+  },
+
+  // Feedback
+  feedback: {
+    button: 'Leave Feedback',
+    title: 'Share Your Feedback',
+    subtitle: 'Help us improve KnowMe',
+    placeholder: 'Tell us what you think...',
+    send: 'Send Feedback',
+    thanks: 'Thank you for your feedback!',
+    emailSubject: 'KnowMe App Feedback',
+  },
+
   // Navigation
   nav: {
     discover: 'Discover',
@@ -448,18 +473,18 @@ export default {
   inviteFriends: {
     title: 'Send Invite to Friends',
     subtitle: 'Share the love!',
-    description: 'Invite your Facebook friends to join Nomi and find their connections.',
+    description: 'Invite your Facebook friends to join KnowMe and find their connections.',
     inviteButton: 'Send Invite to Friends',
     loading: 'Loading friends...',
     noFriends: 'No friends to invite',
     noFriendsDescription: 'Connect with Facebook to see friends you can invite.',
     invite: 'Invite',
     invited: 'Invited',
-    alreadyOnApp: 'Already on Nomi',
+    alreadyOnApp: 'Already on KnowMe',
     sendInvite: 'Send Invite',
     inviteSent: 'Invite sent!',
     inviteError: 'Failed to send invite',
-    shareMessage: "Hey! I'm using Nomi - an inclusive dating app. Join me!",
+    shareMessage: "Hey! I'm using KnowMe - an inclusive dating app. Join me!",
     close: 'Close',
     loginRequired: 'Please log in with Facebook to invite friends',
     stats: {
@@ -469,27 +494,88 @@ export default {
     },
   },
 
+  // Interest categories
+  interestCategories: {
+    Creative: 'Creative',
+    Active: 'Active',
+    Entertainment: 'Entertainment',
+    'Food & Drink': 'Food & Drink',
+    'Tech & Learning': 'Tech & Learning',
+    Lifestyle: 'Lifestyle',
+    Social: 'Social & Community',
+    Other: 'Other',
+  },
+
   // Interest Tags (for translation lookup)
   interests: {
-    Music: 'Music',
-    Reading: 'Reading',
-    Hiking: 'Hiking',
-    Cooking: 'Cooking',
-    Gaming: 'Gaming',
-    Art: 'Art',
-    Sports: 'Sports',
-    Travel: 'Travel',
-    Movies: 'Movies',
+    // Creative
     Photography: 'Photography',
-    Dancing: 'Dancing',
+    Art: 'Art',
+    Music: 'Music',
     Writing: 'Writing',
+    Painting: 'Painting',
+    Design: 'Design',
+    'Digital Art': 'Digital Art',
+    'Graphic Design': 'Graphic Design',
+    Guitar: 'Guitar',
+    Drumming: 'Drumming',
+    'Music Production': 'Music Production',
+    Poetry: 'Poetry',
+    Comics: 'Comics',
+    // Active
     Yoga: 'Yoga',
-    Meditation: 'Meditation',
-    Nature: 'Nature',
-    Technology: 'Technology',
-    Fashion: 'Fashion',
-    Food: 'Food',
+    Hiking: 'Hiking',
+    Swimming: 'Swimming',
+    Sports: 'Sports',
+    Dancing: 'Dancing',
+    Running: 'Running',
     Fitness: 'Fitness',
+    Basketball: 'Basketball',
+    'Scuba Diving': 'Scuba Diving',
+    Beach: 'Beach',
+    Surfing: 'Surfing',
+    // Entertainment
+    Gaming: 'Gaming',
+    Movies: 'Movies',
+    Reading: 'Reading',
+    'Sci-Fi': 'Sci-Fi',
+    Podcasts: 'Podcasts',
+    'Board Games': 'Board Games',
+    Comedy: 'Comedy',
+    'Stand-up Comedy': 'Stand-up Comedy',
+    Anime: 'Anime',
+    // Food & Drink
+    Cooking: 'Cooking',
+    Baking: 'Baking',
+    Coffee: 'Coffee',
+    Wine: 'Wine',
+    Nutrition: 'Nutrition',
+    // Tech & Learning
+    Technology: 'Technology',
+    Coding: 'Coding',
+    Science: 'Science',
+    Languages: 'Languages',
+    Engineering: 'Engineering',
+    Psychology: 'Psychology',
+    Philosophy: 'Philosophy',
+    History: 'History',
+    Astronomy: 'Astronomy',
+    // Lifestyle
+    Travel: 'Travel',
+    Nature: 'Nature',
     Animals: 'Animals',
+    Fashion: 'Fashion',
+    Meditation: 'Meditation',
+    Wellness: 'Wellness',
+    Dogs: 'Dogs',
+    Cats: 'Cats',
+    Blogging: 'Blogging',
+    // Social & Community
+    'Social Justice': 'Social Justice',
+    Volunteering: 'Volunteering',
+    Teaching: 'Teaching',
+    Healthcare: 'Healthcare',
+    Museums: 'Museums',
+    Architecture: 'Architecture',
   },
 }

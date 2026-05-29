@@ -19,14 +19,14 @@ Use the read_file tool to load these documents at the start of any task involvin
 - Test with screen readers in mind
 
 ### 2. RTL Support
-- Hebrew (he) and Arabic (ar) require RTL layout
+- Hebrew (he) requires RTL layout
 - Use logical CSS properties (start/end instead of left/right)
 - Test UI in both LTR and RTL modes
 - Use `dir="rtl"` attribute appropriately
 
 ### 3. Internationalization
 - All user-facing text must be translatable
-- Support 5 languages: English, Hebrew, Spanish, French, Arabic
+- Support 2 languages: English, Hebrew
 - Use i18n keys, never hardcode user-facing strings
 - DisabilityTag names are stored per-language (name_en, name_he, etc.)
 
@@ -66,7 +66,7 @@ When modifying the matching algorithm (`matching/algorithm.py`):
 ## Testing Requirements
 - Frontend: Playwright E2E tests in `frontend/tests/`
 - Backend: pytest tests in each app's `tests.py`
-- Test RTL layouts for Hebrew/Arabic
+- Test RTL layouts for Hebrew
 - Test accessibility with automated tools
 
 ## What NOT to Do
@@ -95,11 +95,31 @@ cd backend && railway up
 - Environment variables are configured in Railway dashboard
 - Database: PostgreSQL on Railway
 
+### Pre-Deploy Testing (REQUIRED)
+**You MUST run and pass all tests before deploying. Never skip this step.**
+
+#### Backend Tests
+```bash
+cd backend && source venv/bin/activate && python manage.py test matching --verbosity=2
+```
+- All 16+ tests must pass before deploying the backend
+- Tests use an in-memory SQLite database (no external dependencies)
+- If any test fails, fix the issue before deploying
+
+#### Frontend Tests
+```bash
+cd frontend && npx playwright test --reporter=list
+```
+- Requires the dev server (auto-started by Playwright config)
+- Tests run against the production backend API
+- If tests fail due to environment issues (timeouts, auth), note it but proceed with deploy
+
 ### Deployment Checklist
-1. Commit all changes to git
-2. Push to GitHub: `git push origin main`
-3. Deploy frontend: `cd frontend && vercel --prod`
-4. Deploy backend: `cd backend && railway up`
+1. **Run tests first** (see Pre-Deploy Testing above) — do NOT skip
+2. Commit all changes to git
+3. Push to GitHub: `git push origin main`
+4. Deploy frontend: `cd frontend && vercel --prod`
+5. Deploy backend: `cd backend && railway up`
 
 ### Error Tracking (Sentry)
 - Frontend DSN: configured in `VITE_SENTRY_DSN` env var

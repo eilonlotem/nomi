@@ -21,8 +21,8 @@ export const getPhotoUrl = (photo) => {
       return photo
     }
     // Relative path - prepend backend base URL
-    // Handles both /media/... and /static/... paths
-    return `${MEDIA_BASE_URL}${photo}`
+    const path = photo.startsWith('/') ? photo : `/${photo}`
+    return `${MEDIA_BASE_URL}${path}`
   }
   
   // It's an object with image and/or url fields
@@ -36,8 +36,8 @@ export const getPhotoUrl = (photo) => {
   }
   
   // Relative path - prepend backend base URL
-  // Handles both /media/... and /static/... paths
-  return `${MEDIA_BASE_URL}${url}`
+  const path = url.startsWith('/') ? url : `/${url}`
+  return `${MEDIA_BASE_URL}${path}`
 }
 
 /**
@@ -270,6 +270,13 @@ export const matchingApi = {
   cleanup: () => apiRequest('/cleanup/', {
     method: 'POST',
   }),
+
+  /**
+   * Reset passed profiles so they appear in discovery again
+   */
+  resetPasses: () => apiRequest('/reset-passes/', {
+    method: 'POST',
+  }),
   
   /**
    * Block a user
@@ -324,7 +331,7 @@ export const chatApi = {
    * @param {Blob} audioBlob - Audio blob from MediaRecorder
    * @param {number} duration - Duration in seconds
    */
-  sendVoiceMessage: async (conversationId, audioBlob, duration = 0) => {
+  sendVoiceMessage: async (conversationId, audioBlob, duration = 0, transcript = '') => {
     const token = getToken()
     
     // Determine file extension based on MIME type
@@ -343,6 +350,9 @@ export const chatApi = {
     const formData = new FormData()
     formData.append('audio', audioBlob, `voice_message.${extension}`)
     formData.append('duration', duration.toString())
+    if (transcript) {
+      formData.append('transcript', transcript)
+    }
     
     const response = await fetch(`${API_URL}/conversations/${conversationId}/voice/`, {
       method: 'POST',
@@ -357,6 +367,31 @@ export const chatApi = {
       throw new Error(error.error || 'Failed to upload voice message')
     }
     
+    return response.json()
+  },
+
+  /**
+   * Send an image message
+   * @param {number} conversationId - Conversation ID
+   * @param {File} imageFile - Image file to upload
+   */
+  sendImage: async (conversationId, imageFile) => {
+    const token = getToken()
+    const formData = new FormData()
+    formData.append('image', imageFile)
+
+    const response = await fetch(`${API_URL}/conversations/${conversationId}/image/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${token}`,
+      },
+      body: formData,
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to send image')
+    }
+
     return response.json()
   },
 

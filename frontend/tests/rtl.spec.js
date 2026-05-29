@@ -14,29 +14,8 @@ test.describe('RTL (Right-to-Left) Support', () => {
     await expect(body).toHaveAttribute('dir', 'rtl');
   });
 
-  test('Arabic selection sets RTL direction', async ({ page }) => {
-    await page.getByRole('button', { name: /Switch language.*العربية/i }).click();
-    
-    const body = page.locator('body');
-    await expect(body).toHaveAttribute('dir', 'rtl');
-  });
-
   test('English selection sets LTR direction', async ({ page }) => {
     await page.getByRole('button', { name: /Switch language.*English/i }).click();
-    
-    const body = page.locator('body');
-    await expect(body).toHaveAttribute('dir', 'ltr');
-  });
-
-  test('Spanish selection sets LTR direction', async ({ page }) => {
-    await page.getByRole('button', { name: /Switch language.*Español/i }).click();
-    
-    const body = page.locator('body');
-    await expect(body).toHaveAttribute('dir', 'ltr');
-  });
-
-  test('French selection sets LTR direction', async ({ page }) => {
-    await page.getByRole('button', { name: /Switch language.*Français/i }).click();
     
     const body = page.locator('body');
     await expect(body).toHaveAttribute('dir', 'ltr');
@@ -78,27 +57,8 @@ test.describe('Hebrew Language UI', () => {
     await page.getByRole('button', { name: /נוירו-דיברגנטי/i }).click();
     await page.getByRole('button', { name: /הבא/i }).click();
     
-    await expect(page.getByText('מחפש/ת')).toBeVisible(); // Looking For
-    await expect(page.getByText('מתעניין/ת ב...')).toBeVisible(); // Interested in
-  });
-});
-
-test.describe('Arabic Language UI', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-    await page.getByRole('button', { name: /Continue with Facebook/i }).click();
-    await page.waitForTimeout(500);
-    await page.getByRole('button', { name: /Switch language.*العربية/i }).click();
-    await page.waitForTimeout(500);
-  });
-
-  test('onboarding shows Arabic text', async ({ page }) => {
-    await expect(page.getByText('التفاصيل')).toBeVisible(); // The Deets
-  });
-
-  test('RTL layout is applied', async ({ page }) => {
-    const body = page.locator('body');
-    await expect(body).toHaveAttribute('dir', 'rtl');
+    await expect(page.getByText('העדפות חיפוש')).toBeVisible(); // Search Preferences
+    await expect(page.getByText('מגדר')).toBeVisible(); // Gender
   });
 });
 

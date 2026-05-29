@@ -24,8 +24,8 @@
   <!-- Heart emoji -->
   <text x="600" y="200" text-anchor="middle" font-size="120">🧡</text>
   
-  <!-- Main title - Hebrew -->
-  <text x="600" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#0F172A">נומי</text>
+  <!-- Main title -->
+  <text x="600" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" font-weight="bold" fill="#0F172A">KnowMe</text>
   
   <!-- Tagline -->
   <text x="600" y="400" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" fill="#475569">היכרויות שמבינות אותך</text>

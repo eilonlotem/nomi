@@ -1,0 +1,21 @@
+# Railway deploy ignore rules
+#
+# Goal: keep `railway up` uploads small and fast.
+# This directory contains large local assets used for mock data generation,
+# and is not required for production runtime.
+static/painted_avatars/
+
+# Common Python + tooling artifacts (defense-in-depth; also covered by .gitignore in many cases)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.log
+
+# Local env/config
+.env
+venv/
+.venv/

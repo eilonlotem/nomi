@@ -145,7 +145,7 @@ router.beforeEach((to, from, next) => {
 
 // Update document title based on route
 router.afterEach((to) => {
-  document.title = `${to.meta.title || 'Nomi'} | Nomi`
+  document.title = `${to.meta.title || 'KnowMe'} | KnowMe`
 })
 
 export default router

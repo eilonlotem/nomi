@@ -27,9 +27,6 @@ class DisabilityTagSerializer(serializers.ModelSerializer):  # type: ignore[type
             "code",
             "name_en",
             "name_he",
-            "name_es",
-            "name_fr",
-            "name_ar",
             "icon",
             "category",
             "disclosure_level",
@@ -115,6 +112,7 @@ class ProfileSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
         write_only=True,
         source="interests",
     )
+    custom_interests = serializers.JSONField(required=False, default=list)
 
     photos = ProfilePhotoSerializer(many=True, read_only=True)
     looking_for = LookingForSerializer(required=False)
@@ -139,16 +137,20 @@ class ProfileSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
             "disability_tag_visibilities",
             "interests",
             "interest_ids",
+            "custom_interests",
             "prompt_id",
             "prompt_answer",
+            # Ask Me About It
+            "ask_me_prompt_id",
+            "ask_me_answer",
+            # Current mood
+            "current_mood",
             # Time preferences
             "preferred_times",
             "response_pace",
-            "date_pace",
             "time_notes",
-            # Relationship intent and openness
+            # Relationship intent
             "relationship_intent",
-            "openness_tags",
             "photos",
             "looking_for",
             "is_visible",
@@ -169,6 +171,18 @@ class ProfileSerializer(serializers.ModelSerializer):  # type: ignore[type-arg]
             - obj.date_of_birth.year
             - ((today.month, today.day) < (obj.date_of_birth.month, obj.date_of_birth.day))
         )
+
+    def validate_custom_interests(self, value: Any) -> list[str]:
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Must be a list.")
+        cleaned: list[str] = []
+        for item in value[:5]:
+            if not isinstance(item, str):
+                continue
+            trimmed = item.strip()[:20]
+            if trimmed:
+                cleaned.append(trimmed)
+        return cleaned
 
     def get_disability_tags(self, obj: Profile) -> list[dict[str, Any]]:
         """Return all disability tags for the profile owner."""
@@ -273,6 +287,7 @@ class ProfileCardSerializer(serializers.ModelSerializer):  # type: ignore[type-a
     interests = InterestSerializer(many=True, read_only=True)
     photos = ProfilePhotoSerializer(many=True, read_only=True)
     primary_photo = serializers.SerializerMethodField()
+    looking_for = LookingForSerializer(required=False)
     age = serializers.SerializerMethodField()
     user_id = serializers.IntegerField(source="user.id", read_only=True)
     is_bot = serializers.SerializerMethodField()
@@ -289,14 +304,14 @@ class ProfileCardSerializer(serializers.ModelSerializer):  # type: ignore[type-a
             "picture_url",
             "disability_tags",
             "interests",
+            "custom_interests",
             "prompt_id",
             "prompt_answer",
             "relationship_intent",
-            "openness_tags",
             # Time preferences
             "preferred_times",
             "response_pace",
-            "date_pace",
+            "looking_for",
             "photos",
             "primary_photo",
             "age",

@@ -49,9 +49,15 @@ urlpatterns: list[URLPattern] = [
         views.VoiceMessageUploadView.as_view(),
         name="voice-message-upload",
     ),
+    path(
+        "conversations/<int:conversation_id>/image/",
+        views.ImageMessageUploadView.as_view(),
+        name="image-message-upload",
+    ),
     # Block
     path("block/", views.BlockUserView.as_view(), name="block-user"),
     path("block/<int:user_id>/", views.BlockUserView.as_view(), name="unblock-user"),
     # Cleanup
     path("cleanup/", views.CleanupView.as_view(), name="cleanup"),
+    path("reset-passes/", views.ResetPassesView.as_view(), name="reset-passes"),
 ]

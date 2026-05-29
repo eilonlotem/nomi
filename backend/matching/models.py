@@ -138,8 +138,12 @@ class Message(models.Model):
     content = models.TextField()
 
     # For voice notes
-    audio_url = models.URLField(blank=True, null=True)
+    audio_url = models.CharField(max_length=500, blank=True, null=True)
     audio_duration = models.PositiveIntegerField(null=True, blank=True)  # seconds
+    transcript = models.TextField(blank=True, default="")  # speech-to-text transcript
+
+    # For image messages
+    image = models.ImageField(upload_to="chat_images/", blank=True, null=True)
 
     # Status
     is_read = models.BooleanField(default=False)

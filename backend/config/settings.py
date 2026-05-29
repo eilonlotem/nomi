@@ -167,7 +167,7 @@ STATICFILES_DIRS: list[Path] = [
 STATICFILES_STORAGE: str = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Media files (User uploads)
-MEDIA_URL: str = "media/"
+MEDIA_URL: str = "/media/"
 MEDIA_ROOT: Path = BASE_DIR / "media"
 
 # Production security settings

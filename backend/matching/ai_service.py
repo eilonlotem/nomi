@@ -430,11 +430,8 @@ def generate_message_suggestions(
         other_summary = ProfileSummary.from_django_profile(other_profile)
 
         language_name = _language_name(language_code)
-        system_prompt = f"""You are a helpful assistant helping {user_summary.name} reply in a dating app conversation.
-Keep suggestions friendly, inclusive, and respectful. Avoid assumptions about disability unless it was explicitly mentioned.
-Use simple, warm language and keep each suggestion under 120 characters.
-Respond in {language_name}."""
 
+        # Build transcript first to detect conversation stage
         transcript_lines: list[str] = []
         for msg in conversation_history:
             role = msg.get("role")
@@ -448,21 +445,75 @@ Respond in {language_name}."""
         if len(transcript) > 1500:
             transcript = transcript[-1500:]
 
+        msg_count = len(transcript_lines)
+        if msg_count <= 4:
+            stage_hint = "This is the beginning of the conversation — keep suggestions light and friendly, like a gentle ice-breaker."
+        elif msg_count <= 12:
+            stage_hint = "The conversation is building — suggestions should show genuine interest and follow up naturally on what was said."
+        else:
+            stage_hint = "The conversation is well underway — suggestions can be more personal and reference shared topics that came up."
+
+        # Detect last message sender to guide reply direction
+        last_msg_from_other = ""
+        for msg in reversed(conversation_history):
+            if msg.get("role") == "assistant" and (msg.get("content") or "").strip():
+                last_msg_from_other = (msg.get("content") or "").strip()
+                break
+
+        reply_anchor = ""
+        if last_msg_from_other:
+            reply_anchor = f"\nThe last message from {other_summary.name} was: \"{last_msg_from_other[:200]}\"\nSuggestions MUST be relevant responses to that message — do not ignore it."
+
+        system_prompt = f"""You are helping {user_summary.name} reply to {other_summary.name} in an inclusive dating app.
+
+TONE GUIDELINES:
+- Warm, soft, and gentle — never blunt, aggressive, or overly direct.
+- Neutral and respectful — avoid being flirty, presumptuous, or making assumptions.
+- Natural and conversational — sound like a real person, not a chatbot.
+- Each suggestion should feel like something a thoughtful person would actually say.
+- Avoid clichés, generic compliments, and overly enthusiastic phrasing (no "I'd love to!", "That's amazing!").
+- Prefer open-ended questions and curious follow-ups over statements.
+- Never reference or assume anything about disability unless it was explicitly discussed.
+
+{stage_hint}
+
+Keep each suggestion under 100 characters. Respond ONLY in {language_name}."""
+
         recent_messages = f"- Recent messages:\n{transcript}" if transcript else ""
-        context_prompt = f"""
-CONTEXT:
+
+        # Find shared interests for better relevance
+        user_interests = set(
+            i.strip().lower()
+            for i in user_summary.interests.split(",")
+            if i.strip() and i.strip() != "various things"
+        )
+        other_interests = set(
+            i.strip().lower()
+            for i in other_summary.interests.split(",")
+            if i.strip() and i.strip() != "various things"
+        )
+        shared = user_interests & other_interests
+        shared_hint = ""
+        if shared:
+            shared_hint = f"- Shared interests: {', '.join(shared)}\n"
+
+        context_prompt = f"""CONTEXT:
 - {user_summary.name}'s interests: {user_summary.interests}
 - {other_summary.name}'s interests: {other_summary.interests}
-{recent_messages}
+{shared_hint}{recent_messages}{reply_anchor}
 
 TASK:
-Return {max_suggestions} short reply suggestions as a JSON array of strings in {language_name}. No extra text."""
+Generate exactly {max_suggestions} short, gentle reply suggestions as a JSON array of strings in {language_name}.
+- Each suggestion must directly relate to the conversation flow.
+- Vary the suggestions: include one question, one warm comment, and one that references a shared interest or topic from the chat.
+- Do NOT include generic greetings or filler phrases.
+- Output ONLY the JSON array, nothing else."""
 
         messages = [{"role": "system", "content": system_prompt}]
         messages.extend(conversation_history)
         messages.append({"role": "user", "content": context_prompt})
 
-        generator = AIResponseGenerator(AIConfig(max_tokens=120, temperature=0.6))
+        generator = AIResponseGenerator(AIConfig(max_tokens=200, temperature=0.7))
         response = generator.client.chat.completions.create(
             model=generator.config.model,
             messages=messages,  # type: ignore

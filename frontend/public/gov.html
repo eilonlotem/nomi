@@ -452,9 +452,10 @@
         }
         
         .problem-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            display: flex;
+            flex-wrap: wrap;
             gap: 1.25rem;
+            justify-content: center;
         }
         
         .problem-card {
@@ -465,6 +466,8 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
             border: 1px solid var(--border);
             transition: all 0.3s ease;
+            flex: 0 1 calc(33.333% - 1rem);
+            min-width: 240px;
         }
 
         .problem-card:hover {
@@ -740,10 +743,11 @@
         }
 
         .safety-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            display: flex;
+            flex-wrap: wrap;
             gap: 1.5rem;
             margin-bottom: 2.5rem;
+            justify-content: center;
         }
 
         .safety-card {
@@ -754,6 +758,8 @@
             border: 1px solid rgba(16, 185, 129, 0.15);
             transition: all 0.3s ease;
             text-align: right;
+            flex: 0 1 calc(33.333% - 1rem);
+            min-width: 250px;
         }
 
         html[dir="ltr"] .safety-card {
@@ -820,6 +826,7 @@
         @media (max-width: 768px) {
             .safety-card {
                 text-align: center;
+                max-width: 100%;
             }
 
             .safety-card-icon {
@@ -828,7 +835,8 @@
             }
 
             .safety-grid {
-                grid-template-columns: 1fr;
+                flex-direction: column;
+                align-items: stretch;
             }
         }
 
@@ -974,17 +982,12 @@
         }
 
         .technology-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            display: flex;
+            flex-wrap: wrap;
             gap: 2rem;
             max-width: 900px;
             margin: 0 auto;
-        }
-
-        @media (max-width: 900px) {
-            .technology-grid {
-                grid-template-columns: 1fr;
-            }
+            justify-content: center;
         }
 
         .tech-card {
@@ -996,6 +999,8 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            flex: 0 1 calc(50% - 1rem);
+            min-width: 280px;
         }
 
         .tech-card::before {
@@ -1416,6 +1421,40 @@
         </div>
         <div class="scroll-hint" aria-hidden="true">↓</div>
     </section>
+
+    <!-- Story Section - Meet Shaon -->
+    <section class="story" id="story">
+        <div class="story-inner">
+            <img class="story-photo" src="/shon.jpg" alt="שון מחייכת בכיסא גלגלים">
+            <h2 class="story-title">
+                <span data-lang="he">הכירו את שון</span>
+                <span data-lang="en">Meet Shon</span>
+            </h2>
+            <p class="story-intro">
+                <span data-lang="he">שון היא אישה צעירה בת 28, חכמה, מצחיקה, אוהבת ים, אקטיביסטית, עם תואר ראשון בתקשורת – ומחפשת זוגיות, כמו כולם.<br>יש לה שיתוק מוחין והיא מתניידת על כיסא גלגלים.</span>
+                <span data-lang="en">Shon is a 28-year-old woman who is smart, funny, loves the sea, an activist, with a BA in Communications – and looking for love, like everyone else.<br>She has cerebral palsy and uses a wheelchair.</span>
+            </p>
+            
+            <div class="story-content">
+                <div data-lang="he">
+                    <p>כששון פותחת אפליקציית דייטינג רגילה, אין לה דרך להציג את מי שהיא באמת. אין שפה שמכירה במורכבות שלה, אין התאמה שמבינה את החיים שלה, ואין אפשרות לפגוש אנשים שחווים מציאות דומה. במקום לראות אישה עם עולם פנימי, תשוקות ורצון לאהוב – הדבר הראשון שרואים הוא כיסא הגלגלים.</p>
+                    <p>בפועל, שון – כמו רבים אחרים – מודרת מעולם ההיכרויות הדיגיטלי. אין פילטרים רלוונטיים, אין מרחב בטוח, ואין פלטפורמה שמכירה בזכות הבסיסית שלה לזוגיות, בלי התנצלות ובלי צורך להסביר את עצמה מחדש בכל פעם.</p>
+                    
+                    <div class="story-highlight">
+                        <p>Know Me נולדה מהפער הזה:<br>בין הרצון האנושי הבסיסי לאהבה – לבין קהילות דיגיטליות שאינן מותאמות ונגישות לאנשים עם מוגבלויות.</p>
+                    </div>
+                </div>
+                <div data-lang="en">
+                    <p>When Shon opens a regular dating app, there is no way to show who she really is. There is no language that recognizes her complexity, no matching that understands her life, and no way to meet people who share a similar reality. Instead of seeing a woman with an inner world, passions, and a desire to love, the first thing people see is the wheelchair.</p>
+                    <p>In practice, Shon – like many others – is excluded from digital dating. There are no relevant filters, no safe space, and no platform that recognizes her basic right to love, without apology and without having to explain herself again and again.</p>
+                    
+                    <div class="story-highlight">
+                        <p>Know Me was born from this gap:<br>Between the basic human desire for love – and digital communities that aren't adapted and accessible for people with disabilities.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
     
     <!-- Problem -->
     <section class="problem">
@@ -1445,6 +1484,11 @@
                     <span data-lang="en">The dating world is undergoing a shift: more awareness of inclusion, more conversation about accessibility, and a growing understanding that human connection is a foundation for mental and social wellbeing. At the same time, AI technologies now enable smart, safe, and personalized matching for communities that have long been excluded. While millions of people with disabilities are looking for love, they still don't have a platform built for them. Know Me is born exactly at this intersection: a clear social need, mature technology, and a moment when the market, regulation, and public awareness finally meet.</span>
                 </p>
             </div>
+
+            <h3 style="text-align: center; font-size: 1.3rem; font-weight: 700; color: var(--text); margin-bottom: 2rem;">
+                <span data-lang="he">אנשים עם מוגבלויות מדווחים שבאפליקציות הדייטינג הקיימות:</span>
+                <span data-lang="en">People with disabilities report that in existing dating apps:</span>
+            </h3>
             
             <div class="problem-grid">
                 <div class="problem-card">
@@ -1491,42 +1535,27 @@
                         <span data-lang="en">An entire population is excluded from one of the most important social spaces – relationships</span>
                     </p>
                 </div>
+                <div class="problem-card">
+                    <div class="problem-icon" aria-hidden="true">⚠️</div>
+                    <h3>
+                        <span data-lang="he">אבטחה לא אקטיבית</span>
+                        <span data-lang="en">No Active Security</span>
+                    </h3>
+                    <p>
+                        <span data-lang="he">מנגנוני האבטחה באפליקציות הקיימות אינם מותאמים לאוכלוסיות רגישות ואינם מספקים הגנה אקטיבית</span>
+                        <span data-lang="en">Security mechanisms in existing apps are not adapted for sensitive populations and don't provide active protection</span>
+                    </p>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Story Section - Meet Shaon -->
-    <section class="story" id="story">
-        <div class="story-inner">
-            <img class="story-photo" src="/shon.jpg" alt="שון מחייכת בכיסא גלגלים">
-            <h2 class="story-title">
-                <span data-lang="he">הכירו את שון</span>
-                <span data-lang="en">Meet Shon</span>
-            </h2>
-            <p class="story-intro">
-                <span data-lang="he">שון היא אישה צעירה בת 28, חכמה, מצחיקה, אוהבת ים, אקטיביסטית, עם תואר ראשון בתקשורת – ומחפשת זוגיות, כמו כולם.<br>יש לה שיתוק מוחין והיא מתניידת על כיסא גלגלים.</span>
-                <span data-lang="en">Shon is a 28-year-old woman who is smart, funny, loves the sea, an activist, with a BA in Communications – and looking for love, like everyone else.<br>She has cerebral palsy and uses a wheelchair.</span>
-            </p>
-            
-            <div class="story-content">
-                <div data-lang="he">
-                    <p>כששון פותחת אפליקציית דייטינג רגילה, אין לה דרך להציג את מי שהיא באמת. אין שפה שמכירה במורכבות שלה, אין התאמה שמבינה את החיים שלה, ואין אפשרות לפגוש אנשים שחווים מציאות דומה. במקום לראות אישה עם עולם פנימי, תשוקות ורצון לאהוב – הדבר הראשון שרואים הוא כיסא הגלגלים.</p>
-                    <p>בפועל, שון – כמו רבים אחרים – מודרת מעולם ההיכרויות הדיגיטלי. אין פילטרים רלוונטיים, אין מרחב בטוח, ואין פלטפורמה שמכירה בזכות הבסיסית שלה לזוגיות, בלי התנצלות ובלי צורך להסביר את עצמה מחדש בכל פעם.</p>
-                    
-                    <div class="story-highlight">
-                        <p>Know Me נולדה מהפער הזה:<br>בין הרצון האנושי הבסיסי לאהבה – לבין קהילות דיגיטליות שאינן מותאמות ונגישות לאנשים עם מוגבלויות.</p>
-                    </div>
-                </div>
-                <div data-lang="en">
-                    <p>When Shon opens a regular dating app, there is no way to show who she really is. There is no language that recognizes her complexity, no matching that understands her life, and no way to meet people who share a similar reality. Instead of seeing a woman with an inner world, passions, and a desire to love, the first thing people see is the wheelchair.</p>
-                    <p>In practice, Shon – like many others – is excluded from digital dating. There are no relevant filters, no safe space, and no platform that recognizes her basic right to love, without apology and without having to explain herself again and again.</p>
-                    
-                    <div class="story-highlight">
-                        <p>Know Me was born from this gap:<br>Between the basic human desire for love – and digital communities that aren't adapted and accessible for people with disabilities.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Know Me Introduction -->
+    <section style="padding: 4rem 2rem 0; max-width: 1200px; margin: 0 auto; text-align: center;">
+        <h2 class="section-title">
+            <span data-lang="he">הכירו את Know Me – אפליקציית דייטינג נגישה ובטוחה</span>
+            <span data-lang="en">Meet Know Me – An Accessible and Safe Dating App</span>
+        </h2>
     </section>
 
     <!-- Core Principles -->
@@ -1556,25 +1585,25 @@
                     </p>
                 </div>
                 <div class="principle-card">
-                    <div class="principle-icon" aria-hidden="true">🏷️</div>
+                    <div class="principle-icon" aria-hidden="true">🛡️</div>
                     <h3>
-                        <span data-lang="he">בחירת תגיות</span>
-                        <span data-lang="en">Tag Selection</span>
+                        <span data-lang="he">אבטחה אקטיבית</span>
+                        <span data-lang="en">Active Security</span>
                     </h3>
                     <p>
-                        <span data-lang="he">תגיות להצגה בפרופיל הגלוי. תגיות נוספות הנחשפות רק בשלב ההתאמה, בהתאם להחלטת המשתמשים.</span>
-                        <span data-lang="en">Tags for display in public profile. Additional tags revealed only during matching stage, according to users' decisions.</span>
+                        <span data-lang="he">מערכת ניטור מבוססת בינה מלאכותית לזיהוי שיח פוגעני, ניסיונות ניצול ותוכן לא הולם — הגנה יזומה על המשתמשים בזמן אמת.</span>
+                        <span data-lang="en">AI-based monitoring system to detect harmful discourse, exploitation attempts, and inappropriate content — proactive user protection in real-time.</span>
                     </p>
                 </div>
                 <div class="principle-card">
-                    <div class="principle-icon" aria-hidden="true">✏️</div>
+                    <div class="principle-icon" aria-hidden="true">♿</div>
                     <h3>
-                        <span data-lang="he">גמישות ועדכון</span>
-                        <span data-lang="en">Flexibility and Updates</span>
+                        <span data-lang="he">הנגשה מלאה</span>
+                        <span data-lang="en">Full Accessibility</span>
                     </h3>
                     <p>
-                        <span data-lang="he">אפשרות לשינוי, עדכון או הסרת מידע בכל שלב. העיקרון המנחה: הסיפור האישי נמצא בשליטת המשתמשים בלבד.</span>
-                        <span data-lang="en">Ability to change, update, or remove information at any stage. The guiding principle: the personal story is under users' control alone.</span>
+                        <span data-lang="he">הפלטפורמה מונגשת באופן מלא לכלל סוגי המוגבלויות, עם ממשק אדפטיבי המותאם לצרכים משתנים של כל משתמש ומשתמשת.</span>
+                        <span data-lang="en">The platform is fully accessible for all types of disabilities, with an adaptive interface tailored to the varying needs of each user.</span>
                     </p>
                 </div>
             </div>
@@ -1666,6 +1695,37 @@
                         </li>
                     </ul>
                 </div>
+
+                <!-- Active Security -->
+                <div class="tech-card">
+                    <div class="tech-card-icon" aria-hidden="true">🛡️</div>
+                    <h3>
+                        <span data-lang="he">אבטחה אקטיבית</span>
+                        <span data-lang="en">Active Security</span>
+                    </h3>
+                    <p class="tech-card-tagline">
+                        <span data-lang="he">ניטור מבוסס בינה מלאכותית</span>
+                        <span data-lang="en">AI-Based Monitoring</span>
+                    </p>
+                    <p class="tech-card-desc">
+                        <span data-lang="he">הפלטפורמה כוללת מערכת ניטור מבוססת בינה מלאכותית לזיהוי ומניעה של התנהגויות פוגעניות במרחב הדיגיטלי.</span>
+                        <span data-lang="en">The platform includes an AI-based monitoring system for detecting and preventing harmful behaviors in the digital space.</span>
+                    </p>
+                    <ul class="tech-card-list">
+                        <li>
+                            <span data-lang="he">זיהוי פגיעות בשיח</span>
+                            <span data-lang="en">Detection of harmful discourse</span>
+                        </li>
+                        <li>
+                            <span data-lang="he">זיהוי ניסיונות ניצול</span>
+                            <span data-lang="en">Detection of exploitation attempts</span>
+                        </li>
+                        <li>
+                            <span data-lang="he">סינון תוכן לא הולם</span>
+                            <span data-lang="en">Filtering inappropriate content</span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </section>
@@ -1710,8 +1770,8 @@
                         <span data-lang="en">Monitoring & Protection</span>
                     </h3>
                     <p>
-                        <span data-lang="he">ניטור טכנולוגי ואנושי של שיח פוגעני, הטרדות והתנהגות חריגה.</span>
-                        <span data-lang="en">Technological and human monitoring of harmful discourse, harassment, and unusual behavior.</span>
+                        <span data-lang="he">ניטור טכנולוגי ואנושי של שיח פוגעני, הטרדות והתנהגות חריגה. הטכנולוגיה מנטרת באופן אקטיבי שיח פוגעני, ניסיונות ניצול ותמונות מטרידות — כדי לזהות ולמנוע פגיעה בזמן אמת.</span>
+                        <span data-lang="en">Technological and human monitoring of harmful discourse, harassment, and unusual behavior. The technology actively monitors offensive discourse, exploitation attempts, and harassing images — to detect and prevent harm in real-time.</span>
                     </p>
                 </div>
                 <div class="safety-card">

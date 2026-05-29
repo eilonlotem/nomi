@@ -159,8 +159,6 @@ def _build_realistic_prompt(user_data: dict[str, Any], style_idx: int = 0) -> st
     gender_map = {
         "male": "man",
         "female": "woman",
-        "nonbinary": "non-binary person",
-        "other": "person",
     }
     gender_desc = gender_map.get(gender, "person")
     

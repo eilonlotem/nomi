@@ -334,6 +334,7 @@ export default {
     photoInstructions: 'Upload up to 6 photos. Recommended: 800x800px, JPG/PNG formats. Tap to reorder or delete.',
     setAsPrimary: 'Set as primary photo',
     main: 'Main',
+    primaryPhotoHint: 'To change, set another photo as primary',
     addPhoto: 'Add Photo',
     uploadingPhoto: 'Uploading...',
     maxPhotos: 'Maximum 6 photos allowed',

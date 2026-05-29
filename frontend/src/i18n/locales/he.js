@@ -333,6 +333,7 @@ export default {
     photoInstructions: 'העלה עד 6 תמונות. מומלץ: 800x800 פיקסלים, פורמט JPG/PNG. לחץ לסידור או מחיקה.',
     setAsPrimary: 'הגדר כתמונה ראשית',
     main: 'ראשית',
+    primaryPhotoHint: 'כדי להחליף, הגדירו תמונה אחרת כראשית',
     addPhoto: 'הוסף תמונה',
     uploadingPhoto: 'מעלה...',
     maxPhotos: 'מותר עד 6 תמונות',

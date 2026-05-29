@@ -5642,6 +5642,9 @@ const constellationPoints = computed(() => {
                 <div class="absolute top-1 start-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded-full font-medium z-10">
                   {{ t('profile.main') }}
                 </div>
+                <div class="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center py-1 px-1">
+                  {{ t('profile.primaryPhotoHint') }}
+                </div>
               </div>
               
               <!-- Additional Photos -->

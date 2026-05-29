@@ -619,11 +619,16 @@ const handleReport = async () => {
   
   isReporting.value = true
   try {
-    const partnerId = selectedMatch.value.user1 === user.value?.id
-      ? selectedMatch.value.user2
-      : selectedMatch.value.user1
+    const partnerId = selectedMatch.value.other_user?.id
     
-    await matchingApi.blockUser(partnerId, 'harassment', '')
+    if (partnerId) {
+      try {
+        await matchingApi.blockUser(partnerId, 'harassment', '')
+      } catch (blockErr) {
+        console.warn('Block failed (continuing with unmatch):', blockErr)
+      }
+    }
+    
     await matchingApi.unmatch(selectedMatch.value.id)
     
     matches.value = matches.value.filter(m => m.id !== selectedMatch.value.id)

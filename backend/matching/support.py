@@ -20,8 +20,8 @@ SUPPORT_DISPLAY_NAME_EN = "Support"
 SUPPORT_BIO_HE = "היי! אני כאן כדי לעזור לך עם כל שאלה על האפליקציה. שלח/י הודעה ואחזור אליך בהקדם 💜"
 SUPPORT_BIO_EN = "Hi! I'm here to help you with any questions about the app. Send a message and I'll get back to you soon 💜"
 
-WELCOME_MESSAGE_HE = "היי! ברוך/ה הבא/ה לנומי 💜\nאני כאן כדי לעזור לך עם כל שאלה. אל תהסס/י לשלוח הודעה!"
-WELCOME_MESSAGE_EN = "Hi! Welcome to Nomi 💜\nI'm here to help you with any questions. Don't hesitate to send a message!"
+WELCOME_MESSAGE_HE = "היי! ברוך/ה הבא/ה ל-KnowMe 💜\nאני כאן כדי לעזור לך עם כל שאלה. אל תהסס/י לשלוח הודעה!"
+WELCOME_MESSAGE_EN = "Hi! Welcome to KnowMe 💜\nI'm here to help you with any questions. Don't hesitate to send a message!"
 
 
 def get_or_create_support_user() -> User:
@@ -52,7 +52,7 @@ def get_or_create_support_user() -> User:
             gender="prefer_not_to_say",
             city="",
             is_visible=False,
-            picture_url="",
+            picture_url="https://ui-avatars.com/api/?name=%D7%AA%D7%9E%D7%99%D7%9B%D7%94&background=10A37F&color=fff&size=256&bold=true",
         )
 
     logger.info("Created support user: %s", SUPPORT_USERNAME)

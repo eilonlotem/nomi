@@ -4200,9 +4200,9 @@ const constellationPoints = computed(() => {
     </div>
 
     <!-- Discovery View -->
-    <div 
-      v-else-if="currentView === 'discovery'" 
-      class="h-[100svh] flex flex-col relative z-10 overflow-hidden overscroll-none"
+    <div
+      v-else-if="currentView === 'discovery'"
+      class="h-[100svh] flex flex-col relative z-10 overflow-hidden overscroll-none animate-fade-in"
     >
       <!-- Header -->
       <header class="sticky top-0 z-20 bg-surface/90 backdrop-blur-lg header-safe">
@@ -4463,8 +4463,11 @@ const constellationPoints = computed(() => {
               <h3 class="text-xs xs:text-sm font-semibold text-text-muted uppercase tracking-wide mb-2">
                 {{ t('profile.about') }}
               </h3>
-              <p class="text-sm xs:text-base text-text-deep leading-relaxed mb-3 xs:mb-4">
+              <p v-if="getLocalized(currentProfile.bio)" class="text-sm xs:text-base text-text-deep leading-relaxed mb-3 xs:mb-4">
                 {{ getLocalized(currentProfile.bio) }}
+              </p>
+              <p v-else class="text-sm xs:text-base text-text-light italic leading-relaxed mb-3 xs:mb-4">
+                {{ t('discovery.noBioYet', `${currentProfile.name || currentProfile.display_name || ''} hasn't written a bio yet — say hi and get to know them!`) }}
               </p>
             
               <!-- Interests -->
@@ -4603,21 +4606,21 @@ const constellationPoints = computed(() => {
           <!-- Pass Button -->
           <button
             @click="passProfile"
-            class="w-8 h-8 xs:w-9 xs:h-9 bg-surface rounded-full shadow-card border-2 border-danger/20 flex items-center justify-center touch-manipulation active:scale-90 active:border-danger"
+            class="w-11 h-11 xs:w-12 xs:h-12 bg-surface rounded-full shadow-card border-2 border-danger/20 flex items-center justify-center touch-manipulation transition-transform duration-150 active:scale-90 active:border-danger hover:border-danger/50"
             :aria-label="t('a11y.passProfile')"
           >
-            <svg class="w-3.5 h-3.5 xs:w-4 xs:h-4 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4.5 h-4.5 xs:w-5 xs:h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
-          
+
           <!-- Connect Button -->
           <button
             @click="connectProfile"
-            class="w-10 h-10 xs:w-11 xs:h-11 bg-primary rounded-full shadow-button flex items-center justify-center touch-manipulation active:scale-90"
+            class="w-14 h-14 bg-primary rounded-full shadow-button flex items-center justify-center touch-manipulation transition-transform duration-150 active:scale-90 hover:bg-[#0F8A6C]"
             :aria-label="t('a11y.connectProfile')"
           >
-            <svg class="w-4.5 h-4.5 xs:w-5 xs:h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>
           </button>
@@ -4653,9 +4656,9 @@ const constellationPoints = computed(() => {
     </div>
 
     <!-- Matches View -->
-    <div 
-      v-else-if="currentView === 'matches'" 
-      class="min-h-screen-safe flex flex-col relative z-10"
+    <div
+      v-else-if="currentView === 'matches'"
+      class="min-h-screen-safe flex flex-col relative z-10 animate-fade-in"
     >
       <!-- Header -->
       <header class="sticky top-0 z-20 bg-surface/90 backdrop-blur-lg header-safe">
@@ -4771,9 +4774,9 @@ const constellationPoints = computed(() => {
     </div>
 
     <!-- Chat View -->
-    <div 
-      v-else-if="currentView === 'chat'" 
-      class="h-[100svh] flex flex-col relative z-10 bg-background overflow-hidden overscroll-none"
+    <div
+      v-else-if="currentView === 'chat'"
+      class="h-[100svh] flex flex-col relative z-10 bg-background overflow-hidden overscroll-none animate-fade-in"
     >
       <!-- Header -->
       <header class="sticky top-0 z-20 bg-surface border-b border-border shadow-soft header-safe">
@@ -5049,11 +5052,24 @@ const constellationPoints = computed(() => {
                 {{ t('chat.today') }}
               </span>
             </div>
-            
+
+            <!-- Ice-breaker prompt for empty/new conversations -->
+            <div v-if="!mockChat.messages || mockChat.messages.length <= 1" class="flex flex-col items-center justify-center py-8 xs:py-12 text-center animate-fade-in">
+              <div class="w-16 h-16 xs:w-20 xs:h-20 rounded-full bg-primary-light/50 flex items-center justify-center mb-4">
+                <span class="text-2xl xs:text-3xl">👋</span>
+              </div>
+              <p class="text-sm xs:text-base font-semibold text-text-deep mb-1">
+                {{ t('chat.startConversation', 'Start the conversation!') }}
+              </p>
+              <p class="text-xs xs:text-sm text-text-muted max-w-[240px]">
+                {{ t('chat.iceBreaker', `Say hi to ${mockChat.matchName || 'your match'} — a simple hello goes a long way!`) }}
+              </p>
+            </div>
+
             <!-- Messages -->
-            <div>
-              <div 
-                v-for="(message, index) in mockChat.messages" 
+            <TransitionGroup name="chat-msg" tag="div">
+              <div
+                v-for="(message, index) in mockChat.messages"
                 :key="message.id"
                 class="w-full"
               >
@@ -5226,10 +5242,10 @@ const constellationPoints = computed(() => {
                 </div>
               </div>
 
-            </div>
+            </TransitionGroup>
           </div>
         </main>
-        
+
         <!-- Smart Suggestions Panel -->
         <Transition name="slide-up">
           <div
@@ -5566,9 +5582,9 @@ const constellationPoints = computed(() => {
     </div>
 
     <!-- Profile Edit View -->
-    <div 
-      v-else-if="currentView === 'profile'" 
-      class="min-h-screen-safe flex flex-col relative z-10 bg-background"
+    <div
+      v-else-if="currentView === 'profile'"
+      class="min-h-screen-safe flex flex-col relative z-10 bg-background animate-fade-in"
     >
       <!-- Header with Sticky Save -->
       <header class="sticky top-0 z-20 bg-surface/90 backdrop-blur-lg border-b border-border header-safe">
@@ -5663,17 +5679,34 @@ const constellationPoints = computed(() => {
                   <span class="text-3xl opacity-30">📷</span>
                 </div>
                 <!-- Photo actions overlay -->
-                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <button 
+                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-3">
+                  <button
                     @click="setPrimaryPhoto(photo.id)"
-                    class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center touch-manipulation"
+                    class="w-11 h-11 bg-primary text-white rounded-full flex items-center justify-center touch-manipulation transition-transform duration-150 active:scale-90 hover:bg-[#0F8A6C]"
                     :title="t('profile.setAsPrimary')"
                   >
                     ⭐
                   </button>
-                  <button 
+                  <button
                     @click="deletePhoto(photo.id)"
-                    class="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center touch-manipulation"
+                    class="w-11 h-11 bg-red-500 text-white rounded-full flex items-center justify-center touch-manipulation transition-transform duration-150 active:scale-90 hover:bg-red-600"
+                    :title="t('delete')"
+                  >
+                    🗑️
+                  </button>
+                </div>
+                <!-- Mobile: always-visible action bar at bottom -->
+                <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-2 flex items-center justify-center gap-2 sm:hidden">
+                  <button
+                    @click="setPrimaryPhoto(photo.id)"
+                    class="w-9 h-9 bg-primary/90 text-white rounded-full flex items-center justify-center touch-manipulation transition-transform duration-150 active:scale-90 text-sm"
+                    :title="t('profile.setAsPrimary')"
+                  >
+                    ⭐
+                  </button>
+                  <button
+                    @click="deletePhoto(photo.id)"
+                    class="w-9 h-9 bg-red-500/90 text-white rounded-full flex items-center justify-center touch-manipulation transition-transform duration-150 active:scale-90 text-sm"
                     :title="t('delete')"
                   >
                     🗑️
@@ -7183,10 +7216,10 @@ body.dark-mode {
   background: #000000 !important;
 }
 
-/* Transitions */
+/* Transitions — standardized durations */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 
 .fade-enter-from,
@@ -7196,7 +7229,7 @@ body.dark-mode {
 
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .slide-up-enter-from,
@@ -7205,15 +7238,36 @@ body.dark-mode {
   opacity: 0;
 }
 
-.scale-enter-active,
-.scale-leave-active {
-  transition: all 0.2s ease;
+.scale-enter-active {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.scale-enter-from,
-.scale-leave-to {
+.scale-leave-active {
+  transition: all 0.2s ease-in;
+}
+
+.scale-enter-from {
   transform: scale(0.8);
   opacity: 0;
+}
+
+.scale-leave-to {
+  transform: scale(0.9);
+  opacity: 0;
+}
+
+/* Chat message enter animation (#17) */
+.chat-msg-enter-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chat-msg-enter-from {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.chat-msg-move {
+  transition: transform 0.3s ease;
 }
 
 /* RTL flip for back arrow */

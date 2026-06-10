@@ -104,15 +104,14 @@
 @layer components {
   /* Unique organic button style - performance optimized */
   .btn-primary {
-    @apply relative overflow-hidden font-semibold px-6 py-3.5 
-           min-h-[52px] min-w-[52px] 
+    @apply relative overflow-hidden font-semibold px-6 py-3.5
+           min-h-[52px] min-w-[52px]
            bg-primary text-white rounded-xl
            shadow-button
-           transition-colors duration-200 ease-out
-           active:scale-[0.98];
+           transition-all duration-200 ease-out
+           active:scale-[0.98] hover:shadow-lg;
     will-change: transform;
     transform: translateZ(0);
-    /* Removed infinite gradient animation for performance */
   }
 
   /* Only show glow on hover, no blur filter */
@@ -121,21 +120,21 @@
   }
 
   .btn-secondary {
-    @apply bg-surface text-text-deep font-semibold rounded-xl px-6 py-3.5 
-           min-h-[52px] min-w-[52px] 
+    @apply bg-surface text-text-deep font-semibold rounded-xl px-6 py-3.5
+           min-h-[52px] min-w-[52px]
            border border-border
            shadow-soft
-           hover:border-primary hover:text-primary
-           transition-colors duration-200 ease-out
+           hover:border-primary hover:text-primary hover:shadow-md
+           transition-all duration-200 ease-out
            active:scale-[0.97];
   }
 
   .btn-icon {
-    @apply flex items-center justify-center 
+    @apply flex items-center justify-center
            min-h-[52px] min-w-[52px] w-[52px] h-[52px]
-           rounded-xl transition-colors duration-200 ease-out
+           rounded-xl transition-all duration-200 ease-out
            active:scale-90 bg-surface border border-border shadow-soft
-           hover:border-primary;
+           hover:border-primary hover:shadow-md;
   }
 
   /* Dark mode buttons */

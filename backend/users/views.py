@@ -134,7 +134,7 @@ class FacebookAuthView(APIView):
                 "https://graph.facebook.com/me",
                 params={
                     "access_token": access_token,
-                    "fields": "id,name,email,first_name,last_name,picture.type(large),birthday,gender",
+                    "fields": "id,name,email,first_name,last_name,picture.type(large){url,is_silhouette},birthday,gender",
                 },
                 timeout=10,
             )
@@ -187,11 +187,13 @@ class FacebookAuthView(APIView):
                 is_verified=True,  # Facebook verified their email
             )
 
-        # Get profile picture URL
+        # Get profile picture URL (skip Facebook's default silhouette)
         picture_url: Optional[str] = None
         picture_data: Any = fb_data.get("picture", {})
         if isinstance(picture_data, dict):
-            picture_url = picture_data.get("data", {}).get("url")
+            pic_inner = picture_data.get("data", {})
+            if not pic_inner.get("is_silhouette", False):
+                picture_url = pic_inner.get("url")
 
         # Parse birthday from Facebook (format: MM/DD/YYYY)
         date_of_birth = None

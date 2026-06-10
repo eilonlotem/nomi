@@ -2817,13 +2817,13 @@ const handleSocialLogin = async (provider) => {
       loggedInWith.value = provider
       
       // Update user profile with data from social login
-      if (result.facebookData) {
+      if (result.isNewUser && result.facebookData) {
         userProfile.value.name = result.facebookData.name || userProfile.value.name
         if (result.facebookData.picture_url) {
           userProfile.value.photo = result.facebookData.picture_url
         }
       }
-      
+
       // Check if user has already completed onboarding
       if (user.value?.is_onboarded) {
         // Skip onboarding, go directly to discovery
@@ -3268,14 +3268,14 @@ onMounted(async () => {
       if (result.success) {
         loggedInWith.value = 'facebook'
         
-        // Update user profile with data from social login
-        if (result.facebookData) {
+        // Update user profile with data from social login (new users only)
+        if (result.isNewUser && result.facebookData) {
           userProfile.value.name = result.facebookData.name || userProfile.value.name
           if (result.facebookData.picture_url) {
             userProfile.value.photo = result.facebookData.picture_url
           }
         }
-        
+
         // Navigate based on onboarding status
         if (user.value?.is_onboarded) {
           navigateTo('discovery')

@@ -10,11 +10,11 @@ ENV DJANGO_SETTINGS_MODULE=config.settings
 WORKDIR /app
 
 # Install dependencies
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project
-COPY . .
+COPY backend/ .
 
 # Make start script executable
 RUN chmod +x start.sh

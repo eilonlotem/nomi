@@ -1,7 +1,3 @@
-[build]
-dockerfilePath = "Dockerfile"
-dockerContext = "."
-
 [deploy]
 healthcheckPath = "/api/auth/validate/"
 restartPolicyType = "ON_FAILURE"
